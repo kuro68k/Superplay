@@ -236,3 +236,4 @@ $RECYCLE.BIN/
 pc/hid_bootloader/test.hex
 Joystick/composite.inf
 Joystick/joystick/descriptor.hid
+Joystick/joystick/descriptor_feature.hid
