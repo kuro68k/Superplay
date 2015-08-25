@@ -81,10 +81,10 @@ void HID_send_report(void)
 	{
 		hid_report.x = 0;
 		hid_report.y = 0;
-		if (report.udlr_scc & JOY_UP_bm)	hid_report.y = -127;
-		if (report.udlr_scc & JOY_DOWN_bm)	hid_report.y = 127;
-		if (report.udlr_scc & JOY_RIGHT_bm)	hid_report.x = 127;
-		if (report.udlr_scc & JOY_LEFT_bm)	hid_report.x = -127;
+		if (report.udlr_sscc & JOY_UP_bm)		hid_report.y = -127;
+		if (report.udlr_sscc & JOY_DOWN_bm)		hid_report.y = 127;
+		if (report.udlr_sscc & JOY_RIGHT_bm)	hid_report.x = 127;
+		if (report.udlr_sscc & JOY_LEFT_bm)		hid_report.x = -127;
 
 		hid_report.buttons = report.buttons;
 

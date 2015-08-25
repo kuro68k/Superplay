@@ -30,8 +30,12 @@
 
 
 
+extern uint16_t	AF_high_map;
+extern uint16_t	AF_low_map;
+
+
 extern void AF_init(void);
-extern uint16_t AF_read(uint16_t buttons);
+extern uint16_t AF_read(uint16_t buttons, uint8_t button_mode);
 
 
 

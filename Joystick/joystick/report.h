@@ -19,7 +19,7 @@
 
 typedef struct
 {
-	uint8_t		udlr_scc;
+	uint8_t		udlr_sscc;
 	uint16_t	buttons;
 	uint8_t		rot_mode;
 } REPORT_t;
@@ -44,7 +44,7 @@ typedef struct
 #define BUTTON_MODE_8_gc			(0<<4)
 #define BUTTON_MODE_4_gc			(1<<4)
 #define BUTTON_MODE_4AF_gc			(2<<4)
-#define BUTTON_MODE_UNDEFINED_gc	(3<<4)
+#define BUTTON_MODE_16_gc			(3<<4)
 #define	BUTTON_MODE_gp				4
 #define BUTTON_MODE_gm				(0b11<<4)
 

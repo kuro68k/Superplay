@@ -335,6 +335,12 @@
     <Compile Include="joystick.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="keys.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="keys.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="report.c">
       <SubType>compile</SubType>
     </Compile>
