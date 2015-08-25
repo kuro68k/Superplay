@@ -19,15 +19,19 @@
 
 // 30Hz
 #define AF1_PER				0x208C
-#define AF1_DIV				TC_CLKSEL_DIV64_gc
+#define AF1_CLKSEL			TC_CLKSEL_DIV64_gc
 
 // 15Hz
 #define AF2_PER				0x411A
-#define AF2_DIV				TC_CLKSEL_DIV64_gc
+#define AF2_CLKSEL			TC_CLKSEL_DIV64_gc
+
+
+#define AF_CLKMUL			8
 
 
 
-extern uint16_t AF_get_mask(void);
+extern void AF_init(void);
+extern uint16_t AF_read(uint16_t buttons);
 
 
 

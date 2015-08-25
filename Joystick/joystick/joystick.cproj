@@ -299,6 +299,12 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="autofire.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="autofire.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="config.c">
       <SubType>compile</SubType>
     </Compile>

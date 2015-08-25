@@ -7,22 +7,92 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/pgmspace.h>
+#include <stdlib.h>
+#include <string.h>
+#include "global.h"
+#include "config.h"
 #include "autofire.h"
 
 
-uint8_t	volatile	af1_pressed_SIG = 0;
-uint8_t	volatile	af2_pressed_SIG = 0;
+const __flash uint16_t prescalers[] = { 1, 2, 4, 8, 64, 256, 1024 };
+const __flash uint8_t clksel[] = {	TC_CLKSEL_DIV1_gc, TC_CLKSEL_DIV2_gc, TC_CLKSEL_DIV4_gc,
+									TC_CLKSEL_DIV8_gc, TC_CLKSEL_DIV64_gc, TC_CLKSEL_DIV256_gc,
+									TC_CLKSEL_DIV1024_gc };
 
-uint8_t	af_setting[16];
 
+
+uint8_t	af1_counters[16];
+uint8_t af2_counters[16];
+uint8_t volatile af1_count_AT = 0;	// !! ATOMIC !!
+uint8_t volatile af2_count_AT = 0;	// !! ATOMIC !!
+
+uint16_t	af_map = 0xFFFF;		// autofire state for each button
+uint16_t	af_high_map = 0;
+uint16_t	af_low_map = 0;
+
+
+/**************************************************************************************************
+** Find the best timer settings for a given frequency. Returns true is a usable (but possibly
+** very inaccurate) setting is found.
+*/
+bool af_calc_timer(float freq, uint8_t *clksel, uint16_t *period)
+{
+	uint32_t	cycles;
+	uint32_t	per;
+	uint32_t	lowest_error = UINT32_MAX;
+	bool		found = false;
+
+	cycles = F_CPU / freq;
+
+	// find best prescaler
+	for (uint8_t i = 0; i < (sizeof(prescalers) / sizeof(uint16_t)); i++)
+	{
+		per = cycles / prescalers[i];
+		per--;
+		if (per > 0xFFFF)	// unusable
+			continue;
+
+		uint32_t error;
+		error = abs((int32_t)cycles - (int32_t)((per + 1) * prescalers[i]));
+		if (error < lowest_error)
+		{
+			lowest_error = error;
+			*clksel = clksel[i];
+			*period = per;
+			found = true;
+		}
+	}
+	
+	return found;
+}
 
 /**************************************************************************************************
 ** Set up autofire timers
 */
 void AF_init(void)
 {
-	memset(af_setting, 0, sizeof(af_setting));
+	memset(af1_counters, AF_CLKMUL, sizeof(af1_counters));
+	memset(af2_counters, AF_CLKMUL, sizeof(af2_counters));
+
+	// re-load settings if required
+	if ((cfg->af_mode == CFG_AF_MODE_FIXED) ||
+		(cfg->af_mode == CFG_AF_MODE_TOGGLE_HIGH) ||
+		(cfg->af_mode == CFG_AF_MODE_TOGGLE_HIGH_LOW))
+		af_high_map = cfg->af_mask;
+
+	uint16_t	per = AF1_PER;
+	uint8_t		clksel = AF1_CLKSEL;
+	float		freq;
 	
+	freq = cfg->af_high_05hz / 2;	// convert o Hz
+	freq *= AF_CLKMUL;				// timer runs AF_CLKMUL times faster than autofire
+	if (!af_calc_timer(freq, &clksel, &per))
+	{
+		clksel = AF1_CLKSEL;
+		per = AF1_PER;
+	}
+
 	AF_TC1.CTRLA = 0;
 	AF_TC1.CTRLB = 0;
 	AF_TC1.CTRLC = 0;
@@ -31,8 +101,16 @@ void AF_init(void)
 	AF_TC1.INTCTRLA = TC_OVFINTLVL_LO_gc;
 	AF_TC1.INTCTRLB = 0;
 	AF_TC1.CNT = 0;
-	AF_TC1.PER = AF1_PER;
-	AF_TC1.CTRLA = AF1_DIV;
+	AF_TC1.PER = per;
+	AF_TC1.CTRLA = clksel;
+
+	freq = cfg->af_low_05hz / 2;	// convert o Hz
+	freq *= 8;						// timer runs 8x faster than autofire
+	if (!af_calc_timer(freq, &clksel, &per))
+	{
+		clksel = AF2_CLKSEL;
+		per = AF2_PER;
+	}
 
 	AF_TC2.CTRLA = 0;
 	AF_TC2.CTRLB = 0;
@@ -42,8 +120,8 @@ void AF_init(void)
 	AF_TC2.INTCTRLA = TC_OVFINTLVL_LO_gc;
 	AF_TC2.INTCTRLB = 0;
 	AF_TC2.CNT = 0;
-	AF_TC2.PER = AF2_PER;
-	AF_TC2.CTRLA = AF2_DIV;
+	AF_TC2.PER = per;
+	AF_TC2.CTRLA = clksel;
 }
 
 /**************************************************************************************************
@@ -51,46 +129,68 @@ void AF_init(void)
 */
 ISR(AF_TC1_OVF_vect)
 {
-	af1_pressed_SIG = ~af1_pressed_SIG;
+	af1_count_AT++;
 }
 
 ISR(AF_TC2_OVF_vect)
 {
-	af2_pressed_SIG = ~af2_pressed_SIG;
+	af2_count_AT++;
 }
 
 /**************************************************************************************************
-** Get autofire button mask
+** Read current autofire state, and reset any non-pressed buttons
 */
-uint16_t AF_get_mask(void)
+uint16_t AF_read(uint16_t buttons)
 {
-	uint16_t	mask = 0;
-	uint16_t	bit = 1;
-	uint8_t		af1, af2;
-	
-	af1 = af1_pressed_SIG;
-	af2 = af2_pressed_SIG;
-	
-	for (uint8_t i = 0; i < 16; i++)
-	{
-		switch(af_setting[i])
-		{
-			default:
-			case 0:	// no autofire
-				mask |= bit;
-				break;
-			
-			case 1:	// AF1
-				if (af1)
-					mask |= bit;
-				break;
+	uint8_t		i;
+	uint16_t	mask;
+	uint8_t		af1_count, af2_count;
 
-			case 2:	// AF2
-				if (af2)
-					mask |= bit;
-				break;
+	// non-AF buttons always active
+	af_map |= ~af_high_map;
+	af_map |= ~af_low_map;
+	
+	cli();
+	af1_count = af1_count_AT;
+	af1_count_AT = 0;
+	af2_count = af2_count_AT;
+	af2_count_AT = 0;
+	sei();
+
+
+	// decrement counters
+	mask = 1;
+	for (i = 0; i < 16; i++)
+	{
+		af1_counters[i] -= af1_count;
+		while (af1_count > AF_CLKMUL)	// counter underflowed
+		{
+			af1_count += AF_CLKMUL;
+			if (af_high_map & mask)
+				af_map ^= mask;
+		}	
+
+		af2_counters[i] -= af2_count;
+		while (af2_count > AF_CLKMUL)	// counter underflowed
+		{
+			af2_count += AF_CLKMUL;
+			if (af_low_map & mask)
+				af_map ^= mask;
+		}	
+	}
+
+	
+	// handle unpressed buttons
+	mask = 1;
+	for (i = 0; i < 16; i++)
+	{
+		if (!(buttons & mask))	// button not pressed
+		{
+			af1_counters[i] = AF_CLKMUL;	// reset counters so button engages instantly when pressed
+			af2_counters[i] = AF_CLKMUL;
+			af_map |= mask;
 		}
 	}
 	
-	return mask;
+	return af_map;
 }

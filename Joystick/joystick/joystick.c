@@ -16,6 +16,7 @@
 #include "hid.h"
 #include "report.h"
 #include "vendor.h"
+#include "autofire.h"
 
 int main(void)
 {
@@ -25,6 +26,7 @@ int main(void)
 	sysclk_init();
 	CFG_init();
 	HW_init();
+	AF_init();
 	HID_init();
 
 	//PORTCFG.CLKEVOUT = PORTCFG_CLKOUTSEL_CLK1X_gc | PORTCFG_CLKOUT_PC7_gc;
