@@ -2,7 +2,7 @@
  * autofire.h
  *
  * Created: 03/06/2015 21:19:14
- *  Author: MoJo
+ *  Author: ???
  */ 
 
 

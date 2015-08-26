@@ -2,7 +2,7 @@
  * config.c
  *
  * Created: 16/08/2015 12:34:57
- *  Author: MoJo
+ *  Author: ???
  */ 
 
 #include <avr/io.h>

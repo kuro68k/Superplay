@@ -2,7 +2,7 @@
  * hw_misc.c
  *
  * Created: 18/12/2014 21:22:20
- *  Author: MoJo
+ *  Author: ???
  */ 
 
 #include <avr/io.h>

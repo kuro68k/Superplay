@@ -2,7 +2,7 @@
  * joystick.c
  *
  * Created: 29/03/2015 16:17:58
- *  Author: MoJo
+ *  Author: ???
  */ 
 
 
@@ -42,11 +42,9 @@ int main(void)
 		WDR();
 
 		RPT_refresh();
-		HID_send_report();
-		
-		//if (HID_enabled)
-	        //udi_hid_generic_send_report_in(report);
-		//if (VEN_enabled)
-		//	udi_vendor_interrupt_in_run(report, sizeof(report), NULL);
+		if (HID_enabled && !VEN_enabled)
+			HID_send_report();
+		if (VEN_enabled)
+			udi_vendor_interrupt_in_run((uint8_t *)&report, sizeof(report), NULL);
 	}
 }

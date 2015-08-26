@@ -2,7 +2,7 @@
  * hid.c
  *
  * Created: 04/04/2015 16:10:24
- *  Author: MoJo
+ *  Author: ???
  */ 
 
 #include <avr/io.h>

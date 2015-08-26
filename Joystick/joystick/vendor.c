@@ -2,7 +2,7 @@
  * vendor.c
  *
  * Created: 04/04/2015 16:10:36
- *  Author: MoJo
+ *  Author: ???
  */ 
 
 #include <avr/io.h>
@@ -18,7 +18,6 @@ bool VEN_enabled = false;
 */
 bool VEN_callback_enable(void)
 {
-	PORTF.OUTSET = PIN2_bm;
 	VEN_enabled = true;
 	return true;
 }
@@ -28,7 +27,6 @@ bool VEN_callback_enable(void)
 */
 bool VEN_callback_disable(void)
 {
-	PORTF.OUTCLR = PIN2_bm;
 	VEN_enabled = false;
 	return true;
 }
@@ -38,7 +36,6 @@ bool VEN_callback_disable(void)
 */
 bool VEN_callback_setup_out_received(void)
 {
-	PORTF.OUTTGL = PIN0_bm;
 	return true;
 }
 
@@ -47,6 +44,5 @@ bool VEN_callback_setup_out_received(void)
 */
 bool VEN_callback_setup_in_received(void)
 {
-	PORTF.OUTTGL = PIN1_bm;
 	return true;
 }

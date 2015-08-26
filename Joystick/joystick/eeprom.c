@@ -2,7 +2,7 @@
  * eeprom.c
  *
  * Created: 26/06/2012 13:25:00
- * Author:	MoJo
+ * Author:	???
  */
 
 #include <string.h>

@@ -55,20 +55,19 @@
  */
 
 //! Device definition (mandatory)
-#define  USB_DEVICE_VENDOR_ID             0x8282
-#define  USB_DEVICE_PRODUCT_ID            0x6899
-#define  USB_DEVICE_MAJOR_VERSION         1
-#define  USB_DEVICE_MINOR_VERSION         0
-#define  USB_DEVICE_POWER                 100 // Consumption on VBUS line (mA)
-#define  USB_DEVICE_ATTR                  (USB_CONFIG_ATTR_BUS_POWERED)
-//		(USB_CONFIG_ATTR_SELF_POWERED)
-// (USB_CONFIG_ATTR_BUS_POWERED)
+#define  USB_DEVICE_VENDOR_ID				0x8282
+#define  USB_DEVICE_PRODUCT_ID				0x6899
+#define  USB_DEVICE_MAJOR_VERSION			1
+#define  USB_DEVICE_MINOR_VERSION			0
+#define  USB_DEVICE_POWER					100 // Consumption on VBUS line (mA)
+#define  USB_DEVICE_ATTR					(USB_CONFIG_ATTR_BUS_POWERED)
+// (USB_CONFIG_ATTR_SELF_POWERED)
 // (USB_CONFIG_ATTR_REMOTE_WAKEUP|USB_CONFIG_ATTR_SELF_POWERED)
 // (USB_CONFIG_ATTR_REMOTE_WAKEUP|USB_CONFIG_ATTR_BUS_POWERED)
 
 //! USB Device string definitions (Optional)
-#define  USB_DEVICE_MANUFACTURE_NAME      "KEIO"
-#define  USB_DEVICE_PRODUCT_NAME          "SUPERPLAY Joystick"
+#define  USB_DEVICE_MANUFACTURE_NAME		"KEIO"
+#define  USB_DEVICE_PRODUCT_NAME			"SUPERPLAY Joystick"
 // #define  USB_DEVICE_SERIAL_NAME           "12...EF" // Disk SN for MSC
 
 /**
@@ -107,16 +106,16 @@
  * @{
  */
 //! Control endpoint size
-#define  USB_DEVICE_EP_CTRL_SIZE       64
+#define  USB_DEVICE_EP_CTRL_SIZE			64
 
 //! Number of interfaces for this device
-#define  USB_DEVICE_NB_INTERFACE       2 // 1 or more
+#define  USB_DEVICE_NB_INTERFACE			2 // 1 or more
 
 //! Total endpoint used by all interfaces
 //! Note:
 //! It is possible to define an IN and OUT endpoints with the same number on XMEGA product only
 //! E.g. MSC class can be have IN endpoint 0x81 and OUT endpoint 0x01
-#define  USB_DEVICE_MAX_EP             4 // 0 to max endpoint requested by interfaces
+#define  USB_DEVICE_MAX_EP					4 // 0 to max endpoint requested by interfaces
 //@}
 
 //@}
@@ -147,11 +146,11 @@
  * @{
  */
 //! Endpoint numbers definition
-#define  UDI_HID_GENERIC_EP_OUT   (2 | USB_EP_DIR_OUT)
-#define  UDI_HID_GENERIC_EP_IN    (1 | USB_EP_DIR_IN)
+#define  UDI_HID_GENERIC_EP_OUT				(2 | USB_EP_DIR_OUT)
+#define  UDI_HID_GENERIC_EP_IN				(1 | USB_EP_DIR_IN)
 
 //! Interface number
-#define  UDI_HID_GENERIC_IFACE_NUMBER    0
+#define  UDI_HID_GENERIC_IFACE_NUMBER		0
 //@}
 //@}
 
@@ -169,14 +168,14 @@
 #define  UDI_VENDOR_SETUP_IN_RECEIVED()		VEN_callback_setup_in_received()
 
 //! endpoints size for full speed
-#define  UDI_VENDOR_EPS_SIZE_INT_FS		64
-#define  UDI_VENDOR_EPS_SIZE_BULK_FS	0
-#define  UDI_VENDOR_EPS_SIZE_ISO_FS		0
+#define  UDI_VENDOR_EPS_SIZE_INT_FS			64
+#define  UDI_VENDOR_EPS_SIZE_BULK_FS		0
+#define  UDI_VENDOR_EPS_SIZE_ISO_FS			0
 
 //! endpoints size for high speed
-//#define  UDI_VENDOR_EPS_SIZE_INT_HS    64
-//#define  UDI_VENDOR_EPS_SIZE_BULK_HS  512
-//#define  UDI_VENDOR_EPS_SIZE_ISO_HS    64
+//#define  UDI_VENDOR_EPS_SIZE_INT_HS		64
+//#define  UDI_VENDOR_EPS_SIZE_BULK_HS		512
+//#define  UDI_VENDOR_EPS_SIZE_ISO_HS		64
 
 /**
  * USB Class Vendor low level configuration
@@ -185,16 +184,16 @@
  * @{
  */
 //! Endpoint numbers definition
-#define  UDI_VENDOR_EP_INTERRUPT_IN  (3 | USB_EP_DIR_IN)
-#define  UDI_VENDOR_EP_INTERRUPT_OUT (4 | USB_EP_DIR_OUT)
-//#define  UDI_VENDOR_EP_BULK_IN       (3 | USB_EP_DIR_IN)
-//#define  UDI_VENDOR_EP_BULK_OUT      (4 | USB_EP_DIR_OUT)
-//#define  UDI_VENDOR_EP_ISO_IN        (5 | USB_EP_DIR_IN)
-//#define  UDI_VENDOR_EP_ISO_OUT       (6 | USB_EP_DIR_OUT)
+#define  UDI_VENDOR_EP_INTERRUPT_IN			(3 | USB_EP_DIR_IN)
+#define  UDI_VENDOR_EP_INTERRUPT_OUT		(4 | USB_EP_DIR_OUT)
+//#define  UDI_VENDOR_EP_BULK_IN			(3 | USB_EP_DIR_IN)
+//#define  UDI_VENDOR_EP_BULK_OUT			(4 | USB_EP_DIR_OUT)
+//#define  UDI_VENDOR_EP_ISO_IN				(5 | USB_EP_DIR_IN)
+//#define  UDI_VENDOR_EP_ISO_OUT			(6 | USB_EP_DIR_OUT)
 
 
 //! Interface number
-#define  UDI_VENDOR_IFACE_NUMBER     1
+#define  UDI_VENDOR_IFACE_NUMBER			1
 
 
 /**
