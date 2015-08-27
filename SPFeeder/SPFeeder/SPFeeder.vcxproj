@@ -79,12 +79,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="device.h" />
+    <ClInclude Include="public.h" />
+    <ClInclude Include="report.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SPFeeder.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tray.h" />
     <ClInclude Include="usb.h" />
+    <ClInclude Include="vjoyinterface.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="device.cpp" />

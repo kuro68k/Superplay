@@ -39,6 +39,15 @@
     <ClInclude Include="usb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="report.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vjoyinterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="public.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

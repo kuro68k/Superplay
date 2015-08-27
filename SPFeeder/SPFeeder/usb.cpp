@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <Psapi.h>
 #include <winusb.h>
 #include <usb.h>
@@ -15,6 +16,9 @@
 #include "device.h"
 #include "SPFeeder.h"
 #include "tray.h"
+#include "report.h"
+#include "vjoyinterface.h"
+#include "public.h"
 
 // ------------------------------------------------------------------------------------------------
 void PrintLastError(void)
@@ -160,7 +164,43 @@ DWORD WINAPI USB_task(LPVOID lpParam)
 			UCHAR inPipe = 0;
 			if (GetWinUSBDevice(&deviceData, &inPipe))
 			{
+				// try to set up vJoy
+				char high_btn = 9;
+				
 				// keep reading pipe until it fails
+				REPORT_t rep;
+				for (;;)
+				{
+					ULONG cbRead = 0;
+					if (!WinUsb_ReadPipe(deviceData.WinusbHandle, inPipe, (PUCHAR)&rep, sizeof(rep), &cbRead, 0))
+					{
+						printf(__FUNCTION__ ": WinUsb_ReadPipe() failed\n");
+						break;	// device disconnected
+					}
+
+					// decode report
+					if (rep.udlr_sscc & JOY_UP_bm)		SetAxis(32767, 1, HID_USAGE_Y);
+					if (rep.udlr_sscc & JOY_DOWN_bm)	SetAxis(-32768, 1, HID_USAGE_Y);
+					if (rep.udlr_sscc & JOY_LEFT_bm)	SetAxis(-32768, 1, HID_USAGE_X);
+					if (rep.udlr_sscc & JOY_RIGHT_bm)	SetAxis(32767, 1, HID_USAGE_X);
+
+					if (rep.udlr_sscc & BUTTON_START_bm)	SetBtn(TRUE, 1, high_btn+0);
+					else									SetBtn(FALSE, 1, high_btn+0);
+					if (rep.udlr_sscc & BUTTON_SELECT_bm)	SetBtn(TRUE, 1, high_btn+1);
+					else									SetBtn(FALSE, 1, high_btn+1);
+					if (rep.udlr_sscc & BUTTON_COIN_bm)		SetBtn(TRUE, 1, high_btn+2);
+					else									SetBtn(FALSE, 1, high_btn+2);
+					if (rep.udlr_sscc & BUTTON_CONTROL_bm)	SetBtn(TRUE, 1, high_btn+3);
+					else									SetBtn(FALSE, 1, high_btn+3);
+
+					uint16_t mask = 1;
+					for (char i = 0; i < 16; i++)
+					{
+						if (rep.buttons & mask)	SetBtn(TRUE, 1, i + 1);
+						else					SetBtn(FALSE, 1, i + 1);
+						mask <<= 1;
+					}
+				}
 			}
 			else
 				printf(__FUNCTION__ ": GetSinUSBDevice() failed\n");
