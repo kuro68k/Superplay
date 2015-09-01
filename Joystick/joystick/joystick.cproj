@@ -312,6 +312,9 @@
     <Compile Include="config.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="descriptor.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="drivers\avr_compiler.h">
       <SubType>compile</SubType>
     </Compile>
@@ -343,6 +346,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="joystick.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="kbus.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="kbus.h">

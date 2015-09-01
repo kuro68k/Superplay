@@ -2,12 +2,21 @@
  * kbus.h
  *
  * Created: 01/09/2015 10:25:16
- *  Author: paul.qureshi
+ *  Author: Paul Qureshi
  */ 
 
 
 #ifndef KBUS_H_
 #define KBUS_H_
+
+
+#define KBUS_PACKET_DATA_SIZE			62
+typedef struct
+{
+	uint8_t		command;
+	uint8_t		length;
+	uint8_t		data[KBUS_PACKET_DATA_SIZE];
+} KBUS_PACKET_t;
 
 
 #define KCMD_LOOPBACK				0x50
@@ -28,12 +37,8 @@
 #define KSTRING_MANUFACTURER		1
 #define KSTRING_SERIAL_NUMBER		3
 
-typedef struct 
-{
-	uint16_t	vid;
-	uint16_t	pid;
-} KCMD_VID_PID_OUTPUT_t;
 
+extern void KBUS_process_command(const KBUS_PACKET_t *cmd, KBUS_PACKET_t *res);
 
 
 #endif /* KBUS_H_ */
