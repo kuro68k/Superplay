@@ -2,7 +2,7 @@
  * vendor.c
  *
  * Created: 04/04/2015 16:10:36
- *  Author: ???
+ *  Author: Paul Qureshi
  */ 
 
 #include <avr/io.h>

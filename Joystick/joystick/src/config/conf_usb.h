@@ -68,7 +68,11 @@
 //! USB Device string definitions (Optional)
 #define  USB_DEVICE_MANUFACTURE_NAME		"KEIO"
 #define  USB_DEVICE_PRODUCT_NAME			"SUPERPLAY Joystick"
-// #define  USB_DEVICE_SERIAL_NAME           "12...EF" // Disk SN for MSC
+#define	USB_DEVICE_SERIAL_NAME
+#define	USB_DEVICE_GET_SERIAL_NAME_POINTER	USB_serial_number
+#define	USB_DEVICE_GET_SERIAL_NAME_LENGTH	25
+extern uint8_t USB_serial_number[];
+
 
 /**
  * Device speeds support

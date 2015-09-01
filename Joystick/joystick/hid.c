@@ -2,7 +2,7 @@
  * hid.c
  *
  * Created: 04/04/2015 16:10:24
- *  Author: ???
+ *  Author: Paul Qureshi
  */ 
 
 #include <avr/io.h>
@@ -12,7 +12,12 @@
 
 #include "report.h"
 #include "vendor.h"
+#include "kbus.h"
 #include "hid.h"
+
+// from ASF, saves duplication
+extern uint8_t udc_string_product_name[];
+extern uint8_t udc_string_manufacturer_name[];
 
 bool HID_enabled = false;
 
@@ -50,14 +55,44 @@ bool HID_callback_disable(void)
 }
 
 /**************************************************************************************************
-** Accept commands from host
+** Accept commands from host (KBUS)
 */
 void HID_set_feature(uint8_t *report)
 {
-	if (report[1])
-		PORTF.OUTSET = PIN0_bm;
-	else
-		PORTF.OUTCLR = PIN0_bm;
+	uint8_t	response[UDI_HID_REPORT_OUT_SIZE];
+	response[0] = report[0] | 0x80;	// response code = command code | 0x80
+	memset(&response[1], 0, UDI_HID_REPORT_OUT_SIZE-1);
+	
+	switch(report[0])
+	{
+		case KCMD_LOOPBACK:
+			memcpy(&response[1], &report[1], UDI_HID_REPORT_OUT_SIZE-1);
+			break;
+
+		case KCMD_READ_STRING:
+			if (report[1] == KSTRING_DEVICE_NAME)
+				strncpy_P((char *)&response[1], PSTR(USB_DEVICE_PRODUCT_NAME), UDI_HID_REPORT_OUT_SIZE-1);
+			else if (report[1] == KSTRING_MANUFACTURER)
+				strncpy_P((char *)&response[1], PSTR(USB_DEVICE_MANUFACTURE_NAME), UDI_HID_REPORT_OUT_SIZE-1);
+			else if (report[1] == KSTRING_SERIAL_NUMBER)
+				strncpy((char *)&response[1], (char *)USB_serial_number, UDI_HID_REPORT_OUT_SIZE-1);
+			// otherwise empty string
+			break;
+	
+		case KCMD_READ_VID_PID:
+		{
+			KCMD_VID_PID_OUTPUT_t *r = (KCMD_VID_PID_OUTPUT_t *)&response[1];
+			r->vid = USB_DEVICE_VENDOR_ID;
+			r->pid = USB_DEVICE_PRODUCT_ID;
+			break;
+		}
+		
+		default:
+			response[0] = 0;
+			break;
+	}
+	
+	udi_hid_generic_send_report_in(response);
 }
 
 /**************************************************************************************************

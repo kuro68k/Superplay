@@ -2,7 +2,7 @@
  * global.h
  *
  * Created: 18/12/2014 21:47:07
- *  Author: ???
+ *  Author: Paul Qureshi
  */ 
 
 

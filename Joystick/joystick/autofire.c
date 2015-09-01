@@ -2,7 +2,7 @@
  * autofire.c
  *
  * Created: 03/06/2015 21:17:54
- *  Author: ???
+ *  Author: Paul Qureshi
  */ 
 
 #include <avr/io.h>

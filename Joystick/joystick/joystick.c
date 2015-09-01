@@ -2,7 +2,7 @@
  * joystick.c
  *
  * Created: 29/03/2015 16:17:58
- *  Author: ???
+ *  Author: Paul Qureshi
  */ 
 
 
@@ -17,6 +17,7 @@
 #include "report.h"
 #include "vendor.h"
 #include "autofire.h"
+#include "serial_num.h"
 
 int main(void)
 {
@@ -28,6 +29,7 @@ int main(void)
 	HW_init();
 	AF_init();
 	HID_init();
+	USB_init_build_usb_serial_number();
 
 	//PORTCFG.CLKEVOUT = PORTCFG_CLKOUTSEL_CLK1X_gc | PORTCFG_CLKOUT_PC7_gc;
 	//PORTC.DIRSET = PIN7_bm;

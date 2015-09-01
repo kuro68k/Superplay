@@ -2,7 +2,7 @@
  * config.h
  *
  * Created: 15/07/2015 16:32:00
- *  Author: ???
+ *  Author: Paul Qureshi
  */ 
 
 
