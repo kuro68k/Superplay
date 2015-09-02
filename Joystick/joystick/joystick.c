@@ -18,6 +18,7 @@
 #include "vendor.h"
 #include "autofire.h"
 #include "serial_num.h"
+#include "usart.h"
 
 int main(void)
 {
@@ -30,6 +31,7 @@ int main(void)
 	AF_init();
 	HID_init();
 	USB_init_build_usb_serial_number();
+	USART_init();
 
 	//PORTCFG.CLKEVOUT = PORTCFG_CLKOUTSEL_CLK1X_gc | PORTCFG_CLKOUT_PC7_gc;
 	//PORTC.DIRSET = PIN7_bm;

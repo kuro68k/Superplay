@@ -10,6 +10,10 @@
 #define KBUS_H_
 
 
+/**************************************************************************************************
+** KBUS packets
+*/
+
 #define KBUS_PACKET_DATA_SIZE			62
 typedef struct
 {
@@ -18,6 +22,12 @@ typedef struct
 	uint8_t		data[KBUS_PACKET_DATA_SIZE];
 } KBUS_PACKET_t;
 
+#define KBUS_FRAME_START				0x55
+
+
+/**************************************************************************************************
+** KBUS commands
+*/
 
 #define KCMD_LOOPBACK				0x50
 #define KCMD_READ_STRING			0x51
@@ -37,6 +47,11 @@ typedef struct
 #define KSTRING_MANUFACTURER		1
 #define KSTRING_SERIAL_NUMBER		3
 
+
+
+/**************************************************************************************************
+** Public variables and functions
+*/
 
 extern void KBUS_process_command(const KBUS_PACKET_t *cmd, KBUS_PACKET_t *res);
 

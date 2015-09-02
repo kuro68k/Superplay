@@ -372,6 +372,12 @@
     <Compile Include="serial_num.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="usart.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usart.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="vendor.c">
       <SubType>compile</SubType>
     </Compile>

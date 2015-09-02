@@ -82,6 +82,11 @@ void HW_init(void)
 	PORTR.DIR = 0;
 	
 	SLEEP.CTRL = SLEEP_SMODE_IDLE_gc | SLEEP_SEN_bm;
+	
+	// DMA
+	DMA.CTRL = DMA_RESET_bm;
+	asm("nop");
+	DMA.CTRL = DMA_ENABLE_bm | DMA_DBUFMODE_DISABLED_gc | DMA_PRIMODE_CH0RR123_gc;
 }
 
 /**************************************************************************************************
