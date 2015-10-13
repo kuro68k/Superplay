@@ -45,10 +45,13 @@ int main(void)
 	{
 		WDR();
 
-		RPT_refresh();
+		RPT_logical_inputs_refresh();
 		if (HID_enabled && !VEN_enabled)
 			HID_send_report();
 		if (VEN_enabled)
+		{
+			RPT_refresh();
 			udi_vendor_interrupt_in_run((uint8_t *)&report, sizeof(report), NULL);
+		}
 	}
 }

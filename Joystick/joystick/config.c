@@ -10,7 +10,7 @@
 #include "eeprom.h"
 #include "config.h"
 
-const CONFIG_t * const cfg = (CONFIG_t *)(EEP_MAPPED_ADDR(0, 0));
+const MAPPING_CONFIG_t * const map = (MAPPING_CONFIG_t *)(EEP_MAPPED_ADDR(0, 0));
 
 /**************************************************************************************************
 ** Load default config
@@ -19,37 +19,74 @@ void cfg_load_default(void)
 {
 	EEP_DisableMapping();
 	
-	CONFIG_t new_cfg;
-	memset(&new_cfg, 0, sizeof(new_cfg));
+	MAPPING_CONFIG_t new_map;
+	memset(&new_map, 0, sizeof(new_map));
 	
-	new_cfg.config_id = CONFIG_ID;
-	new_cfg.config_size = sizeof(CONFIG_t);
+	new_map.config_id = MAPPING_CONFIG_ID;
+	new_map.config_size = sizeof(MAPPING_CONFIG_t);
 	
-	new_cfg.button_mode = CFG_BUTTON_MODE_SWITCHED;
+	new_map.joy_up		= LJOY_UP;
+	new_map.joy_down	= LJOY_DN;
+	new_map.joy_left	= LJOY_LF;
+	new_map.joy_right	= LJOY_RT;
+	new_map.start		= LSTART;
+	new_map.coin		= LCOIN;
 	
-	//new_cfg.af_mode = CFG_AF_MODE_HIGH_LOW;
-	new_cfg.af_mode = CFG_AF_MODE_HIGH_WITH_LEDS;
-	new_cfg.af_high_05hz = (15*2);
-	new_cfg.af_low_05hz = (5*2);
-	new_cfg.af_mask = 0;
-	new_cfg.af_save_state = 0;
+	new_map.button1		= LBUTTON1;
+	new_map.button2		= LBUTTON2;
+	new_map.button3		= LBUTTON3;
+	new_map.button4		= LBUTTON4;
+	new_map.button5		= LBUTTON5;
+	new_map.button6		= LBUTTON6;
+	new_map.button7		= LBUTTON7;
+	new_map.button8		= LBUTTON8;
 	
-	new_cfg.rotary_mode = CFG_ROTARY_MODE_DISABLED;
+	new_map.rotary1		= LROTARY1;
+	new_map.rotary2		= LROTARY2;
+	new_map.rotary3		= LROTARY3;
+	new_map.rotary4		= LROTARY4;
+	new_map.rotary5		= LROTARY5;
+	new_map.rotary6		= LROTARY6;
+	new_map.rotary7		= LROTARY7;
+	new_map.rotary8		= LROTARY8;
+	new_map.rotary9		= LROTARY9;
+	new_map.rotary10	= LROTARY10;
+	new_map.rotary11	= LROTARY11;
+	new_map.rotary12	= LROTARY12;
 	
-	new_cfg.start_af_toggle_mode = 0;
+	new_map.auto_low_1	= LAF_LOW_1;
+	new_map.auto_low_2	= LAF_LOW_2;
+	new_map.auto_low_3	= LAF_LOW_3;
+	new_map.auto_low_4	= LAF_LOW_4;
+	new_map.auto_low_5	= LAF_LOW_5;
+	new_map.auto_low_6	= LAF_LOW_6;
+	new_map.auto_high_1	= LAF_HIGH_1;
+	new_map.auto_high_2	= LAF_HIGH_2;
+	new_map.auto_high_3	= LAF_HIGH_3;
+	new_map.auto_high_4	= LAF_HIGH_4;
+	new_map.auto_high_5	= LAF_HIGH_5;
+	new_map.auto_high_6	= LAF_HIGH_6;
+	
+	new_map.unused		= LUNUSED;
+	new_map.mode_4		= LMODE_4;
+	new_map.mode_4af	= LMODE_4AF;
+	new_map.control		= LCONTROL;
 	
 	// calculate CRC
 	CRC.CTRL = CRC_RESET_RESET1_gc;
 	asm("nop");
 	CRC.CTRL = CRC_CRC32_bm | CRC_SOURCE_IO_gc;
-	uint8_t *ptr = (uint8_t *)&new_cfg;
-	for (uint8_t i = 0; i < sizeof(CONFIG_t); i++)
+	uint8_t *ptr = (uint8_t *)&new_map;
+	for (uint8_t i = 0; i < sizeof(MAPPING_CONFIG_t); i++)
 		CRC.DATAIN = *ptr++;
 	CRC.CTRL |= CRC_BUSY_bm;
-	new_cfg.crc32 = CRC.CHECKSUM0 | ((uint32_t)CRC.CHECKSUM0 << 8) | ((uint32_t)CRC.CHECKSUM0 << 16) | ((uint32_t)CRC.CHECKSUM0 << 24);
+	new_map.crc32 = CRC.CHECKSUM0 | ((uint32_t)CRC.CHECKSUM0 << 8) | ((uint32_t)CRC.CHECKSUM0 << 16) | ((uint32_t)CRC.CHECKSUM0 << 24);
 
 	// save to EEPROM
-	EEP_LoadPageBuffer((uint8_t *)&new_cfg, sizeof(new_cfg));
+	EEP_LoadPageBuffer((uint8_t *)&new_map, 32);
+	EEP_AtomicWritePage(0);
+	EEP_WaitForNVM();
+	EEP_LoadPageBuffer((uint8_t *)&new_map+32, 32);
 	EEP_AtomicWritePage(0);
 	EEP_WaitForNVM();
 	
@@ -67,15 +104,15 @@ void CFG_init(void)
 	CRC.CTRL = CRC_RESET_RESET1_gc;
 	asm("nop");
 	CRC.CTRL = CRC_CRC32_bm | CRC_SOURCE_IO_gc;
-	uint8_t *ptr = (uint8_t *)cfg;
-	for (uint8_t i = 0; i < sizeof(CONFIG_t); i++)
+	uint8_t *ptr = (uint8_t *)map;
+	for (uint8_t i = 0; i < sizeof(MAPPING_CONFIG_t); i++)
 		CRC.DATAIN = *ptr++;
 	CRC.CTRL |= CRC_BUSY_bm;
 	uint32_t crc = CRC.CHECKSUM0 | ((uint32_t)CRC.CHECKSUM0 << 8) | ((uint32_t)CRC.CHECKSUM0 << 16) | ((uint32_t)CRC.CHECKSUM0 << 24);
 
 	// validate config
-	if ((cfg->config_id != CONFIG_ID) ||
-		(cfg->config_size != sizeof(CONFIG_t)) ||
-		(cfg->crc32 != crc))
+	if ((map->config_id != MAPPING_CONFIG_ID) ||
+		(map->config_size != sizeof(MAPPING_CONFIG_t)) ||
+		(map->crc32 != crc))
 		cfg_load_default();
 }

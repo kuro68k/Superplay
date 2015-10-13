@@ -36,7 +36,7 @@ uint16_t	AF_low_map = 0;
 
 
 /**************************************************************************************************
-** Find the best timer settings for a given frequency. Returns true is a usable (but possibly
+** Find the best timer settings for a given frequency. Returns true if a usable (but possibly
 ** very inaccurate) setting is found.
 */
 bool af_calc_timer(float freq, uint8_t *clksel, uint16_t *period)

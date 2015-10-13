@@ -50,7 +50,9 @@ typedef struct
 
 
 extern REPORT_t	report;
+extern uint8_t	logical_inputs[NUM_LOGICAL_INPUTS];
 
+extern void RPT_logical_inputs_refresh(void);
 extern void RPT_refresh(void);
 
 
