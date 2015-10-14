@@ -10,71 +10,18 @@
 #define CONFIG_H_
 
 
-// physical inputs
-#define MAPPING_CONFIG_ID		0x256A
+// storage locations in EEPROM
+#define EEP_MAPPING_CFG_PAGE	0		// 8 pages
+#define EEP_FORCED_CFG_PAGE		8		// 8 pages
+#define EEP_MISC_CFG_PAGE		16		// 1 page
 
-typedef struct
-{
-	uint16_t	config_id;				// must be MAPPING_CONFIG_ID
-	uint16_t	config_size;
-
-	uint8_t		joy_up;
-	uint8_t		joy_down;
-	uint8_t		joy_left;
-	uint8_t		joy_right;
-	
-	uint8_t		start;
-	uint8_t		coin;
-	
-	uint8_t		button1;
-	uint8_t		button2;
-	uint8_t		button3;
-	uint8_t		button4;
-	uint8_t		button5;
-	uint8_t		button6;
-	uint8_t		button7;
-	uint8_t		button8;
-	
-	uint8_t		rotary1;
-	uint8_t		rotary2;
-	uint8_t		rotary3;
-	uint8_t		rotary4;
-	uint8_t		rotary5;
-	uint8_t		rotary6;
-	uint8_t		rotary7;
-	uint8_t		rotary8;
-	uint8_t		rotary9;
-	uint8_t		rotary10;
-	uint8_t		rotary11;
-	uint8_t		rotary12;
-	
-	uint8_t		auto_low_1;
-	uint8_t		auto_low_2;
-	uint8_t		auto_low_3;
-	uint8_t		auto_low_4;
-	uint8_t		auto_low_5;
-	uint8_t		auto_low_6;
-	
-	uint8_t		auto_high_1;
-	uint8_t		auto_high_2;
-	uint8_t		auto_high_3;
-	uint8_t		auto_high_4;
-	uint8_t		auto_high_5;
-	uint8_t		auto_high_6;
-
-	uint8_t		unused;
-	uint8_t		mode_4;
-	uint8_t		mode_4af;
-	uint8_t		control;
-
-	uint8_t		padding[14];	// round up to 64 bytes
-	uint32_t	crc32;
-} MAPPING_CONFIG_t;
 
 // logical inputs
 enum LOGICAL_INPUTS_enum
 {
-	LJOY_UP = 0,
+	LNONE = 0,
+	
+	LJOY_UP,
 	LJOY_DN,
 	LJOY_LF,
 	LJOY_RT,
@@ -158,6 +105,22 @@ enum LOGICAL_INPUTS_enum
 #define LOGICAL_OUTPUT_MASK				0x80
 
 
+// physical input map
+#define MAPPING_CONFIG_ID		0x256A
+
+typedef struct
+{
+	uint16_t	config_id;								// must be MAPPING_CONFIG_ID
+	uint16_t	config_size;
+
+	uint8_t		ltop[NUM_LOGICAL_INPUTS];				// logical to physical mapping
+
+	uint8_t		padding[96 - NUM_LOGICAL_INPUTS - 8];	// round up to 64 bytes
+	uint32_t	crc32;
+} MAPPING_CONFIG_t;
+
+
+
 
 
 #define MISC_CONFIG_ID			0x97B2
@@ -178,6 +141,8 @@ typedef struct
 
 
 
+extern const MAPPING_CONFIG_t * const map;
+extern const MAPPING_CONFIG_t * const forced;
 extern const MISC_CONFIG_t * const cfg;
 
 extern void CFG_init(void);
