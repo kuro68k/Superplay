@@ -13,7 +13,9 @@
 typedef struct
 {
 	int8_t		x, y;
-	uint16_t	buttons;
+	uint8_t		buttons1;
+	uint8_t		buttons2;
+	uint8_t		buttons3;
 	uint8_t		rot;
 } HID_REPORT_t;
 

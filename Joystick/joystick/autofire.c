@@ -79,15 +79,15 @@ void AF_init(void)
 	memset(af2_counters, AF_CLKMUL, sizeof(af2_counters));
 
 	// re-load settings if required
-	if ((cfg->af_mode == CFG_AF_MODE_FIXED) ||
-		(cfg->af_mode == CFG_AF_MODE_TOGGLE_HIGH))
-		AF_high_map = cfg->af_mask;
+	//if ((cfg->af_mode == CFG_AF_MODE_FIXED) ||
+	//	(cfg->af_mode == CFG_AF_MODE_TOGGLE_HIGH))
+	//	AF_high_map = cfg->af_mask;
 
 	uint16_t	per = AF1_PER;
 	uint8_t		clksel = AF1_CLKSEL;
 	float		freq;
 	
-	freq = cfg->af_high_05hz / 2;	// convert o Hz
+	freq = cfg->af_high_05hz / 2;	// convert to Hz
 	freq *= AF_CLKMUL;				// timer runs AF_CLKMUL times faster than autofire
 	if (!af_calc_timer(freq, &clksel, &per))
 	{
@@ -106,7 +106,7 @@ void AF_init(void)
 	AF_TC1.PER = per;
 	AF_TC1.CTRLA = clksel;
 
-	freq = cfg->af_low_05hz / 2;	// convert o Hz
+	freq = cfg->af_low_05hz / 2;	// convert to Hz
 	freq *= 8;						// timer runs 8x faster than autofire
 	if (!af_calc_timer(freq, &clksel, &per))
 	{
@@ -142,55 +142,24 @@ ISR(AF_TC2_OVF_vect)
 /**************************************************************************************************
 ** Read current autofire state, and reset any non-pressed buttons
 */
-uint16_t AF_read(uint16_t buttons, uint8_t button_mode)
+uint16_t AF_read(uint16_t buttons)
 {
 	uint8_t		i;
 	uint16_t	mask;
 	uint8_t		af1_count, af2_count;
 
-	// check AF settings
-	switch(cfg->af_mode)
-	{
-		case CFG_AF_MODE_HIGH_LOW:
-			AF_low_map = PORTC.IN & 0x0F;
-			AF_low_map |= (PORTA.IN & 0xC0) >> 2;
-			AF_high_map = PORTD.IN & 0x3F;
-			break;
-			
-		case CFG_AF_MODE_HIGH_WITH_LEDS:
-			AF_low_map = 0;
-			AF_high_map = PORTD.IN & 0x3F;
-			PORTC.OUT = (PORTC.OUT & 0xF0) | (AF_high_map & 0x0F);			// LEDs
-			PORTA.OUT = (PORTA.OUT & 0x3F) | ((AF_high_map & 0x30) << 2);	//
-			break;
-		
-		default:
-		case CFG_AF_MODE_FIXED:
-			AF_low_map = 0;
-			AF_high_map = cfg->af_mask;
-			break;
-		
-		case CFG_AF_MODE_TOGGLE_HIGH:
-			AF_low_map = 0;
-			if (PORTA.IN & START_PIN_bm)	// hold start to toggle
-				AF_high_map ^= KEY_read();
-			else
-				KEY_clear();
-			PORTC.OUT = (PORTC.OUT & 0xF0) | (AF_high_map & 0x0F);			// LEDs
-			PORTA.OUT = (PORTA.OUT & 0x3F) | ((AF_high_map & 0x30) << 2);	//
-			break;
-	}
-
-	if (button_mode == BUTTON_MODE_4AF_gc)
-	{
-		AF_low_map = 0;
-		AF_high_map = 0xF0;
-	}
-
+	// refresh AF maps
+	AF_low_map = 0;
+	for (i = LAF_LOW_1; i <= LAF_LOW_16; i++)
+		if (logical_inputs[i]) AF_low_map |= (1<<i);
+	AF_high_map = 0;
+	for (i = LAF_HIGH_1; i <= LAF_HIGH_16; i++)
+		if (logical_inputs[i]) AF_high_map |= (1<<i);
 
 	// non-AF buttons always active
 	af_map |= ~AF_high_map;
 	af_map |= ~AF_low_map;
+
 	
 	cli();
 	af1_count = af1_count_AT;

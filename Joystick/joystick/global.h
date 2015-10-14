@@ -17,5 +17,12 @@
 #define	WDR()	__asm__ __volatile__("wdr")
 
 
+// compile time static assertions (http://www.pixelbeat.org/programming/gcc/static_assert.html)
+// generate a compile time divide by zero if evaluated to false
+#define ASSERT_CONCAT_(a, b) a##b
+#define ASSERT_CONCAT(a, b) ASSERT_CONCAT_(a, b)
+#define ct_assert(e) enum { ASSERT_CONCAT(assert_line_, __LINE__) = 1/(!!(e)) }
+
+
 
 #endif /* GLOBAL_H_ */

@@ -25,7 +25,7 @@ void RPT_logical_inputs_refresh(void)
 	memset(logical_inputs, 0, sizeof(logical_inputs));
 
 	// PORTA
-	uint8_t p = PORTA.IN.
+	uint8_t p = PORTA.IN;
 	if (!(p & JOY_UP_PIN_bm))		logical_inputs[LJOY_UP] = 1;
 	if (!(p & JOY_DOWN_PIN_bm))		logical_inputs[LJOY_DN] = 1;
 	if (!(p & JOY_LEFT_bm))			logical_inputs[LJOY_LF] = 1;
@@ -63,7 +63,7 @@ void RPT_logical_inputs_refresh(void)
 	if (!(p & AUTO_HIGH_6_PIN_bm))	logical_inputs[LAF_HIGH_6] = 1;
 
 	// PORTE
-	uint8_t p = PORTE.IN;
+	p = PORTE.IN;
 	if (!(p & ROTARY_1_PIN_bm))		logical_inputs[LROTARY1] = 1;
 	if (!(p & ROTARY_2_PIN_bm))		logical_inputs[LROTARY2] = 1;
 	if (!(p & ROTARY_3_PIN_bm))		logical_inputs[LROTARY3] = 1;
@@ -130,7 +130,7 @@ void RPT_refresh(void)
 		report.rot_mode |= BUTTON_MODE_8_gc;
 
 	// autofire
-	uint16_t af_mask = AF_read(report.buttons, report.rot_mode & BUTTON_MODE_gm);
+	uint16_t af_mask = AF_read(report.buttons);
 	report.buttons &= af_mask;
 	
 	// remap depending on the mode

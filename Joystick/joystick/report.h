@@ -9,6 +9,8 @@
 #ifndef REPORT_H_
 #define REPORT_H_
 
+#include "config.h"
+
 
 //	7			6			5			4			3			2			1			0
 //	Control		Coin		Select		Start		Right		Left		Down		Up

@@ -7,10 +7,17 @@
 
 #include <avr/io.h>
 #include <string.h>
+#include "global.h"
 #include "eeprom.h"
 #include "config.h"
 
+
+ct_assert((sizeof(MAPPING_CONFIG_t) % 32) == 0);
+ct_assert((sizeof(MISC_CONFIG_t) % 32) == 0);
+
+
 const MAPPING_CONFIG_t * const map = (MAPPING_CONFIG_t *)(EEP_MAPPED_ADDR(0, 0));
+const MISC_CONFIG_t * const cfg = (MISC_CONFIG_t *)(EEP_MAPPED_ADDR(16, 0));
 
 /**************************************************************************************************
 ** Load default config

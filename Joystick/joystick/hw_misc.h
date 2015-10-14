@@ -67,8 +67,8 @@
 #define ROTARY_11_PIN_bm		PIN2_bm
 #define ROTARY_12_PIN_bm		PIN3_bm
 //#define MODE_8_bm				PIN4_bm
-#define MODE_4_bm				PIN5_bm
-#define MODE_4AF_bm				PIN6_bm
+#define MODE_4_PIN_bm			PIN5_bm
+#define MODE_4AF_PIN_bm			PIN6_bm
 #define CONTROL_PIN_bm			PIN7_bm
 
 
