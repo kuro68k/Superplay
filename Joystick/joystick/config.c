@@ -22,7 +22,7 @@ const MISC_CONFIG_t * const cfg = (MISC_CONFIG_t *)(EEP_MAPPED_ADDR(16, 0));
 /**************************************************************************************************
 ** Load default config
 */
-void cfg_load_default(void)
+void cfg_load_default_mapping(void)
 {
 	EEP_DisableMapping();
 	
@@ -101,25 +101,45 @@ void cfg_load_default(void)
 }
 
 /**************************************************************************************************
-** Prepare config for use
+** Do some basic checks on a configuration struct
 */
-void CFG_init(void)
+bool cfg_check_config(const void *config, uint16_t expected_id, uint16_t expected_size)
 {
-	EEP_EnableMapping();
-	
+	uint8_t *ptr = (uint8_t *)config;
+	uint16_t *id = (uint16_t *)ptr;
+	uint16_t *size = (uint16_t *)ptr + 2;
+	uint32_t *stored_crc = (uint32_t *)ptr + *size - 4;
+
+	if ((*id != expected_id) ||
+		(*size != expected_size))
+		return false;
+
 	// calculate CRC
 	CRC.CTRL = CRC_RESET_RESET1_gc;
 	asm("nop");
 	CRC.CTRL = CRC_CRC32_bm | CRC_SOURCE_IO_gc;
-	uint8_t *ptr = (uint8_t *)map;
 	for (uint8_t i = 0; i < sizeof(MAPPING_CONFIG_t); i++)
 		CRC.DATAIN = *ptr++;
 	CRC.CTRL |= CRC_BUSY_bm;
 	uint32_t crc = CRC.CHECKSUM0 | ((uint32_t)CRC.CHECKSUM0 << 8) | ((uint32_t)CRC.CHECKSUM0 << 16) | ((uint32_t)CRC.CHECKSUM0 << 24);
 
-	// validate config
-	if ((map->config_id != MAPPING_CONFIG_ID) ||
-		(map->config_size != sizeof(MAPPING_CONFIG_t)) ||
-		(map->crc32 != crc))
-		cfg_load_default();
+	if (*stored_crc != crc)
+		return false;
+	
+	return true;
+}
+
+/**************************************************************************************************
+** Prepare config for use
+*/
+void CFG_init(void)
+{
+	EEP_EnableMapping();
+
+	if (!cfg_check_config(map, MAPPING_CONFIG_ID, sizeof(MAPPING_CONFIG_t)))
+		cfg_load_default_mapping();
+	
+	if (!cfg_check_config(cfg, MISC_CONFIG_ID, sizeof(MISC_CONFIG_t)))
+		cfg_load_default_mapping();
+
 }
