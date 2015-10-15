@@ -109,9 +109,6 @@ void HID_send_report(void)
 		if (logical_inputs[LUNUSED])		hid_report.buttons3 |= (1<<3);
 
 		// rotary
-		/*
-		hid_report.rot = 11 - ((report.rot_mode & ROTARY_gm) >> ROTARY_gp);
-		
 		if (!rot_left && !rot_right && !inhibit)
 		{
 			if (last_rot == 0xFF)
@@ -161,9 +158,8 @@ void HID_send_report(void)
 			}
 		}
 		
-		if (rot_left)	hid_report.buttons |= HID_ROTATE_LEFT_BUTTON_bm;
-		if (rot_right)	hid_report.buttons |= HID_ROTATE_RIGHT_BUTTON_bm;
-		*/
+		if (rot_left)	hid_report.buttons3 |= HID_ROTATE_LEFT_BUTTON_bm;
+		if (rot_right)	hid_report.buttons3 |= HID_ROTATE_RIGHT_BUTTON_bm;
 	}
 	
 	udi_hid_generic_send_report_in((uint8_t *)&hid_report);
