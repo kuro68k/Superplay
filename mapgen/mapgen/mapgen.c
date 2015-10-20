@@ -130,7 +130,10 @@ int main(int argc, char* argv[])
 	if (optd)
 	{
 		for (int i = 0; i < NUM_LOGICAL_INPUTS; i++)
-			cfg.ltop[i] = i;
+		{
+			cfg.logical[i] = i;
+			cfg.physical[i] = i;
+		}
 	}
 
 	FILE *fin;
@@ -141,6 +144,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	int map_num = 0;
 	int line_num = 0;
 	bool error = false;
 	while (!feof(fin))
@@ -239,7 +243,18 @@ int main(int argc, char* argv[])
 		if (output)
 			map_physical |= 0x80;
 		DEBUG_PRINTF("%d -> %d\n", map_logical, map_physical);
-		cfg.ltop[map_logical] = map_physical;
+		//cfg.ltop[map_logical] = map_physical;
+
+		if (map_num >= NUM_MAPPINGS)
+		{
+			error = true;
+			printf("Exceeded the maximum number of mappings (%d) on line %d.\n", NUM_MAPPINGS, line_num);
+			printf("%s\n", line);
+		}
+
+		cfg.logical[map_num] = map_logical;
+		cfg.physical[map_num] = map_physical;
+		map_num++;
 	}
 
 	fclose(fin);

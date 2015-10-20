@@ -25,8 +25,8 @@ uint8_t		logical_inputs[128];
 */
 void RPT_init(void)
 {
-	//memcpy(forced_inputs, forced, sizeof(forced_inputs));
-	//forced_inputs[LNONE] = 0;	// must always be unpressed
+	//memset(physical_inputs, 0, sizeof(physical_inputs));
+	//memset(logical_inputs, 0, sizeof(logical_inputs));
 }
 
 /**************************************************************************************************
@@ -34,7 +34,6 @@ void RPT_init(void)
 */
 void rpt_physical_inputs_refresh(void)
 {
-	//memset(physical_inputs, 0, sizeof(physical_inputs));
 	memset(physical_inputs, 0, NUM_LOGICAL_INPUTS);
 
 	// PORTA
@@ -106,7 +105,6 @@ void rpt_physical_inputs_refresh(void)
 void RPT_logical_inputs_refresh(void)
 {
 	rpt_physical_inputs_refresh();
-	//memset(logical_inputs, 0, sizeof(logical_inputs));
 	memset(logical_inputs, 0, NUM_LOGICAL_INPUTS);
 
 	for (uint8_t i = 0; i < NUM_MAPPINGS; i++)

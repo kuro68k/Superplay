@@ -86,21 +86,23 @@ enum LOGICAL_INPUTS_enum
 
 	LCONTROL,
 
-	NUM_LOGICAL_INPUTS					// must not be >127
+	NUM_LOGICAL_INPUTS,					// must not be >127
+	LFORCED = 127
 };
 
 
 // physical input map
 #define MAPPING_CONFIG_ID		0x256A
+#define NUM_MAPPINGS			124
 
 typedef struct
 {
-	uint16_t	config_id;								// must be MAPPING_CONFIG_ID
+	uint16_t	config_id;					// must be MAPPING_CONFIG_ID
 	uint16_t	config_size;
 
-	uint8_t		ltop[NUM_LOGICAL_INPUTS];				// logical to physical mapping
+	uint8_t		logical[NUM_MAPPINGS];		// logical to physical mapping
+	uint8_t		physical[NUM_MAPPINGS];
 
-	uint8_t		padding[96 - NUM_LOGICAL_INPUTS - 8];	// round up to 64 bytes
 	uint32_t	crc32;
 } MAPPING_CONFIG_t;
 
