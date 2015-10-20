@@ -12,7 +12,6 @@
 
 // storage locations in EEPROM
 #define EEP_MAPPING_CFG_PAGE	0		// 8 pages
-#define EEP_FORCED_CFG_PAGE		8		// 8 pages
 #define EEP_MISC_CFG_PAGE		16		// 1 page
 
 
@@ -99,23 +98,25 @@ enum LOGICAL_INPUTS_enum
 	
 	LCONTROL,
 	
-	NUM_LOGICAL_INPUTS					// must not be >127
+	NUM_LOGICAL_INPUTS,					// must not be >127
+	LFORCED = 127
 };
 
-#define LOGICAL_OUTPUT_MASK				0x80
+#define LOGICAL_OUTPUT_MASK		0x80
 
 
 // physical input map
 #define MAPPING_CONFIG_ID		0x256A
+#define NUM_MAPPINGS			124
 
 typedef struct
 {
-	uint16_t	config_id;								// must be MAPPING_CONFIG_ID
+	uint16_t	config_id;					// must be MAPPING_CONFIG_ID
 	uint16_t	config_size;
 
-	uint8_t		ltop[NUM_LOGICAL_INPUTS];				// logical to physical mapping
+	uint8_t		logical[NUM_MAPPINGS];		// logical to physical mapping
+	uint8_t		physical[NUM_MAPPINGS];
 
-	uint8_t		padding[96 - NUM_LOGICAL_INPUTS - 8];	// round up to 64 bytes
 	uint32_t	crc32;
 } MAPPING_CONFIG_t;
 

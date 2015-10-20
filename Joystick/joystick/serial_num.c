@@ -2,7 +2,7 @@
  * serial_num.c
  *
  * Created: 22/04/2015 11:24:05
- *  Author: paul.qureshi
+ *  Author: MoJo
  */ 
 
 #include <avr/io.h>

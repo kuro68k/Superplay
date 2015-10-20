@@ -8,15 +8,16 @@
 #include <avr/io.h>
 #include <string.h>
 
+#include "global.h"
 #include "hw_misc.h"
 #include "config.h"
 #include "autofire.h"
 #include "report.h"
+#include "io_table.h"
 
 REPORT_t	report;
-uint8_t		physical_inputs[NUM_LOGICAL_INPUTS];
-uint8_t		logical_inputs[NUM_LOGICAL_INPUTS];
-uint8_t		forced_inputs[NUM_LOGICAL_INPUTS];
+uint8_t		physical_inputs[128];
+uint8_t		logical_inputs[128];
 
 
 /**************************************************************************************************
@@ -24,16 +25,17 @@ uint8_t		forced_inputs[NUM_LOGICAL_INPUTS];
 */
 void RPT_init(void)
 {
-	memcpy(forced_inputs, forced, sizeof(forced_inputs));
-	forced_inputs[LNONE] = 0;	// must always be unpressed
+	//memcpy(forced_inputs, forced, sizeof(forced_inputs));
+	//forced_inputs[LNONE] = 0;	// must always be unpressed
 }
 
 /**************************************************************************************************
 ** Refresh physical inputs
 */
-inline void rpt_physical_inputs_refresh(void)
+void rpt_physical_inputs_refresh(void)
 {
-	memset(physical_inputs, 0, sizeof(physical_inputs));
+	//memset(physical_inputs, 0, sizeof(physical_inputs));
+	memset(physical_inputs, 0, NUM_LOGICAL_INPUTS);
 
 	// PORTA
 	uint8_t p = PORTA.IN;
@@ -94,6 +96,8 @@ inline void rpt_physical_inputs_refresh(void)
 	if (!(p & MODE_4_PIN_bm))		physical_inputs[LMODE_4] = 1;
 	if (!(p & MODE_4AF_PIN_bm))		physical_inputs[LMODE_4AF] = 1;
 	if (!(p & CONTROL_PIN_bm))		physical_inputs[LCONTROL] = 1;
+	
+	physical_inputs[LFORCED] = 1;
 }
 
 /**************************************************************************************************
@@ -102,12 +106,24 @@ inline void rpt_physical_inputs_refresh(void)
 void RPT_logical_inputs_refresh(void)
 {
 	rpt_physical_inputs_refresh();
-
 	//memset(logical_inputs, 0, sizeof(logical_inputs));
-	memcpy(logical_inputs, forced_inputs, sizeof(logical_inputs));
+	memset(logical_inputs, 0, NUM_LOGICAL_INPUTS);
 
-	for (uint8_t i = 0; i < NUM_LOGICAL_INPUTS; i++)
-		if (physical_inputs[map->ltop[i]])	logical_inputs[i] = 1;
+	for (uint8_t i = 0; i < NUM_MAPPINGS; i++)
+	{
+		if (map->logical[i] == 0)		// end of mapping list
+			break;
+		if (map->physical[i] > 127)		// output
+		{
+			uint8_t io = map->physical[i];
+			if (logical_inputs[map->logical[i]])
+				io_pin_table[io].port->OUTSET = io_pin_table[io].pin_mask;
+			else
+				io_pin_table[io].port->OUTCLR = io_pin_table[io].pin_mask;
+		}
+		else if (physical_inputs[map->physical[i]])
+			logical_inputs[map->logical[i]] = 1;
+	}
 }
 
 /**************************************************************************************************

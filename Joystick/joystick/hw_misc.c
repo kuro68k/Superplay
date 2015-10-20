@@ -12,6 +12,7 @@
 #include "global.h"
 #include "config.h"
 #include "hw_misc.h"
+#include "io_table.h"
 
 FUSES = {
 	0xFF,		// fusebyte 0
@@ -80,6 +81,19 @@ void HW_init(void)
 
 	// port R
 	PORTR.DIR = 0;
+
+
+	// reconfigure output pins based on mapping
+	for (uint8_t i = 0; i < NUM_MAPPINGS; i++)
+	{
+		if (map->physical[i] > 127)		// output
+		{
+			uint8_t io = map->physical[i];
+			io_pin_table[io].port->DIRSET = io_pin_table[io].pin_mask;
+		}
+	}
+
+
 	
 	SLEEP.CTRL = SLEEP_SMODE_IDLE_gc | SLEEP_SEN_bm;
 	

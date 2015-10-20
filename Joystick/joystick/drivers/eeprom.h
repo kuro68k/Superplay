@@ -1,7 +1,7 @@
 /*
  * eeprom.h
  *
- * Author:	???
+ * Author:	MoJo
  * Created: 26/06/2012 13:25:42
  */
 

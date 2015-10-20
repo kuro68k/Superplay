@@ -18,7 +18,6 @@ ct_assert((sizeof(MISC_CONFIG_t) % 32) == 0);
 
 
 const MAPPING_CONFIG_t * const map = (MAPPING_CONFIG_t *)(EEP_MAPPED_ADDR(EEP_MAPPING_CFG_PAGE, 0));
-const MAPPING_CONFIG_t * const forced = (MAPPING_CONFIG_t *)(EEP_MAPPED_ADDR(EEP_FORCED_CFG_PAGE, 0));
 const MISC_CONFIG_t * const cfg = (MISC_CONFIG_t *)(EEP_MAPPED_ADDR(EEP_MISC_CFG_PAGE, 0));
 
 /**************************************************************************************************
@@ -50,27 +49,10 @@ void cfg_load_default_mapping(void)
 	new_map.config_size = sizeof(MAPPING_CONFIG_t);
 
 	for (uint8_t i = 0; i < NUM_LOGICAL_INPUTS; i++)
-		new_map.ltop[i] = i;
-	
-	new_map.crc32 = cfg_calc_crc(&new_map, sizeof(new_map) - 4);
-
-	// save to EEPROM
-	EEP_WriteBuffer(&new_map, sizeof(new_map), EEP_MAPPING_CFG_PAGE);
-	EEP_EnableMapping();
-}
-
-/**************************************************************************************************
-** Load default forced config
-*/
-void cfg_load_default_forced(void)
-{
-	EEP_DisableMapping();
-	
-	MAPPING_CONFIG_t new_map;
-	memset(&new_map, 0, sizeof(new_map));
-	
-	new_map.config_id = MAPPING_CONFIG_ID;
-	new_map.config_size = sizeof(MAPPING_CONFIG_t);
+	{
+		new_map.logical[i] = i;
+		new_map.physical[i] = i;
+	}
 	
 	new_map.crc32 = cfg_calc_crc(&new_map, sizeof(new_map) - 4);
 
@@ -142,8 +124,8 @@ void CFG_init(void)
 	if (!cfg_check_config(map, MAPPING_CONFIG_ID, sizeof(MAPPING_CONFIG_t)))
 		cfg_load_default_mapping();
 
-	if (!cfg_check_config(forced, MAPPING_CONFIG_ID, sizeof(MAPPING_CONFIG_t)))
-		cfg_load_default_forced();
+	//if (!cfg_check_config(forced, MAPPING_CONFIG_ID, sizeof(MAPPING_CONFIG_t)))
+	//	cfg_load_default_forced();
 	
 	if (!cfg_check_config(cfg, MISC_CONFIG_ID, sizeof(MISC_CONFIG_t)))
 		cfg_load_default_misc_config();
