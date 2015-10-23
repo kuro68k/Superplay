@@ -40,7 +40,7 @@ typedef struct
 //#define KCMD_SET_AUTOFIRE_MAP		0x58
 //#define KCMD_READ_AUTOFIRE_MAP		0x59
 //#define KCMD_READ_REPORT			0x5A
-//#define KCMD_ENTER_BOOTLOADER		0x5B
+#define KCMD_ENTER_BOOTLOADER		0x5B
 
 
 #define KSTRING_DEVICE_NAME			0

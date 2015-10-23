@@ -7,11 +7,17 @@
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
+#include <util/delay.h>
 #include <stdbool.h>
 #include <string.h>
 #include <conf_usb.h>
 
+#include "global.h"
+#include "hw_misc.h"
+#include "eeprom.h"
 #include "kbus.h"
+
+typedef void (*AppPtr)(void) __attribute__ ((noreturn));
 
 /**************************************************************************************************
 ** Process an incoming packet
@@ -47,6 +53,17 @@ void KBUS_process_command(const KBUS_PACKET_t *cmd, KBUS_PACKET_t *res)
 			*(uint16_t *)&res->data[0] = USB_DEVICE_VENDOR_ID;
 			*(uint16_t *)&res->data[2] = USB_DEVICE_PRODUCT_ID;
 			break;
+
+		case KCMD_ENTER_BOOTLOADER:
+			{
+				uint32_t load = 0x4c4f4144;					// "LOAD"
+				EEP_DisableMapping();
+				EEP_WriteBuffer(&load, sizeof(load), 31);
+				_delay_ms(100);								// ensure all writes have definitely finished
+				HW_CCPWrite(&RST.CTRL, RST_SWRST_bm);		// reset MCU into bootloader
+				NOP();
+				break;
+			}
 		
 		default:
 			res->command = 0;	// unknown command response

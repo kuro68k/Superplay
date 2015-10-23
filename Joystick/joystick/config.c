@@ -29,7 +29,8 @@ uint32_t cfg_calc_crc(const void *buffer, uint16_t size)
 	asm("nop");
 	CRC.CTRL = CRC_CRC32_bm | CRC_SOURCE_IO_gc;
 	uint8_t *ptr = (uint8_t *)buffer;
-	for (uint8_t i = 0; i < sizeof(MAPPING_CONFIG_t); i++)
+	//for (uint16_t i = 0; i < sizeof(MAPPING_CONFIG_t); i++)
+	while (size--)
 		CRC.DATAIN = *ptr++;
 	CRC.CTRL |= CRC_BUSY_bm;
 	return CRC.CHECKSUM0 | ((uint32_t)CRC.CHECKSUM0 << 8) | ((uint32_t)CRC.CHECKSUM0 << 16) | ((uint32_t)CRC.CHECKSUM0 << 24);
@@ -103,7 +104,7 @@ bool cfg_check_config(const void *config, uint16_t expected_id, uint16_t expecte
 	CRC.CTRL = CRC_RESET_RESET1_gc;
 	asm("nop");
 	CRC.CTRL = CRC_CRC32_bm | CRC_SOURCE_IO_gc;
-	for (uint8_t i = 0; i < sizeof(MAPPING_CONFIG_t); i++)
+	for (uint16_t i = 0; i < sizeof(MAPPING_CONFIG_t); i++)
 		CRC.DATAIN = *ptr++;
 	CRC.CTRL |= CRC_BUSY_bm;
 	uint32_t crc = CRC.CHECKSUM0 | ((uint32_t)CRC.CHECKSUM0 << 8) | ((uint32_t)CRC.CHECKSUM0 << 16) | ((uint32_t)CRC.CHECKSUM0 << 24);

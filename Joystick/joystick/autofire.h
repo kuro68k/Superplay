@@ -35,7 +35,7 @@ extern uint16_t	AF_low_map;
 
 
 extern void AF_init(void);
-extern uint16_t AF_read(uint16_t buttons);
+extern void AF_apply(void);
 
 
 

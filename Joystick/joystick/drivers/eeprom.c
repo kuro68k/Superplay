@@ -74,7 +74,10 @@ void EEP_WriteBuffer(const void *buffer, uint16_t size, uint8_t page)
 		EEP_LoadPageBuffer(ptr, EEPROM_PAGE_SIZE);
 		EEP_AtomicWritePage(page++);
 		EEP_WaitForNVM();
-		size -= EEPROM_PAGE_SIZE;
+		if (size >= EEPROM_PAGE_SIZE)
+			size -= EEPROM_PAGE_SIZE;
+		else
+			size = 0;
 		ptr += EEPROM_PAGE_SIZE;
 	}
 }

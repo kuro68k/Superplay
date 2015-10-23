@@ -11,7 +11,6 @@
 #include "global.h"
 #include "hw_misc.h"
 #include "config.h"
-#include "autofire.h"
 #include "report.h"
 #include "io_table.h"
 
@@ -168,10 +167,6 @@ void RPT_refresh(void)
 	else
 		report.rot_mode |= BUTTON_MODE_8_gc;
 
-	// autofire
-	uint16_t af_mask = AF_read(report.buttons);
-	report.buttons &= af_mask;
-	
 	// remap depending on the mode
 	if (logical_inputs[LMODE_4] || logical_inputs[LMODE_4AF])
 	{

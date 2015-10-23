@@ -7,7 +7,7 @@
 
 // UDI_HID_REPORT_SIZE defined in conf_usb.h
 
-// 56 bytes
+// 55 bytes
 UDC_DESC_STORAGE udi_hid_generic_report_desc_t udi_hid_generic_report_desc = {
 	{
 		0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)

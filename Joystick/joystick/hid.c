@@ -61,6 +61,26 @@ void HID_set_feature(uint8_t *report)
 }
 
 /**************************************************************************************************
+** Find rotary position. Returns -1 if none, or 0-11
+*/
+inline int8_t hid_find_rotary_pos(void)
+{
+	if (logical_inputs[LROTARY1])	return 0;
+	if (logical_inputs[LROTARY2])	return 1;
+	if (logical_inputs[LROTARY3])	return 2;
+	if (logical_inputs[LROTARY4])	return 3;
+	if (logical_inputs[LROTARY5])	return 4;
+	if (logical_inputs[LROTARY6])	return 5;
+	if (logical_inputs[LROTARY7])	return 6;
+	if (logical_inputs[LROTARY8])	return 7;
+	if (logical_inputs[LROTARY9])	return 8;
+	if (logical_inputs[LROTARY10])	return 9;
+	if (logical_inputs[LROTARY11])	return 10;
+	if (logical_inputs[LROTARY12])	return 11;
+	return -1;
+}
+
+/**************************************************************************************************
 ** Send a latest report over HID
 */
 void HID_send_report(void)
@@ -111,29 +131,32 @@ void HID_send_report(void)
 		// rotary
 		if (!rot_left && !rot_right && !inhibit)
 		{
-			if (last_rot == 0xFF)
-				last_rot = (report.rot_mode & ROTARY_gm) >> ROTARY_gp;
-			uint8_t new_rot = (report.rot_mode & ROTARY_gm) >> ROTARY_gp;
-
-			// determine clockwise/anti-clockwise movement
-			if ((last_rot != new_rot) && (new_rot != 0xF))
+			uint8_t new_rot = hid_find_rotary_pos();
+			if (new_rot != -1)
 			{
-				if ((last_rot > 9) && (new_rot < 3))
-					rot_left = true;
-				else if ((last_rot < 3) && (new_rot > 9))
-					rot_right = true;
-				else if (last_rot > new_rot)
-					rot_right = true;
-				else
-					rot_left = true;
+				if (last_rot == 0xFF)
+					last_rot = new_rot;
 
-				last_rot = new_rot;
+				// determine clockwise/anti-clockwise movement
+				if ((last_rot != new_rot) && (new_rot != 0xF))
+				{
+					if ((last_rot > 9) && (new_rot < 3))
+						rot_left = true;
+					else if ((last_rot < 3) && (new_rot > 9))
+						rot_right = true;
+					else if (last_rot > new_rot)
+						rot_right = true;
+					else
+						rot_left = true;
+
+					last_rot = new_rot;
 			
-				// restart time
-				HID_TC.CTRLA = 0;
-				HID_TC.CNT = 0;
-				HID_TC.INTFLAGS = TC0_OVFIF_bm;
-				HID_TC.CTRLA = HID_TC_CLKSEL;
+					// restart time
+					HID_TC.CTRLA = 0;
+					HID_TC.CNT = 0;
+					HID_TC.INTFLAGS = TC0_OVFIF_bm;
+					HID_TC.CTRLA = HID_TC_CLKSEL;
+				}
 			}
 		}
 		
