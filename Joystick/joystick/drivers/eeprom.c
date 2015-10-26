@@ -69,7 +69,7 @@ void EEP_WriteBuffer(const void *buffer, uint16_t size, uint8_t page)
 {
 	uint8_t *ptr = (uint8_t *)buffer;
 	
-	while (size > EEPROM_PAGE_SIZE)
+	while (size >= EEPROM_PAGE_SIZE)
 	{
 		EEP_LoadPageBuffer(ptr, EEPROM_PAGE_SIZE);
 		EEP_AtomicWritePage(page++);
