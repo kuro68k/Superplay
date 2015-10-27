@@ -10,14 +10,25 @@
 #include "getopt.h"
 #include "config.h"
 #include "crc.h"
+#include "hidapi.h"
 
 #define	DEBUG	1
 #define DEBUG_PRINTF(fmt, ...) \
 		do { if (DEBUG) fprintf(stderr, fmt, __VA_ARGS__); } while (0)
 
+
+#define	BUFFER_SIZE			(64+1)		// +1 for mandatory HID report ID
+#define	IDX_REPORT_ID		0
+#define	IDX_COMMAND			1
+#define	IDX_ADDR			2
+#define	IDX_DATA			4
+
+
 char *infile = NULL;
 char *outfile = NULL;
 bool optd = false;
+bool optu = false;
+MAPPING_CONFIG_t cfg;
 
 
 /**************************************************************************************************
@@ -25,6 +36,7 @@ bool optd = false;
 *
 * -o <outfile>		save output to file
 * -d				modify default mapping
+* -u				upload to joystick
 */
 int parse_args(int argc, char* argv[])
 {
@@ -32,12 +44,13 @@ int parse_args(int argc, char* argv[])
 
 	if (argc == 1)
 	{
-		printf("Usage: [-d] [-o output.eep] map.txt\n");
+		printf("Usage: [-u] [-d] [-o output.eep] map.txt\n");
 		printf("\t-d\tModify default mapping\n");
+		printf("\t-u\tUpload to joystick\n");
 		return 1;
 	}
 
-	while ((c = getopt(argc, argv, "do:")) != -1)
+	while ((c = getopt(argc, argv, "udo:")) != -1)
 	{
 		switch (c)
 		{
@@ -47,6 +60,10 @@ int parse_args(int argc, char* argv[])
 
 		case 'd':
 			optd = true;
+			break;
+
+		case 'u':
+			optu = true;
 			break;
 
 		case '?':
@@ -114,28 +131,10 @@ int tokenize(char *str)
 }
 
 /**************************************************************************************************
-* main()
+* Process input file
 */
-int main(int argc, char* argv[])
+int read_input_file(void)
 {
-	MAPPING_CONFIG_t cfg;
-	memset(&cfg, 0, sizeof(cfg));
-	cfg.config_id = MAPPING_CONFIG_ID;
-	cfg.config_size = sizeof(cfg);
-
-	int res;
-	if ((res = parse_args(argc, argv)) != 0)
-		return res;
-
-	if (optd)
-	{
-		for (int i = 0; i < NUM_LOGICAL_INPUTS; i++)
-		{
-			cfg.logical[i] = i;
-			cfg.physical[i] = i;
-		}
-	}
-
 	FILE *fin;
 	fin = fopen(infile, "r");
 	if (fin == NULL)
@@ -265,6 +264,100 @@ int main(int argc, char* argv[])
 	}
 	printf("Parsing OK.\n");
 
+	return 0;
+}
+
+/**************************************************************************************************
+* Execute a HID "command". Set timeout_ms to zero if no response is required.
+*/
+bool ExecuteHIDCommand(hid_device *handle, uint8_t command, uint16_t addr, int timeout_ms, uint8_t *buffer)
+{
+	int res;
+
+	// send command
+	buffer[IDX_REPORT_ID] = 0;
+	buffer[IDX_COMMAND] = command;
+	buffer[IDX_ADDR] = addr & 0xFF;
+	buffer[IDX_ADDR + 1] = (addr >> 8) & 0xFF;
+	res = hid_send_feature_report(handle, buffer, BUFFER_SIZE);
+	if (res == -1)
+	{
+		printf("hid_send_feature_report failed.\n");
+		printf("%ls\n", hid_error(handle));
+		return false;
+	}
+
+	// wait for response
+	if (timeout_ms == 0)	// no response required
+		return true;
+
+	res = hid_read_timeout(handle, buffer, BUFFER_SIZE, timeout_ms);
+	if (res == -1)
+	{
+		printf("hid_read failed.\n");
+		printf("%ls\n", hid_error(handle));
+		return false;
+	}
+
+	// validate response
+	if (buffer[IDX_COMMAND - 1] != (command | 0x80))
+		return false;
+	if ((buffer[IDX_ADDR - 1] != (addr & 0xFF)) || (buffer[IDX_ADDR] != ((addr >> 8) & 0xFF)))
+		return false;
+
+	return true;
+}
+
+/**************************************************************************************************
+* Upload config
+*/
+int upload_config(void)
+{
+	uint8_t buffer[BUFFER_SIZE];
+
+	hid_device *handle;
+	handle = hid_open(0x8282, 0x6099, NULL);
+	if (handle != NULL)
+	{
+		//printf("Unable to find any devices to upload to.\n");
+		printf("Found SUPERPLAY joystick.\n");
+		if (!ExecuteHIDCommand(handle, 0x5B, 0, 0, buffer))
+		{
+			printf("KBUS command failed.\n");
+			return 1;
+		}
+		printf("Waiting for bootloader...\n");
+	}
+
+	return 0;
+}
+
+/**************************************************************************************************
+* main()
+*/
+int main(int argc, char* argv[])
+{
+	memset(&cfg, 0, sizeof(cfg));
+	cfg.config_id = MAPPING_CONFIG_ID;
+	cfg.config_size = sizeof(cfg);
+
+	int res;
+	if ((res = parse_args(argc, argv)) != 0)
+		return res;
+
+	if (optd)
+	{
+		for (int i = 0; i < NUM_LOGICAL_INPUTS; i++)
+		{
+			cfg.logical[i] = i;
+			cfg.physical[i] = i;
+		}
+	}
+
+	res = read_input_file();
+	if (res != 0)
+		return res;
+
 	cfg.crc32 = crc32(&cfg, sizeof(cfg) - 4);
 	DEBUG_PRINTF("Config CRC: %08X\n", cfg.crc32);
 
@@ -278,7 +371,7 @@ int main(int argc, char* argv[])
 			printf("Error opening %s.\n", outfile);
 			return 1;
 		}
-		error = false;
+		bool error = false;
 		if (fwrite(&cfg, 1, sizeof(cfg), fout) != sizeof(cfg))
 		{
 			error = true;
@@ -289,4 +382,14 @@ int main(int argc, char* argv[])
 			return false;
 		printf("Wrote config to %s.\n", outfile);
 	}
+
+	// try to upload if required
+	if (optu)
+	{
+		res = upload_config();
+		if (res != 0)
+			return res;
+	}
+
+	return 0;
 }

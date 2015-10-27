@@ -33,6 +33,9 @@
     <ClInclude Include="crc.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="hidapi.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mapgen.c">
@@ -45,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="crc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hid.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
