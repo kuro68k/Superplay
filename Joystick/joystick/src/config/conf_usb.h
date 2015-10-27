@@ -141,7 +141,7 @@ extern uint8_t USB_serial_number[];
 #define  UDI_HID_GENERIC_EP_SIZE            64
 
 //#define  UDI_HID_REPORT_SIZE				(39+15)
-#define  UDI_HID_REPORT_SIZE				56
+#define  UDI_HID_REPORT_SIZE				55
 
 /**
  * USB HID Generic low level configuration

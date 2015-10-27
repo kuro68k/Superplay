@@ -9,6 +9,8 @@
 #ifndef REPORT_H_
 #define REPORT_H_
 
+#include "config.h"
+
 
 //	7			6			5			4			3			2			1			0
 //	Control		Coin		Select		Start		Right		Left		Down		Up
@@ -50,7 +52,9 @@ typedef struct
 
 
 extern REPORT_t	report;
+extern uint8_t	logical_inputs[128];
 
+extern void RPT_logical_inputs_refresh(void);
 extern void RPT_refresh(void);
 
 

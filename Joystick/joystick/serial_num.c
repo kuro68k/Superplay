@@ -2,7 +2,7 @@
  * serial_num.c
  *
  * Created: 22/04/2015 11:24:05
- *  Author: paul.qureshi
+ *  Author: MoJo
  */ 
 
 #include <avr/io.h>
@@ -34,7 +34,7 @@ void USB_init_build_usb_serial_number(void)
 	uint8_t	i;
 	uint8_t	j = 0;
 	uint8_t b;
-	
+
 	for (i = 0; i < 6; i++)
 	{
 		b = SP_ReadCalibrationByte(offsetof(NVM_PROD_SIGNATURES_t, LOTNUM0) + i);

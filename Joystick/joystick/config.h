@@ -10,50 +10,141 @@
 #define CONFIG_H_
 
 
-#define CONFIG_ID		0x2768
+// storage locations in EEPROM
+#define EEP_MAPPING_CFG_PAGE	0		// 8 pages
+#define EEP_MISC_CFG_PAGE		16		// 1 page
+
+
+// logical inputs
+enum LOGICAL_INPUTS_enum
+{
+	LNONE = 0,
+	
+	LJOY_UP,
+	LJOY_DN,
+	LJOY_LF,
+	LJOY_RT,
+	
+	LSTART,
+	LCOIN,
+	
+	LBUTTON1,
+	LBUTTON2,
+	LBUTTON3,
+	LBUTTON4,
+	LBUTTON5,
+	LBUTTON6,
+	LBUTTON7,
+	LBUTTON8,
+	LBUTTON9,
+	LBUTTON10,
+	LBUTTON11,
+	LBUTTON12,
+	LBUTTON13,
+	LBUTTON14,
+	LBUTTON15,
+	LBUTTON16,
+	
+	LROTARY1,
+	LROTARY2,
+	LROTARY3,
+	LROTARY4,
+	LROTARY5,
+	LROTARY6,
+	LROTARY7,
+	LROTARY8,
+	LROTARY9,
+	LROTARY10,
+	LROTARY11,
+	LROTARY12,
+	
+	LAF_LOW_1,
+	LAF_LOW_2,
+	LAF_LOW_3,
+	LAF_LOW_4,
+	LAF_LOW_5,
+	LAF_LOW_6,
+	LAF_LOW_7,
+	LAF_LOW_8,
+	LAF_LOW_9,
+	LAF_LOW_10,
+	LAF_LOW_11,
+	LAF_LOW_12,
+	LAF_LOW_13,
+	LAF_LOW_14,
+	LAF_LOW_15,
+	LAF_LOW_16,
+	
+	LAF_HIGH_1,
+	LAF_HIGH_2,
+	LAF_HIGH_3,
+	LAF_HIGH_4,
+	LAF_HIGH_5,
+	LAF_HIGH_6,
+	LAF_HIGH_7,
+	LAF_HIGH_8,
+	LAF_HIGH_9,
+	LAF_HIGH_10,
+	LAF_HIGH_11,
+	LAF_HIGH_12,
+	LAF_HIGH_13,
+	LAF_HIGH_14,
+	LAF_HIGH_15,
+	LAF_HIGH_16,
+	
+	LUNUSED,
+	LMODE_4,
+	LMODE_4AF,
+	
+	LCONTROL,
+	
+	NUM_LOGICAL_INPUTS,					// must not be >127
+	LFORCED = 127
+};
+
+#define LOGICAL_OUTPUT_MASK		0x80
+
+
+// physical input map
+#define MAPPING_CONFIG_ID		0x256A
+#define NUM_MAPPINGS			124
 
 typedef struct
 {
-	uint16_t	config_id;				// must be CONFIG_ID
+	uint16_t	config_id;					// must be MAPPING_CONFIG_ID
 	uint16_t	config_size;
-	
-	uint8_t		button_mode;			// CFG_BUTTON_MODE_*
-	
-	uint8_t		af_mode;				// CFG_AF_MODE_*
-	uint8_t		af_high_05hz;
-	uint8_t		af_low_05hz;
-	uint16_t	af_mask;				// default autofire setting
-	uint8_t		af_save_state;			// save state to EEPROM
 
-	uint8_t		rotary_mode;			// CFG_ROTARY_MODE_*
-
-	uint8_t		start_af_toggle_mode;	// hold START to toggle autofire
-
-	uint8_t		padding[14];
+	uint8_t		logical[NUM_MAPPINGS];		// logical to physical mapping
+	uint8_t		physical[NUM_MAPPINGS];
 
 	uint32_t	crc32;
-} CONFIG_t;
-
-
-#define CFG_BUTTON_MODE_SWITCHED		0
-#define CFG_BUTTON_MODE_8				1
-#define CFG_BUTTON_MODE_4				2
-#define CFG_BUTTON_MODE_4AF				3
-#define	CFG_BUTTON_MODE_16				4
-
-#define CFG_AF_MODE_HIGH_LOW			0
-#define CFG_AF_MODE_HIGH_WITH_LEDS		1
-#define CFG_AF_MODE_FIXED				2
-#define CFG_AF_MODE_TOGGLE_HIGH			3
-
-#define	CFG_ROTARY_MODE_DISABLED		0
-#define	CFG_ROTARY_MODE_BUTTONS			1
-#define	CFG_ROTARY_MODE_POV				2
-#define	CFG_ROTARY_MODF_ADDITIONAL_AF	3
+} MAPPING_CONFIG_t;
 
 
 
-extern const CONFIG_t * const cfg;
+
+
+#define MISC_CONFIG_ID			0x97B2
+
+typedef struct
+{
+	uint16_t	config_id;				// must be MISC_CONFIG_ID
+	uint16_t	config_size;
+	
+	uint8_t		af_high_05hz;
+	uint8_t		af_low_05hz;
+	uint8_t		af_save_state;			// save state to EEPROM
+
+	uint8_t		padding[21];
+
+	uint32_t	crc32;
+} MISC_CONFIG_t;
+
+
+
+extern const MAPPING_CONFIG_t * const map;
+extern const MAPPING_CONFIG_t * const forced;
+extern const MISC_CONFIG_t * const cfg;
 
 extern void CFG_init(void);
 

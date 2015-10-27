@@ -1,7 +1,7 @@
 /*
  * eeprom.h
  *
- * Author:	???
+ * Author:	MoJo
  * Created: 26/06/2012 13:25:42
  */
 
@@ -53,10 +53,11 @@ inline static void EEP_WaitForNVM(void)
 /**************************************************************************************************
 ** Externally accessible functions
 */
-void EEP_WaitForNVM( void );
-void EEP_LoadPageBuffer(const uint8_t *data, uint8_t size)	__attribute__((nonnull));
-void EEP_AtomicWritePage(uint8_t page_addr);
-void EEP_EraseAll( void );
+extern void EEP_WaitForNVM( void );
+extern void EEP_LoadPageBuffer(const uint8_t *data, uint8_t size)	__attribute__((nonnull));
+extern void EEP_AtomicWritePage(uint8_t page_addr);
+extern void EEP_WriteBuffer(const void *buffer, uint16_t size, uint8_t page);
+extern void EEP_EraseAll( void );
 
 
 

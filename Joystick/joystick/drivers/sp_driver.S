@@ -758,6 +758,7 @@ SP_CommonLPM:
 	movw	ZL, r24             ; Load index into Z.
 	sts	NVM_CMD, r20        ; Load prepared command into NVM Command register.
 	lpm	r24,Z
+	sts		NVM_CMD, r1			; clean up (PQ, damn it Atmel)
 	ret
 
 

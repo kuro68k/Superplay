@@ -61,6 +61,26 @@ void HID_set_feature(uint8_t *report)
 }
 
 /**************************************************************************************************
+** Find rotary position. Returns -1 if none, or 0-11
+*/
+inline int8_t hid_find_rotary_pos(void)
+{
+	if (logical_inputs[LROTARY1])	return 0;
+	if (logical_inputs[LROTARY2])	return 1;
+	if (logical_inputs[LROTARY3])	return 2;
+	if (logical_inputs[LROTARY4])	return 3;
+	if (logical_inputs[LROTARY5])	return 4;
+	if (logical_inputs[LROTARY6])	return 5;
+	if (logical_inputs[LROTARY7])	return 6;
+	if (logical_inputs[LROTARY8])	return 7;
+	if (logical_inputs[LROTARY9])	return 8;
+	if (logical_inputs[LROTARY10])	return 9;
+	if (logical_inputs[LROTARY11])	return 10;
+	if (logical_inputs[LROTARY12])	return 11;
+	return -1;
+}
+
+/**************************************************************************************************
 ** Send a latest report over HID
 */
 void HID_send_report(void)
@@ -81,41 +101,62 @@ void HID_send_report(void)
 	{
 		hid_report.x = 0;
 		hid_report.y = 0;
-		if (report.udlr_sscc & JOY_UP_bm)		hid_report.y = -127;
-		if (report.udlr_sscc & JOY_DOWN_bm)		hid_report.y = 127;
-		if (report.udlr_sscc & JOY_RIGHT_bm)	hid_report.x = 127;
-		if (report.udlr_sscc & JOY_LEFT_bm)		hid_report.x = -127;
+		if (logical_inputs[LJOY_UP])		hid_report.y = -127;
+		if (logical_inputs[LJOY_DN])		hid_report.y = 127;
+		if (logical_inputs[LJOY_RT])		hid_report.x = 127;
+		if (logical_inputs[LJOY_LF])		hid_report.x = -127;
 
-		hid_report.buttons = report.buttons;
+		if (logical_inputs[LBUTTON1])		hid_report.buttons1 |= (1<<0);
+		if (logical_inputs[LBUTTON2])		hid_report.buttons1 |= (1<<1);
+		if (logical_inputs[LBUTTON3])		hid_report.buttons1 |= (1<<2);
+		if (logical_inputs[LBUTTON4])		hid_report.buttons1 |= (1<<3);
+		if (logical_inputs[LBUTTON5])		hid_report.buttons1 |= (1<<4);
+		if (logical_inputs[LBUTTON6])		hid_report.buttons1 |= (1<<5);
+		if (logical_inputs[LBUTTON7])		hid_report.buttons1 |= (1<<6);
+		if (logical_inputs[LBUTTON8])		hid_report.buttons1 |= (1<<7);
+		if (logical_inputs[LBUTTON9])		hid_report.buttons2 |= (1<<0);
+		if (logical_inputs[LBUTTON10])		hid_report.buttons2 |= (1<<1);
+		if (logical_inputs[LBUTTON11])		hid_report.buttons2 |= (1<<2);
+		if (logical_inputs[LBUTTON12])		hid_report.buttons2 |= (1<<3);
+		if (logical_inputs[LBUTTON13])		hid_report.buttons2 |= (1<<4);
+		if (logical_inputs[LBUTTON14])		hid_report.buttons2 |= (1<<5);
+		if (logical_inputs[LBUTTON15])		hid_report.buttons2 |= (1<<6);
+		if (logical_inputs[LBUTTON16])		hid_report.buttons2 |= (1<<7);
+		
+		if (logical_inputs[LSTART])			hid_report.buttons3 |= (1<<0);
+		if (logical_inputs[LCOIN])			hid_report.buttons3 |= (1<<1);
+		if (logical_inputs[LCONTROL])		hid_report.buttons3 |= (1<<2);
+		if (logical_inputs[LUNUSED])		hid_report.buttons3 |= (1<<3);
 
 		// rotary
-		hid_report.rot = 11 - ((report.rot_mode & ROTARY_gm) >> ROTARY_gp);
-		
 		if (!rot_left && !rot_right && !inhibit)
 		{
-			if (last_rot == 0xFF)
-				last_rot = (report.rot_mode & ROTARY_gm) >> ROTARY_gp;
-			uint8_t new_rot = (report.rot_mode & ROTARY_gm) >> ROTARY_gp;
-
-			// determine clockwise/anti-clockwise movement
-			if ((last_rot != new_rot) && (new_rot != 0xF))
+			uint8_t new_rot = hid_find_rotary_pos();
+			if (new_rot != -1)
 			{
-				if ((last_rot > 9) && (new_rot < 3))
-					rot_left = true;
-				else if ((last_rot < 3) && (new_rot > 9))
-					rot_right = true;
-				else if (last_rot > new_rot)
-					rot_right = true;
-				else
-					rot_left = true;
+				if (last_rot == 0xFF)
+					last_rot = new_rot;
 
-				last_rot = new_rot;
+				// determine clockwise/anti-clockwise movement
+				if ((last_rot != new_rot) && (new_rot != 0xF))
+				{
+					if ((last_rot > 9) && (new_rot < 3))
+						rot_left = true;
+					else if ((last_rot < 3) && (new_rot > 9))
+						rot_right = true;
+					else if (last_rot > new_rot)
+						rot_right = true;
+					else
+						rot_left = true;
+
+					last_rot = new_rot;
 			
-				// restart time
-				HID_TC.CTRLA = 0;
-				HID_TC.CNT = 0;
-				HID_TC.INTFLAGS = TC0_OVFIF_bm;
-				HID_TC.CTRLA = HID_TC_CLKSEL;
+					// restart time
+					HID_TC.CTRLA = 0;
+					HID_TC.CNT = 0;
+					HID_TC.INTFLAGS = TC0_OVFIF_bm;
+					HID_TC.CTRLA = HID_TC_CLKSEL;
+				}
 			}
 		}
 		
@@ -140,8 +181,8 @@ void HID_send_report(void)
 			}
 		}
 		
-		if (rot_left)	hid_report.buttons |= HID_ROTATE_LEFT_BUTTON_bm;
-		if (rot_right)	hid_report.buttons |= HID_ROTATE_RIGHT_BUTTON_bm;
+		if (rot_left)	hid_report.buttons3 |= HID_ROTATE_LEFT_BUTTON_bm;
+		if (rot_right)	hid_report.buttons3 |= HID_ROTATE_RIGHT_BUTTON_bm;
 	}
 	
 	udi_hid_generic_send_report_in((uint8_t *)&hid_report);

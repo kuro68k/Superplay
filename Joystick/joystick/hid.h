@@ -13,13 +13,14 @@
 typedef struct
 {
 	int8_t		x, y;
-	uint16_t	buttons;
-	uint8_t		rot;
+	uint8_t		buttons1;
+	uint8_t		buttons2;
+	uint8_t		buttons3;
 } HID_REPORT_t;
 
 
-#define HID_ROTATE_LEFT_BUTTON_bm		(1<<14)
-#define HID_ROTATE_RIGHT_BUTTON_bm		(1<<15)
+#define HID_ROTATE_LEFT_BUTTON_bm		(1<<4)
+#define HID_ROTATE_RIGHT_BUTTON_bm		(1<<5)
 
 #define HID_TC							TCF0
 #define HID_TC_CLKSEL					TC_CLKSEL_DIV64_gc

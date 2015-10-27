@@ -62,6 +62,27 @@ void EEP_AtomicWritePage(uint8_t page_addr)
 }
 
 /**************************************************************************************************
+** Write a buffer to one or more pages. Writes chunks of EEPROM_PAGE_SIZE bytes, so if the buffer
+** is not a multiple of that number the remainder of the buffer is junk.
+*/
+void EEP_WriteBuffer(const void *buffer, uint16_t size, uint8_t page)
+{
+	uint8_t *ptr = (uint8_t *)buffer;
+	
+	while (size >= EEPROM_PAGE_SIZE)
+	{
+		EEP_LoadPageBuffer(ptr, EEPROM_PAGE_SIZE);
+		EEP_AtomicWritePage(page++);
+		EEP_WaitForNVM();
+		if (size >= EEPROM_PAGE_SIZE)
+			size -= EEPROM_PAGE_SIZE;
+		else
+			size = 0;
+		ptr += EEPROM_PAGE_SIZE;
+	}
+}
+
+/**************************************************************************************************
 ** Erase the entire EEPROM
 */
 void EEP_EraseAll(void)
