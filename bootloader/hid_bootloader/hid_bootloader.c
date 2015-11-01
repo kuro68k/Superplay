@@ -29,11 +29,12 @@ uint32_t	*eeprom_marker = (uint32_t *)EEP_MAPPED_ADDR(31, 0);
 */
 int main(void)
 {
-	CCP = CCP_IOREG_gc;				// unlock IVSEL
-	PMIC.CTRL |= PMIC_IVSEL_bm;		// set interrupt vector table to bootloader section
+	EEP_EnableMapping();
+	uint32_t marker = *eeprom_marker;
+	EEP_DisableMapping();
 	
 	// check for VUSB
-	if ((*eeprom_marker != 0x4c4f4144) &&		// "LOAD" signal from application
+	if ((marker != 0x4c4f4144) &&				// "LOAD" signal from application
 		(SP_ReadWord(0x00000000) != 0xFFFF))	// application reset vector not blank
 	{
 		// exit bootloader
@@ -44,6 +45,9 @@ int main(void)
 		RAMPZ = 0;				// LPM uses lower 64k of flash
 		application_vector();
 	}
+
+	CCP = CCP_IOREG_gc;				// unlock IVSEL
+	PMIC.CTRL |= PMIC_IVSEL_bm;		// set interrupt vector table to bootloader section
 
 	EEP_ErasePage(31);			// clear "LOAD" signal from application
 	

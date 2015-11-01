@@ -12,7 +12,12 @@
 #include "crc.h"
 #include "hidapi.h"
 
-#define	DEBUG	1
+#ifdef _WIN32
+#include "windows.h"
+#endif
+
+
+#define	DEBUG	0
 #define DEBUG_PRINTF(fmt, ...) \
 		do { if (DEBUG) fprintf(stderr, fmt, __VA_ARGS__); } while (0)
 
@@ -308,26 +313,60 @@ bool ExecuteHIDCommand(hid_device *handle, uint8_t command, uint16_t addr, int t
 	return true;
 }
 
+hid_device * find_bootloader(void)
+{
+	uint8_t buffer[BUFFER_SIZE];
+
+	hid_device *handle;
+	handle = hid_open(0x8282, 0x6899, NULL);
+	if (handle != NULL)
+	{
+		printf("Found SUPERPLAY joystick.\n");
+		if (!ExecuteHIDCommand(handle, 0x5B, 0, 0, buffer))
+		{
+			printf("KBUS command failed.\n");
+			return NULL;
+		}
+		hid_close(handle);
+
+		printf("Waiting for bootloader...");
+		int timeout = 30;
+		while (timeout--)
+		{
+			Sleep(1000);
+			handle = hid_open(0x8282, 0xB710, NULL);
+			if (handle != NULL)
+				break;
+			printf(".");
+		}
+		if (handle == NULL)
+			return NULL;
+		printf(" OK\n");
+		hid_close(handle);
+	}
+
+	handle = hid_open(0x8282, 0xB710, NULL);
+	if (handle == NULL)
+	{
+		printf("Unable to find bootloader.\n");
+		return NULL;
+	}
+
+	printf("Bootloader found.\n");
+	return handle;
+}
+
 /**************************************************************************************************
 * Upload config
 */
 int upload_config(void)
 {
-	uint8_t buffer[BUFFER_SIZE];
-
 	hid_device *handle;
-	handle = hid_open(0x8282, 0x6099, NULL);
-	if (handle != NULL)
-	{
-		//printf("Unable to find any devices to upload to.\n");
-		printf("Found SUPERPLAY joystick.\n");
-		if (!ExecuteHIDCommand(handle, 0x5B, 0, 0, buffer))
-		{
-			printf("KBUS command failed.\n");
-			return 1;
-		}
-		printf("Waiting for bootloader...\n");
-	}
+	handle = find_bootloader();
+	if (handle == NULL)
+		return 1;
+
+
 
 	return 0;
 }
@@ -386,6 +425,7 @@ int main(int argc, char* argv[])
 	// try to upload if required
 	if (optu)
 	{
+		printf("Uploading configuration to target...\n");
 		res = upload_config();
 		if (res != 0)
 			return res;
