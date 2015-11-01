@@ -49,11 +49,12 @@ void cfg_load_default_mapping(void)
 	new_map.config_id = MAPPING_CONFIG_ID;
 	new_map.config_size = sizeof(MAPPING_CONFIG_t);
 
-	for (uint8_t i = 0; i < NUM_LOGICAL_INPUTS; i++)
+	for (uint8_t i = 1; i < NUM_LOGICAL_INPUTS; i++)
 	{
 		new_map.logical[i] = i;
 		new_map.physical[i] = i;
 	}
+	new_map.logical[0] = LFORCED;
 	
 	new_map.crc32 = cfg_calc_crc(&new_map, sizeof(new_map) - 4);
 

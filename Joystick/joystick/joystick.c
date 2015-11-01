@@ -73,7 +73,7 @@ int main(void)
 	{
 		WDR();
 
-		//RPT_logical_inputs_refresh();
+		RPT_logical_inputs_refresh();
 		//AF_apply();
 		
 		//if (HID_enabled && !VEN_enabled)
