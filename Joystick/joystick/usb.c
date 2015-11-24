@@ -35,13 +35,14 @@ static USB_MicrosoftExtendedPropertiesDescriptor microsoft_extended_properties_d
 	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor),
 	.bcdVersion = 0x0100,
 	.wIndex = 0x0005,
-	.bCount = 1,
+	.bCount = 2,
+	
 	.dwPropertySize = 136,
 	.dwPropertyDataType = 7,
 	.wPropertyNameLength = 21*2,
 	.PropertyName = L"DeviceInterfaceGUIDs",
 	.dwPropertyDataLength = 40*2,
-	.PropertyData = L"{42314231-4231-4231-4231-423142314231}\0",
+	.PropertyData = L"{88BAE032-5A81-49F0-BC3D-A4FF138216D6}\0",
 };
 
 /**************************************************************************************************

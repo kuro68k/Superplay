@@ -50,9 +50,6 @@
 #include "compiler.h"
 #include "usb.h"
 
-// Windows extended device info stuff
-#define USB_WCID
-
 /**
  * USB Device Configuration
  * @{
@@ -60,7 +57,7 @@
 
 //! Device definition (mandatory)
 #define  USB_DEVICE_VENDOR_ID				0x8282
-#define  USB_DEVICE_PRODUCT_ID				0x6888
+#define  USB_DEVICE_PRODUCT_ID				0x6899
 #define  USB_DEVICE_MAJOR_VERSION			1
 #define  USB_DEVICE_MINOR_VERSION			0
 #define  USB_DEVICE_POWER					100 // Consumption on VBUS line (mA)

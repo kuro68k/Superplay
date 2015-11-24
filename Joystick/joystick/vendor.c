@@ -36,8 +36,7 @@ bool VEN_callback_disable(void)
 */
 bool VEN_callback_setup_out_received(void)
 {
-	return usb_other_requests();
-	//return true;
+	return true;
 }
 
 /**************************************************************************************************
