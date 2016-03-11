@@ -48,6 +48,7 @@
 #define _CONF_USB_H_
 
 #include "compiler.h"
+#include "usb.h"
 
 /**
  * USB Device Configuration
@@ -91,16 +92,17 @@ extern uint8_t USB_serial_number[];
  * USB Device Callbacks definitions (Optional)
  * @{
  */
-// #define  UDC_VBUS_EVENT(b_vbus_high)      user_callback_vbus_action(b_vbus_high)
-// #define  UDC_SOF_EVENT()                  user_callback_sof_action()
-// #define  UDC_SUSPEND_EVENT()              user_callback_suspend_action()
-// #define  UDC_RESUME_EVENT()               user_callback_resume_action()
+// #define  UDC_VBUS_EVENT(b_vbus_high)		user_callback_vbus_action(b_vbus_high)
+// #define  UDC_SOF_EVENT()					user_callback_sof_action()
+// #define  UDC_SUSPEND_EVENT()				user_callback_suspend_action()
+// #define  UDC_RESUME_EVENT()				user_callback_resume_action()
 //! Mandatory when USB_DEVICE_ATTR authorizes remote wakeup feature
-// #define  UDC_REMOTEWAKEUP_ENABLE()        user_callback_remotewakeup_enable()
-// #define  UDC_REMOTEWAKEUP_DISABLE()       user_callback_remotewakeup_disable()
+// #define  UDC_REMOTEWAKEUP_ENABLE()		user_callback_remotewakeup_enable()
+// #define  UDC_REMOTEWAKEUP_DISABLE()		user_callback_remotewakeup_disable()
 //! When a extra string descriptor must be supported
 //! other than manufacturer, product and serial string
-// #define  UDC_GET_EXTRA_STRING()
+#define	UDC_GET_EXTRA_STRING()				usb_msft_string()
+#define	USB_DEVICE_SPECIFIC_REQUEST()		usb_other_requests()
 //@}
 
 /**
@@ -135,10 +137,10 @@ extern uint8_t USB_serial_number[];
 #define  UDI_HID_GENERIC_REPORT_OUT(ptr)	HID_set_feature(ptr)
 #define  UDI_HID_GENERIC_SET_FEATURE(f)		HID_set_feature(f)
 
-#define  UDI_HID_REPORT_IN_SIZE             5
-#define  UDI_HID_REPORT_OUT_SIZE            64
-#define  UDI_HID_REPORT_FEATURE_SIZE        64
-#define  UDI_HID_GENERIC_EP_SIZE            64
+#define  UDI_HID_REPORT_IN_SIZE				5
+#define  UDI_HID_REPORT_OUT_SIZE			64
+#define  UDI_HID_REPORT_FEATURE_SIZE		64
+#define  UDI_HID_GENERIC_EP_SIZE			64
 
 //#define  UDI_HID_REPORT_SIZE				(39+15)
 #define  UDI_HID_REPORT_SIZE				55

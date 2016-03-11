@@ -39,7 +39,7 @@ void HW_init(void)
 	WDR();
 	while (WDT.STATUS & WDT_SYNCBUSY_bm);
 	WDR();
-	HW_CCPWrite(&WDT_CTRL, WDT_PER_8KCLK_gc | WDT_ENABLE_bm | WDT_CEN_bm);
+	HW_CCPWrite(&WDT_CTRL, WDT_PER_128CLK_gc | WDT_ENABLE_bm | WDT_CEN_bm);
 
 	// port A
 	PORTA.OUT = 0;
