@@ -5,3 +5,5 @@ V1.1:	Minor fixes, firmware compatible.
 		Moved test points further apart
 		Added missing 1206 capacitor
 		Revised logo
+
+V1.2:	Connected PF4/UNUSED to LED
