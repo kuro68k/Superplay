@@ -7,3 +7,4 @@ V1.1:	Minor fixes, firmware compatible.
 		Revised logo
 
 V1.2:	Connected PF4/UNUSED to LED
+	Thickened lines in SUPERPLAY logos
