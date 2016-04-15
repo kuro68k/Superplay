@@ -126,6 +126,10 @@ typedef struct
 
 #define MISC_CONFIG_ID			0x97B2
 
+#define AUX_MODE_DISABLED		0
+#define AUX_MODE_KBUS			1
+#define AUX_MODE_BUTTONS		2
+
 typedef struct
 {
 	uint16_t	config_id;				// must be MISC_CONFIG_ID
@@ -135,7 +139,9 @@ typedef struct
 	uint8_t		af_low_05hz;
 	uint8_t		af_save_state;			// save state to EEPROM
 
-	uint8_t		padding[21];
+	uint8_t		aux_mode;
+
+	uint8_t		padding[20];
 
 	uint32_t	crc32;
 } MISC_CONFIG_t;

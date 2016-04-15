@@ -128,9 +128,6 @@ void CFG_init(void)
 	if (!cfg_check_config(map, MAPPING_CONFIG_ID, sizeof(MAPPING_CONFIG_t)))
 		cfg_load_default_mapping();
 
-	//if (!cfg_check_config(forced, MAPPING_CONFIG_ID, sizeof(MAPPING_CONFIG_t)))
-	//	cfg_load_default_forced();
-	
 	if (!cfg_check_config(cfg, MISC_CONFIG_ID, sizeof(MISC_CONFIG_t)))
 		cfg_load_default_misc_config();
 }

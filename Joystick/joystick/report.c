@@ -131,33 +131,38 @@ void RPT_refresh(void)
 	memset(&report, 0, sizeof(report));
 	
 	// joystick
-	if (logical_inputs[LJOY_UP])		report.udlr_sscc |= JOY_UP_bm;
-	if (logical_inputs[LJOY_DN])		report.udlr_sscc |= JOY_DOWN_bm;
-	if (logical_inputs[LJOY_LF])		report.udlr_sscc |= JOY_LEFT_bm;
-	if (logical_inputs[LJOY_RT])		report.udlr_sscc |= JOY_RIGHT_bm;
+	uint8_t b = 0;
+	if (logical_inputs[LJOY_UP])		b |= JOY_UP_bm;
+	if (logical_inputs[LJOY_DN])		b |= JOY_DOWN_bm;
+	if (logical_inputs[LJOY_LF])		b |= JOY_LEFT_bm;
+	if (logical_inputs[LJOY_RT])		b |= JOY_RIGHT_bm;
 
 	// meta buttons
-	if (logical_inputs[LSTART])			report.udlr_sscc |= BUTTON_START_bm;
-	if (logical_inputs[LCOIN])			report.udlr_sscc |= BUTTON_COIN_bm;
-	if (logical_inputs[LCONTROL])		report.udlr_sscc |= BUTTON_CONTROL_bm;
+	if (logical_inputs[LSTART])			b |= BUTTON_START_bm;
+	if (logical_inputs[LCOIN])			b |= BUTTON_COIN_bm;
+	if (logical_inputs[LCONTROL])		b |= BUTTON_CONTROL_bm;
+	report.udlr_sscc = b;
 
 	// fire buttons
-	if (logical_inputs[LBUTTON1])		report.buttons |= (1<<0);
-	if (logical_inputs[LBUTTON2])		report.buttons |= (1<<1);
-	if (logical_inputs[LBUTTON3])		report.buttons |= (1<<2);
-	if (logical_inputs[LBUTTON4])		report.buttons |= (1<<3);
-	if (logical_inputs[LBUTTON5])		report.buttons |= (1<<4);
-	if (logical_inputs[LBUTTON6])		report.buttons |= (1<<5);
-	if (logical_inputs[LBUTTON7])		report.buttons |= (1<<6);
-	if (logical_inputs[LBUTTON8])		report.buttons |= (1<<7);
-	if (logical_inputs[LBUTTON9])		report.buttons |= (1<<8);
-	if (logical_inputs[LBUTTON10])		report.buttons |= (1<<9);
-	if (logical_inputs[LBUTTON11])		report.buttons |= (1<<10);
-	if (logical_inputs[LBUTTON12])		report.buttons |= (1<<11);
-	if (logical_inputs[LBUTTON13])		report.buttons |= (1<<12);
-	if (logical_inputs[LBUTTON14])		report.buttons |= (1<<13);
-	if (logical_inputs[LBUTTON15])		report.buttons |= (1<<14);
-	if (logical_inputs[LBUTTON16])		report.buttons |= (1<<15);
+	uint16_t w = 0;
+	if (logical_inputs[LBUTTON1])		w |= (1<<0);
+	if (logical_inputs[LBUTTON2])		w |= (1<<1);
+	if (logical_inputs[LBUTTON3])		w |= (1<<2);
+	if (logical_inputs[LBUTTON4])		w |= (1<<3);
+	if (logical_inputs[LBUTTON5])		w |= (1<<4);
+	if (logical_inputs[LBUTTON6])		w |= (1<<5);
+	if (logical_inputs[LBUTTON7])		w |= (1<<6);
+	if (logical_inputs[LBUTTON8])		w |= (1<<7);
+	if (logical_inputs[LBUTTON9])		w |= (1<<8);
+	if (logical_inputs[LBUTTON10])		w |= (1<<9);
+	if (logical_inputs[LBUTTON11])		w |= (1<<10);
+	if (logical_inputs[LBUTTON12])		w |= (1<<11);
+	if (logical_inputs[LBUTTON13])		w |= (1<<12);
+	if (logical_inputs[LBUTTON14])		w |= (1<<13);
+	if (logical_inputs[LBUTTON15])		w |= (1<<14);
+	if (logical_inputs[LBUTTON16])		w |= (1<<15);
+	report.buttons = w;
+
 
 	// button mode
 	if (logical_inputs[LMODE_4])

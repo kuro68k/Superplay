@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "kbus.h"
+#include "config.h"
 #include "usart.h"
 
 
@@ -80,10 +81,15 @@ void USART_init(void)
 		u->BAUDCTRLA = USART_BSEL & 0xFF;
 		u->BAUDCTRLB = ((USART_BSCALE << 4) & 0xF0) | ((USART_BSEL >> 8) & 0x0F);
 		u = &AUX_USART;
+		if (cfg->aux_mode != AUX_MODE_KBUS)
+			break;
 	}
 	
-	AUX_USART.CTRLB |= USART_RXEN_bm | USART_TXEN_bm;
-	AUX_USART.CTRLA |= USART_RXCINTLVL_HI_gc;
+	if (cfg->aux_mode == AUX_MODE_KBUS)
+	{
+		AUX_USART.CTRLB |= USART_RXEN_bm | USART_TXEN_bm;
+		AUX_USART.CTRLA |= USART_RXCINTLVL_HI_gc;
+	}
 
 
 	// RX DMA
@@ -99,6 +105,8 @@ void USART_init(void)
 		ch->REPCNT = 0;
 		
 		ch = &AUX_RX_DMA_CH;
+		if (cfg->aux_mode != AUX_MODE_KBUS)
+			break;
 	}
 
 	MAIN_TX_DMA_CH.TRIGSRC = MAIN_RX_DMA_TRIGSRC;
@@ -107,11 +115,14 @@ void USART_init(void)
 	MAIN_TX_DMA_CH.SRCADDR2 = 0;
 	usart_reset_main_dma_rx_pointer();
 
-	AUX_TX_DMA_CH.TRIGSRC = MAIN_RX_DMA_TRIGSRC;
-	AUX_TX_DMA_CH.SRCADDR0 = (uint16_t)&MAIN_USART.DATA & 0xFF;
-	AUX_TX_DMA_CH.SRCADDR1 = ((uint16_t)&MAIN_USART.DATA >> 8) & 0xFF;
-	AUX_TX_DMA_CH.SRCADDR2 = 0;
-	usart_reset_aux_dma_rx_pointer();
+	if (cfg->aux_mode == AUX_MODE_KBUS)
+	{
+		AUX_TX_DMA_CH.TRIGSRC = MAIN_RX_DMA_TRIGSRC;
+		AUX_TX_DMA_CH.SRCADDR0 = (uint16_t)&MAIN_USART.DATA & 0xFF;
+		AUX_TX_DMA_CH.SRCADDR1 = ((uint16_t)&MAIN_USART.DATA >> 8) & 0xFF;
+		AUX_TX_DMA_CH.SRCADDR2 = 0;
+		usart_reset_aux_dma_rx_pointer();
+	}
 
 	// TX DMA
 	ch = &MAIN_TX_DMA_CH;
@@ -126,6 +137,8 @@ void USART_init(void)
 		ch->REPCNT = 0;
 		
 		ch = &AUX_TX_DMA_CH;
+		if (cfg->aux_mode != AUX_MODE_KBUS)
+			break;
 	}
 
 	MAIN_TX_DMA_CH.TRIGSRC = MAIN_TX_DMA_TRIGSRC;
@@ -134,11 +147,14 @@ void USART_init(void)
 	MAIN_TX_DMA_CH.DESTADDR2 = 0;
 	usart_reset_main_dma_tx_pointer();
 
-	AUX_TX_DMA_CH.TRIGSRC = AUX_TX_DMA_TRIGSRC;
-	AUX_TX_DMA_CH.DESTADDR0 = (uint16_t)&AUX_USART.DATA & 0xFF;
-	AUX_TX_DMA_CH.DESTADDR1 = ((uint16_t)&AUX_USART.DATA >> 8) & 0xFF;
-	AUX_TX_DMA_CH.DESTADDR2 = 0;
-	usart_reset_aux_dma_tx_pointer();
+	if (cfg->aux_mode == AUX_MODE_KBUS)
+	{
+		AUX_TX_DMA_CH.TRIGSRC = AUX_TX_DMA_TRIGSRC;
+		AUX_TX_DMA_CH.DESTADDR0 = (uint16_t)&AUX_USART.DATA & 0xFF;
+		AUX_TX_DMA_CH.DESTADDR1 = ((uint16_t)&AUX_USART.DATA >> 8) & 0xFF;
+		AUX_TX_DMA_CH.DESTADDR2 = 0;
+		usart_reset_aux_dma_tx_pointer();
+	}
 
 	// RX timers
 	TC0_t *tc = (TC0_t *)&MAIN_RX_TC;
@@ -159,14 +175,20 @@ void USART_init(void)
 		tc->CTRLA = USART_TC_DIV;			// start timer
 		
 		tc = &AUX_RX_TC;
+		if (cfg->aux_mode != AUX_MODE_KBUS)
+			break;
 	}
 	
 	EVSYS.CH0CTRL = 0;
 	EVSYS.CH0MUX = MAIN_RX_EVENT_CHMUX;
 	MAIN_RX_TC.CTRLD |= TC_EVSEL_CH0_gc;
-	EVSYS.CH1CTRL = 0;
-	EVSYS.CH1MUX = AUX_RX_EVENT_CHMUX;
-	AUX_RX_TC.CTRLD |= TC_EVSEL_CH1_gc;
+
+	if (cfg->aux_mode == AUX_MODE_KBUS)
+	{
+		EVSYS.CH1CTRL = 0;
+		EVSYS.CH1MUX = AUX_RX_EVENT_CHMUX;
+		AUX_RX_TC.CTRLD |= TC_EVSEL_CH1_gc;
+	}
 }
 
 /**************************************************************************************************
