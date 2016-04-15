@@ -3,6 +3,8 @@
  *
  * Created: 16/08/2015 12:34:57
  *  Author: Paul Qureshi
+ *
+ * Load and save configuration data from EEPROM.
  */ 
 
 #include <avr/io.h>

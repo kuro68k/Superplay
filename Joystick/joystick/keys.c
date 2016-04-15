@@ -3,6 +3,8 @@
  *
  * Created: 14/07/2015 16:40:30
  *  Author: Paul Qureshi
+ *
+ * Treat buttons as "keys", with simple debouncing and repeat inhibit etc.
  */ 
 
 #include <avr/io.h>

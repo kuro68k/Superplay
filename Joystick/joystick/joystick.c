@@ -79,7 +79,7 @@ int main(void)
 		//if (HID_enabled && !VEN_enabled)
 			HID_send_report();
 		//if (VEN_enabled)
-		if(0)
+		if(1)
 		{
 			RPT_refresh();
 			udi_vendor_interrupt_in_run((uint8_t *)&report, sizeof(report), NULL);

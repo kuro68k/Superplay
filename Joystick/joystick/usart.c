@@ -3,6 +3,8 @@
  *
  * Created: 02/09/2015 09:27:28
  *  Author: Paul Qureshi
+ *
+ * USART comms using KBUS protocol, with main (shared with USB) and aux ports.
  */ 
 
 #include <avr/io.h>
@@ -112,7 +114,7 @@ void USART_init(void)
 	usart_reset_aux_dma_rx_pointer();
 
 	// TX DMA
-	DMA_CH_t *ch = &MAIN_TX_DMA_CH;
+	ch = &MAIN_TX_DMA_CH;
 	for (uint8_t i = 0; i < 2; i++)
 	{
 		ch->CTRLA = DMA_CH_RESET_bm;
@@ -245,9 +247,9 @@ void USART_run(void)
 	{
 		main_rx_SIG = 0;
 		MAIN_RX_DMA_CH.CTRLA &= ~DMA_CH_ENABLE_bm;
-		if (usart_check_crc(main_rx_buffer_DMA) && !(MAIN_TX_DMA_CH.CTRLB & DMA_CH_CHBUSY_bm))	// don't send if previous TX still in progress)
+		if (usart_check_crc((uint8_t*)main_rx_buffer_DMA) && !(MAIN_TX_DMA_CH.CTRLB & DMA_CH_CHBUSY_bm))	// don't send if previous TX still in progress)
 		{
-			KBUS_process_command((KBUS_PACKET_t *)buffer, (KBUS_PACKET_t *)main_tx_buffer_DMA);
+			KBUS_process_command((KBUS_PACKET_t *)main_rx_buffer_DMA, (KBUS_PACKET_t *)main_tx_buffer_DMA);
 			usart_add_crc(main_tx_buffer_DMA);
 			usart_reset_main_dma_tx_pointer();
 			MAIN_TX_DMA_CH.TRFCNT = main_tx_buffer_DMA[1] + 2;	// data length + command + length
