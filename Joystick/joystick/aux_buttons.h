@@ -18,11 +18,13 @@
 #define AB_LAT_PIN_bm		PIN6_bm
 #define AB_CLK_PIN_bm		PIN7_bm
 
-#define AB_SPI				SPIC
 #define AB_USART			USARTC1
 #define	AB_USART_BSEL		1			// max 10MHz for NPIC6C596A
 #define AB_USART_BSCALE		0
 
+
+extern void AB_send_report(void);
+extern void AB_init(void);
 
 
 #endif /* AUX_BUTTONS_H_ */

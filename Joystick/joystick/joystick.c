@@ -19,6 +19,7 @@
 #include "autofire.h"
 #include "serial_num.h"
 #include "usart.h"
+#include "aux_buttons.h"
 
 
 #define VERSION_MAJOR	1
@@ -60,6 +61,7 @@ int main(void)
 	HID_init();
 	USB_init_build_usb_serial_number();
 	USART_init();
+	AB_init();
 
 	//PORTCFG.CLKEVOUT = PORTCFG_CLKOUTSEL_CLK1X_gc | PORTCFG_CLKOUT_PC7_gc;
 	//PORTC.DIRSET = PIN7_bm;
@@ -75,6 +77,9 @@ int main(void)
 
 		RPT_logical_inputs_refresh();
 		//AF_apply();
+
+		if (cfg->aux_mode == AUX_MODE_BUTTONS)
+			AB_send_report();
 		
 		//if (HID_enabled && !VEN_enabled)
 			HID_send_report();

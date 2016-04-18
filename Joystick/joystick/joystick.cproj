@@ -327,6 +327,12 @@
     <Compile Include="autofire.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="aux_buttons.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="aux_buttons.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="config.c">
       <SubType>compile</SubType>
     </Compile>

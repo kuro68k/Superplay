@@ -28,14 +28,14 @@ typedef struct
 
 
 // udlr_sscc
-#define JOY_UP_bm				(1<<0)
-#define JOY_DOWN_bm				(1<<1)
-#define JOY_LEFT_bm				(1<<2)
-#define JOY_RIGHT_bm			(1<<3)
-#define BUTTON_START_bm			(1<<4)
-#define BUTTON_SELECT_bm		(1<<5)
-#define BUTTON_COIN_bm			(1<<6)
-#define BUTTON_CONTROL_bm		(1<<7)
+#define JOY_UP_bm					(1<<0)
+#define JOY_DOWN_bm					(1<<1)
+#define JOY_LEFT_bm					(1<<2)
+#define JOY_RIGHT_bm				(1<<3)
+#define BUTTON_START_bm				(1<<4)
+#define BUTTON_SELECT_bm			(1<<5)
+#define BUTTON_COIN_bm				(1<<6)
+#define BUTTON_CONTROL_bm			(1<<7)
 
 
 // rot_mode
