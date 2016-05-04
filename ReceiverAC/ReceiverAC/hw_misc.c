@@ -7,6 +7,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include "kbus.h"
 #include "hw_misc.h"
 
 /**************************************************************************************************
@@ -16,47 +17,27 @@ void HW_init(void)
 {
 	SLEEP.CTRL	= SLEEP_SMODE_IDLE_gc | SLEEP_SEN_bm;
 
-	// set 32MHz CPU clock
+	// set 16MHz CPU clock
 	OSC.XOSCCTRL = OSC_FRQRANGE_12TO16_gc | OSC_XOSCSEL_XTAL_16KCLK_gc;
-	OSC.PLLCTRL = OSC_PLLSRC_XOSC_gc | 2;			// 16 -> 32MHz
 	OSC.CTRL |= OSC_XOSCEN_bm;
 	while(!(OSC.STATUS & OSC_XOSCRDY_bm));
-	OSC.CTRL |= OSC_PLLEN_bm;
-	while(!(OSC.STATUS & OSC_PLLRDY_bm));
 	HW_CCPWrite(&CLK.PSCTRL, CLK_PSADIV_1_gc | CLK_PSBCDIV_1_1_gc);
-	HW_CCPWrite(&CLK.CTRL, CLK_SCLKSEL_PLL_gc);
-	OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;		// disable other clocks
+	HW_CCPWrite(&CLK.CTRL, CLK_SCLKSEL_XOSC_gc);
+	OSC.CTRL = OSC_XOSCEN_bm;		// disable other clocks
 
-	// PORT A, Saturn
-	PORTA.OUT = 0;
-	PORTA.DIR = PIN2_bm;
-	
-	// Port B, Dreamcast
-	PORTB.OUT = 0;
-	PORTB.DIR = 0;
-	ENABLE_PULLUP(PORTB.PIN0CTRL);
-	ENABLE_PULLUP(PORTB.PIN1CTRL);
-	ENABLE_PULLUP(PORTB.PIN2CTRL);
-	ENABLE_PULLUP(PORTB.PIN3CTRL);
-	
-	// Port C, I2C, Playstation 1/2
-	PORTC.DIR = PIN0_bm | PIN1_bm | PSX_ACK_PIN_bm | PSX_DAT_PIN_bm;
-	ENABLE_PULLUP(PORTC.PIN2CTRL);		// ATT
-	ENABLE_PULLUP(PORTC.PIN4CTRL);		// ATT
-	ENABLE_PULLUP(PORTC.PIN5CTRL);		// CMD
-	ENABLE_PULLUP(PORTC.PIN7CTRL);		// CLK
-	PSX_SPI.INTCTRL = 0;
-	PSX_SPI.CTRL = SPI_ENABLE_bm | SPI_MODE_0_gc;
-	
-	// PORT D, LED, button, USB
-	PORTD.OUT = 0;
-	PORTD.DIR = LED_RED_PIN_bm | LED_GREEN_PIN_bm | PIN2_bm | LED_BLUE_PIN_bm | PIN4_bm;
-	ENABLE_PULLUP(PORTD.PIN6CTRL);		// USB D-
-	ENABLE_PULLUP(PORTD.PIN7CTRL);		// USB D+
-	
-	// PORT E, KBUS
-	PORTE.OUT = 0;
-	PORTE.DIR = PIN0_bm | PIN1_bm;
+	// PORTA, unused
+	PORTA.OUT = 0x00;
+	PORTA.DIR = 0xFF;
+
+	// PORT C, host
+	PORTC.OUT = 0x00;
+	PORTC.DIR = 0xFF;
+
+	// PORT D, LED, KBUS
+	PORTD.OUT = LED_PIN_bm | KBUS_TX_PIN_bm;
+	PORTD.DIR = ~KBUS_RX_PIN_bm;
+	ENABLE_PULLUP(PORTD.PIN6CTRL);		// KBUS RX
+	ENABLE_PULLUP(PORTD.PIN7CTRL);		// KBUS TX
 	
 	// PORT R, xtal
 	PORTR.OUT = 0;
@@ -64,9 +45,9 @@ void HW_init(void)
 	
 	
 	// DMA
-	DMA.CTRL = DMA_RESET_bm;
+	EDMA.CTRL = EDMA_RESET_bm;
 	NOP();
-	DMA.CTRL = DMA_ENABLE_bm | DMA_DBUFMODE_DISABLED_gc | DMA_PRIMODE_CH0123_gc;
+	EDMA.CTRL = EDMA_ENABLE_bm | EDMA_CHMODE_PER0123_gc | EDMA_PRIMODE_CH0123_gc;
 }
 
 /**************************************************************************************************
