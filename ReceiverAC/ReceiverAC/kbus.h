@@ -2,7 +2,7 @@
  * kbus.h
  *
  * Created: 28/05/2015 11:37:47
- *  Author: MoJo
+ *  Author: kuro68k
  */ 
 
 
@@ -35,6 +35,7 @@
 #define KBUS_DMA_TRIGGER_SRC	EDMA_CH_TRIGSRC_USARTC0_RXC_gc
 
 #define KBUS_EVENT_CTRL			EVSYS.CH0CTRL
+#define KBUS_EVENT_STROBE		EVSYS.STROBE
 #define KBUS_EVENT_MUX			EVSYS_CHMUX_PORTD_PIN6_gc
 #define KBUS_EVSEL				TC45_EVSEL_CH0_gc
 
@@ -51,7 +52,7 @@ typedef struct
 } KBUS_PACKET_t;
 
 
-#define CMD_LOOPBACK					0x50
+#define CMD_ECHO						0x50
 #define CMD_READ_STRING					0x51
 #define CMD_READ_VID_PID				0x52
 #define CMD_READ_DESCRIPTOR				0x53

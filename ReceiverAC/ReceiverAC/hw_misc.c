@@ -2,7 +2,7 @@
  * hw_misc.c
  *
  * Created: 27/03/2015 15:19:04
- *  Author: MoJo
+ *  Author: kuro68k
  */ 
 
 #include <avr/io.h>
@@ -25,19 +25,18 @@ void HW_init(void)
 	HW_CCPWrite(&CLK.CTRL, CLK_SCLKSEL_XOSC_gc);
 	OSC.CTRL = OSC_XOSCEN_bm;		// disable other clocks
 
-	// PORTA, unused
+	// PORTA, open drain outputs
 	PORTA.OUT = 0x00;
 	PORTA.DIR = 0xFF;
 
-	// PORT C, host
+	// PORT C, mode input
 	PORTC.OUT = 0x00;
 	PORTC.DIR = 0xFF;
 
-	// PORT D, LED, KBUS
+	// PORT D, LED, direction, button, KBUS
 	PORTD.OUT = LED_PIN_bm | KBUS_TX_PIN_bm;
 	PORTD.DIR = ~KBUS_RX_PIN_bm;
 	ENABLE_PULLUP(PORTD.PIN6CTRL);		// KBUS RX
-	ENABLE_PULLUP(PORTD.PIN7CTRL);		// KBUS TX
 	
 	// PORT R, xtal
 	PORTR.OUT = 0;

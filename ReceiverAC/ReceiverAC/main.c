@@ -2,7 +2,7 @@
  * ReceiverAC.c
  *
  * Created: 04/05/2016 15:10:55
- * Author : paul.qureshi
+ * Author : kuro68k
  *
  * KBUS receiver for Atari/Commodore and other simple directly connected controllers
  */ 

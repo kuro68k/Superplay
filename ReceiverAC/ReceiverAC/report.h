@@ -2,7 +2,7 @@
  * report.h
  *
  * Created: 02/03/2015 15:37:23
- *  Author: MoJo
+ *  Author: kuro68k
  */ 
 
 

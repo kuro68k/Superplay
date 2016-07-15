@@ -2,7 +2,7 @@
  * hw_misc.h
  *
  * Created: 27/03/2015 15:21:00
- *  Author: MoJo
+ *  Author: kuro68k
  */ 
 
 
@@ -15,7 +15,7 @@
 */
 
 #define LED_PORT				PORTD
-#define LED_PIN_bm				PIN0_bm
+#define LED_PIN_bm				PIN4_bm
 
 
 /**************************************************************************************************

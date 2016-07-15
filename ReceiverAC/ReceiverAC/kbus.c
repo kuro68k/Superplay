@@ -2,17 +2,26 @@
  * kbus.c
  *
  * Created: 28/05/2015 11:37:30
- *  Author: MoJo
+ *  Author: kuro68k
  */ 
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 #include <string.h>
+#include <stdbool.h>
 #include "hw_misc.h"
 #include "report.h"
 #include "atari.h"
 #include "kbus.h"
 
+// main state machine
+enum
+{
+	STATE_POLLING,
+	STATE_QUERY,
+	STATE_UPDATE
+};
 
 volatile KBUS_PACKET_t	input_buffer;
 //volatile uint8_t		input_write_ptr_AT = 0;
@@ -23,7 +32,7 @@ KBUS_PACKET_t			packet;
 
 
 /**************************************************************************************************
-* Reset DMA to start of input buffer
+* Reset DMA to start of input buffer. DMA is NOT enabled.
 */
 void kbus_reset_dma(void)
 {
@@ -36,7 +45,7 @@ void kbus_reset_dma(void)
 }
 
 /**************************************************************************************************
-* Set up K-BUS interface
+* Set up K-BUS interface. RX DMA configured but not enabled.
 */
 void KBUS_init(void)
 {
@@ -78,6 +87,16 @@ void KBUS_init(void)
 }
 
 /**************************************************************************************************
+* Restart timeout timer
+*/
+inline void kbus_restart_timeout(void)
+{
+	KBUS_TC.CNT = KBUS_TC.CCA + 1;	// reset to just past end of packet timeout
+									// RX pin events will reset to zero if a new packet comes in
+	timeout_SIG = 0;
+}
+
+/**************************************************************************************************
 * Handle timer overflows (controller not sending reports)
 */
 ISR(KBUS_TC_OVF_vect)
@@ -103,6 +122,54 @@ void kbus_send(const void *buffer, uint8_t length)
 		while ((KBUS_USART.STATUS & USART_DREIF_bm) == 0);
 		KBUS_USART.DATA = *(uint8_t *)buffer++;
 	}
+
+	kbus_reset_dma();
+	KBUS_DMA_CH.CTRLA |= EDMA_CH_ENABLE_bm;
+	kbus_restart_timeout();
+	packet_ready_SIG = 0;
+}
+
+/**************************************************************************************************
+* Find a KBUS device to talk to
+*/
+void kbus_find_device(void)
+{
+	for(;;)
+	{
+		// send sync signal
+		while ((KBUS_USART.STATUS & USART_DREIF_bm) == 0);
+		KBUS_USART.DATA = 0xFF;
+
+		// check for responses from device
+		if (KBUS_USART.STATUS & USART_RXCIF_bm)
+		{
+			if (KBUS_USART.DATA == 0x0F)	// OK response
+				break;
+		}
+	}
+
+	// wait for device to stop sending
+	do 
+	{
+		KBUS_USART.DATA;	// clear buffer and RX flag
+		_delay_ms(10);		// KBUS must be quiet for at least 10ms
+	} while ((KBUS_USART.STATUS & USART_RXCIF_bm) == 0);
+}
+
+/**************************************************************************************************
+* Validate the packet in the input buffer
+*/
+bool kbus_validate_packet(uint8_t command)
+{
+	if (input_buffer.length > 63)
+		return false;
+	if (*(uint16_t *)&input_buffer.data[packet.length] != HW_crc16(&input_buffer.data, 2 + input_buffer.length))
+		return false;
+
+	if (input_buffer.command != (command | RESPONSE_BIT_bm))
+		return false;
+
+	return true;
 }
 
 /**************************************************************************************************
@@ -110,6 +177,116 @@ void kbus_send(const void *buffer, uint8_t length)
 */
 void KBUS_run(void)
 {
+	uint8_t retries = 0;
+	uint8_t	state = STATE_POLLING;
+	
+	AC_init();
+
+	for(;;)
+	{
+		switch(state)
+		{
+			case STATE_POLLING:
+				kbus_find_device();
+				state = STATE_QUERY;
+				retries = 0;
+				break;
+
+			case STATE_QUERY:
+			{
+				// do an echo test
+				KBUS_PACKET_t cmd;
+				cmd.command = CMD_START_REPORTING;
+				cmd.length = 63;
+				for (uint8_t i = 0; i < 63; i++)
+					cmd.data[i] = i;
+				*(uint16_t *)&cmd.data[64] = HW_crc16(&cmd, 2);
+				kbus_send(&cmd, 4);
+			
+				// get response
+				bool fail = false;
+				for(;;)
+				{
+					if (timeout_SIG)
+					{
+						fail = true;
+						break;
+					}
+
+					if (packet_ready_SIG)
+					{
+						if (!kbus_validate_packet(cmd.command) ||
+							memcmp(&input_buffer.data, &cmd.data, 63) != 0)
+						{
+							fail = true;
+						}
+						break;
+					}
+				}
+
+				if (fail)
+				{
+					retries++;
+					if (retries > 1)
+						state = STATE_POLLING;
+					_delay_ms(1);
+				}
+				else
+					state = STATE_UPDATE;
+				break;
+			}
+
+			case STATE_UPDATE:
+			{
+				// ask for a report
+				KBUS_PACKET_t cmd;
+				cmd.command = CMD_START_REPORTING;
+				cmd.length = 63;
+				for (uint8_t i = 0; i < 63; i++)
+					cmd.data[i] = i;
+				*(uint16_t *)&cmd.data[64] = HW_crc16(&cmd, 2);
+				kbus_send(&cmd, 4);
+
+				// get response
+				bool fail = false;
+				for(;;)
+				{
+					if (timeout_SIG)
+					{
+						fail = true;
+						break;
+					}
+
+					if (packet_ready_SIG)
+					{
+						if (!kbus_validate_packet(cmd.command) ||
+							packet.length != sizeof(REPORT_t))
+						{
+							fail = true;
+						}
+						else
+							AC_update((REPORT_t *)&input_buffer.data);
+						break;
+					}
+				}
+
+				if (fail)
+				{
+					retries++;
+					if (retries > 1)
+						state = STATE_POLLING;
+					_delay_ms(1);
+				}
+				break;
+			}
+
+			default:
+				state = STATE_POLLING;
+				break;
+		}
+	}
+
+/*
 	for(;;)
 	{
 		WDR();
@@ -128,6 +305,7 @@ void KBUS_run(void)
 			
 			kbus_reset_dma();
 			KBUS_DMA_CH.CTRLA |= EDMA_CH_ENABLE_bm;
+			kbus_restart_timeout();
 		}
 		
 		// packet arrived
@@ -158,6 +336,9 @@ void KBUS_run(void)
 				// handle packet
 				AC_update((REPORT_t *)&packet.data);
 			}
+
+			kbus_restart_timeout();
 		}
 	}
+*/
 }
