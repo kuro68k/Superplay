@@ -55,7 +55,7 @@ Commands are as follows:
 | READ_STRING | 0x51 | Data byte indicates string ID<br>`0 - DEVICE_NAME`<br>`1 - MANUFACTURER`<br>`2 - SERIAL_NUMBER` |
 | READ_VID_PID | 0x52 | Read 16 bit vendor/product IDs |
 | | |
-| START_REPORTING | 0x54 | Start sending continuous report packets |
+| START_REPORTING | 0x54 | Start sending continuous report packets at 1ms intervals |
 | STOP_REPORTING | 0x55 | Stop sending continuous report packets |
 | | |
 | READ_REPORT | 0x5A | Request sending a report |
