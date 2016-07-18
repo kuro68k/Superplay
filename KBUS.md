@@ -80,6 +80,6 @@ Receivers can ignore inputs they don't need / understand.
 
 Receivers often need to poll KBUS ports to see if a device is attached. Polling also gives devices an opportunity to calibrate internal oscillators/UARTs and signal to the receiver that they are ready.
 
-Polling starts by the receiver sending 0xFF bytes continuiously. 0xFF produces just one low pulse per byte that is 1uS wide. The receiver can measure the width of this bit for calibration / auto-bauding. When ready, the device should respond with 0x0F, which again provides useful timing data and an opportunity to test the receiver's UART. The device should keep transmitting until the receiver stops sending 0xFF bytes.
+Polling starts by the receiver sending 64 0xFF bytes. 0xFF produces just one low pulse per byte that is 1uS wide. The receiver can measure the width of this bit for oscillator calibration / auto-bauding. When ready, the device should respond with 0x0F, which again provides useful timing data and an opportunity to test the receiver's UART. The device should keep transmitting until the receiver stops sending 0xFF bytes for at least 10ms. If the receiver does not see a response for 10ms, it can send another burst of 64 0xFF bytes and repeat the cycle indefinitely.
 
 Once both receiver and device are quiet for at least 10ms, the receiver should send an ECHO command to test the link, followed optionally by polling IDs and strings, before starting to request reports.
