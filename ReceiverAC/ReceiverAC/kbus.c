@@ -3,7 +3,7 @@
  *
  * Created: 28/05/2015 11:37:30
  *  Author: kuro68k
- */ 
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -38,7 +38,7 @@ void kbus_reset_dma(void)
 {
 	KBUS_DMA_CH.CTRLA &= ~EDMA_CH_ENABLE_bm;
 	while(KBUS_DMA_CH.CTRLA & EDMA_CH_ENABLE_bm);
-	
+
 	KBUS_DMA_CH.TRFCNTL = sizeof(KBUS_PACKET_t);
 	KBUS_DMA_CH.ADDRL = (( (uint16_t)&input_buffer) >> 0) & 0xFF;
 	KBUS_DMA_CH.ADDRH = (( (uint16_t)&input_buffer) >> 8) & 0xFF;
@@ -53,7 +53,7 @@ void KBUS_init(void)
 	KBUS_PORT.DIRCLR = KBUS_RX_PIN_bm;
 	KBUS_PORT.DIRSET = KBUS_TX_PIN_bm;
 	KBUS_PORT.KBUS_RX_PINCTRL = (KBUS_PORT.KBUS_RX_PINCTRL & ~PORT_ISC_gm) | PORT_ISC_FALLING_gc;	// event triggered on falling edge
-	
+
 	KBUS_USART.CTRLA = 0;
 	KBUS_USART.BAUDCTRLB = (uint8_t)((uint8_t)BSCALE << 4) | ((uint16_t)BSEL >> 8);
 	KBUS_USART.BAUDCTRLA = (uint8_t)BSEL;
@@ -68,7 +68,7 @@ void KBUS_init(void)
 	KBUS_DMA_CH.ADDRCTRL = EDMA_CH_RELOAD_BLOCK_gc | EDMA_CH_DIR_INC_gc;
 	KBUS_DMA_CH.TRIGSRC = KBUS_DMA_TRIGGER_SRC;
 	kbus_reset_dma();
-	
+
 	// incoming character detection event
 	KBUS_EVENT_CTRL = KBUS_EVENT_MUX;
 
@@ -149,7 +149,7 @@ void kbus_find_device(void)
 	}
 
 	// wait for device to stop sending
-	do 
+	do
 	{
 		KBUS_USART.DATA;	// clear buffer and RX flag
 		_delay_ms(10);		// KBUS must be quiet for at least 10ms
@@ -179,7 +179,7 @@ void KBUS_run(void)
 {
 	uint8_t retries = 0;
 	uint8_t	state = STATE_POLLING;
-	
+
 	AC_init();
 
 	for(;;)
@@ -202,7 +202,7 @@ void KBUS_run(void)
 					cmd.data[i] = i;
 				*(uint16_t *)&cmd.data[64] = HW_crc16(&cmd, 2);
 				kbus_send(&cmd, 4);
-			
+
 				// get response
 				bool fail = false;
 				for(;;)
@@ -290,7 +290,7 @@ void KBUS_run(void)
 	for(;;)
 	{
 		WDR();
-		
+
 		// no response from controller before timeout
 		if (timeout_SIG)
 		{
@@ -302,26 +302,26 @@ void KBUS_run(void)
 			cmd.length = 0;
 			*(uint16_t *)&cmd.data[0] = HW_crc16(&cmd, 2);
 			kbus_send(&cmd, 4);
-			
+
 			kbus_reset_dma();
 			KBUS_DMA_CH.CTRLA |= EDMA_CH_ENABLE_bm;
 			kbus_restart_timeout();
 		}
-		
+
 		// packet arrived
 		if (packet_ready_SIG)
 		{
 			packet_ready_SIG = 0;
-			
+
 			// make sure DMA isn't still writing to the buffer
 			KBUS_DMA_CH.CTRLA &= ~EDMA_CH_ENABLE_bm;
 			while(KBUS_DMA_CH.CTRLA & EDMA_CH_ENABLE_bm);
-			
+
 			// copy buffer and reset DMA for next packet
 			memcpy(&packet, (void *)&input_buffer, sizeof(packet));
 			kbus_reset_dma();
 			KBUS_DMA_CH.CTRLA |= EDMA_CH_ENABLE_bm;
-			
+
 			// validate packet
 			if (packet.length > 63)
 				continue;
@@ -332,7 +332,7 @@ void KBUS_run(void)
 			{
 				if (packet.length != sizeof(REPORT_t))
 					continue;
-				
+
 				// handle packet
 				AC_update((REPORT_t *)&packet.data);
 			}

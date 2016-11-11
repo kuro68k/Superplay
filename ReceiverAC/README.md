@@ -11,8 +11,8 @@ KBUS Receiever for:
 - Sega Master System
 - Sega Megadrive (Genesis)
 
-Any other simple switch/multiplex based system can also be supported, with the caveat that de-multiplexing is not as fast as real logic. Sega specify a 2uS delay after changing the multiplexed outputs, which this receiver exceeds.
+Any other simple switch/multiplex based system can also be supported, with the caveat that de-multiplexing is not as fast as real logic. Sega specify a 2uS delay from changing the multiplex selection to reading the outputs.
 
-The generic XMEGA E5 receiver hardware is used. An external 5V power input is provided because many computers and consoles can't supply the 250mA that KBUS requires. Of course not all KBUS devices need it, so you might be able to get away without it.
+The generic XMEGA E5 receiver hardware is used. KBUS specifies 250mA @ 5V. Some systems, such as the Amiga, can't provide this from the joystick port so must get 5V from elsewhere (e.g. the floppy port). Of course not all KBUS devices need 250mA, so you may get away without it.
 
 Lag is sub 1ms ("true zero", or at least 10x better than USB).

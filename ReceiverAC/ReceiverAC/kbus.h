@@ -3,7 +3,7 @@
  *
  * Created: 28/05/2015 11:37:47
  *  Author: kuro68k
- */ 
+ */
 
 
 #ifndef KBUS_H_
@@ -20,9 +20,9 @@
 
 
 #define KBUS_PORT				PORTD
-#define KBUS_RX_PIN_bm			PIN6_bm
-#define KBUS_TX_PIN_bm			PIN7_bm
-#define KBUS_RX_PINCTRL			PIN6CTRL
+#define KBUS_RX_PIN_bm			PIN2_bm
+#define KBUS_TX_PIN_bm			PIN3_bm
+#define KBUS_RX_PINCTRL			PIN2CTRL
 
 #define KBUS_USART				USARTD0
 #define KBUS_USART_RXC_vect		USARTD0_RXC_vect
