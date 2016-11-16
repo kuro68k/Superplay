@@ -13,6 +13,13 @@
   )
 
   (page A4)
+  (title_block
+    (title "KBUS Receiver")
+    (date 2016-11-16)
+    (comment 1 "with optional voltage boost")
+    (comment 2 "Generic KBUS receiver")
+  )
+
   (layers
     (0 F.Cu signal)
     (1 GND.Cu signal hide)
