@@ -3,7 +3,7 @@
   (general
     (links 121)
     (no_connects 0)
-    (area 58.350001 59.5 128.667914 93.8766)
+    (area 60.609114 61.7734 123.390886 94.0766)
     (thickness 1.6)
     (drawings 47)
     (tracks 709)
@@ -100,9 +100,9 @@
       (subtractmaskfromsilk false)
       (outputformat 1)
       (mirror false)
-      (drillshape 1)
+      (drillshape 0)
       (scaleselection 1)
-      (outputdirectory ""))
+      (outputdirectory svg/))
   )
 
   (net 0 "")
