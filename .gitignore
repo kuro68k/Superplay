@@ -241,3 +241,4 @@ Joystick/joystick/descriptor.hid
 Joystick/joystick/descriptor_feature.hid
 *.bak
 *.kicad_pcb-bak
+Hardware/Receiver/ReceiverE5.xml

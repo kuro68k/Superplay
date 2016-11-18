@@ -184,6 +184,7 @@ F 0 "J1" V 650 1600 50  0000 C CNN
 F 1 "KBUS" V 650 1400 50  0000 C CNN
 F 2 "kuro:USB_A_multicomp" V 900 1400 50  0001 C CNN
 F 3 "" V 900 1400 50  0000 C CNN
+F 4 "Type A, TH, FCI 87520" V 950 1500 60  0001 C CNN "BOM_Footprint"
 	1    950  1500
 	0    -1   1    0   
 $EndComp
@@ -518,6 +519,7 @@ F 0 "J3" H 3850 7200 50  0000 C CNN
 F 1 "CONN_01X08" V 3950 6750 50  0000 C CNN
 F 2 "Pin_Headers:Pin_Header_Straight_1x08" H 3850 6750 50  0001 C CNN
 F 3 "" H 3850 6750 50  0000 C CNN
+F 4 "no part" H 3850 6750 60  0001 C CNN "BOM_Footprint"
 	1    3850 6750
 	1    0    0    -1  
 $EndComp
@@ -545,6 +547,7 @@ F 0 "J4" H 7600 4350 50  0000 C CNN
 F 1 "CONN_01X06" V 7700 4000 50  0000 C CNN
 F 2 "Pin_Headers:Pin_Header_Straight_1x06" H 7600 4000 50  0001 C CNN
 F 3 "" H 7600 4000 50  0000 C CNN
+F 4 "no part" H 7600 4000 60  0001 C CNN "BOM_Footprint"
 	1    7600 4000
 	1    0    0    -1  
 $EndComp
@@ -556,6 +559,7 @@ F 0 "J5" H 7600 5300 50  0000 C CNN
 F 1 "CONN_01X06" V 7700 4950 50  0000 C CNN
 F 2 "Pin_Headers:Pin_Header_Straight_1x06" H 7600 4950 50  0001 C CNN
 F 3 "" H 7600 4950 50  0000 C CNN
+F 4 "no part" H 7600 4950 60  0001 C CNN "BOM_Footprint"
 	1    7600 4950
 	1    0    0    -1  
 $EndComp
@@ -589,6 +593,7 @@ F 0 "J6" H 10650 4250 50  0000 C CNN
 F 1 "CONN_01X04" V 10750 4000 50  0000 C CNN
 F 2 "Pin_Headers:Pin_Header_Straight_1x04" H 10650 4000 50  0001 C CNN
 F 3 "" H 10650 4000 50  0000 C CNN
+F 4 "no part" H 10650 4000 60  0001 C CNN "BOM_Footprint"
 	1    10650 4000
 	1    0    0    -1  
 $EndComp
@@ -600,6 +605,7 @@ F 0 "J7" H 10650 5950 50  0000 C CNN
 F 1 "CONN_01X04" V 10750 5700 50  0000 C CNN
 F 2 "Pin_Headers:Pin_Header_Straight_1x04" H 10650 5700 50  0001 C CNN
 F 3 "" H 10650 5700 50  0000 C CNN
+F 4 "no part" H 10650 5700 60  0001 C CNN "BOM_Footprint"
 	1    10650 5700
 	1    0    0    -1  
 $EndComp
