@@ -163,16 +163,16 @@ void USART_init(void)
 		tc->CTRLA = 0;
 		tc->CTRLB = 0;
 		tc->CTRLC = 0;
-		tc->CTRLD = TC_EVACT_RESTART_gc;	// reset counter to zero when RX pin changes
+		tc->CTRLD = TC_TC0_EVACT_RESTART_gc;	// reset counter to zero when RX pin changes
 		tc->CTRLE = 0;
-		tc->INTCTRLA = TC_OVFINTLVL_HI_gc;	// avoid spurious end of frame detection
-		tc->INTCTRLB = TC_CCAINTLVL_LO_gc;	// detect end of frame
+		tc->INTCTRLA = TC_TC0_OVFINTLVL_HI_gc;	// avoid spurious end of frame detection
+		tc->INTCTRLB = TC_TC0_CCAINTLVL_LO_gc;	// detect end of frame
 		tc->INTCTRLB = 0;
-		tc->INTFLAGS = 0xFF;				// clear all flags
+		tc->INTFLAGS = 0xFF;					// clear all flags
 		tc->PER = 0xFFFF;
-		tc->CCA = USART_TC_CCA;				// end of frame detection
-		tc->CNT = USART_TC_CCA+1;			// avoid triggering after starting timer
-		tc->CTRLA = USART_TC_DIV;			// start timer
+		tc->CCA = USART_TC_CCA;					// end of frame detection
+		tc->CNT = USART_TC_CCA+1;				// avoid triggering after starting timer
+		tc->CTRLA = USART_TC_DIV;				// start timer
 		
 		tc = &AUX_RX_TC;
 		if (cfg->aux_mode != AUX_MODE_KBUS)
@@ -181,13 +181,13 @@ void USART_init(void)
 	
 	EVSYS.CH0CTRL = 0;
 	EVSYS.CH0MUX = MAIN_RX_EVENT_CHMUX;
-	MAIN_RX_TC.CTRLD |= TC_EVSEL_CH0_gc;
+	MAIN_RX_TC.CTRLD |= TC_TC0_EVSEL_CH0_gc;
 
 	if (cfg->aux_mode == AUX_MODE_KBUS)
 	{
 		EVSYS.CH1CTRL = 0;
 		EVSYS.CH1MUX = AUX_RX_EVENT_CHMUX;
-		AUX_RX_TC.CTRLD |= TC_EVSEL_CH1_gc;
+		AUX_RX_TC.CTRLD |= TC_TC0_EVSEL_CH1_gc;
 	}
 }
 

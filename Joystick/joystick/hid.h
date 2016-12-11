@@ -23,7 +23,7 @@ typedef struct
 #define HID_ROTATE_RIGHT_BUTTON_bm		(1<<5)
 
 #define HID_TC							TCF0
-#define HID_TC_CLKSEL					TC_CLKSEL_DIV64_gc
+#define HID_TC_CLKSEL					TC_TC0_CLKSEL_DIV64_gc
 #define HID_TC_PER						0x1387	// 20ms
 
 

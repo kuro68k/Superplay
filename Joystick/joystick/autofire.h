@@ -19,11 +19,11 @@
 
 // 30Hz
 #define AF1_PER				0x208C
-#define AF1_CLKSEL			TC_CLKSEL_DIV64_gc
+#define AF1_CLKSEL			TC_TC0_CLKSEL_DIV64_gc
 
 // 15Hz
 #define AF2_PER				0x411A
-#define AF2_CLKSEL			TC_CLKSEL_DIV64_gc
+#define AF2_CLKSEL			TC_TC0_CLKSEL_DIV64_gc
 
 
 #define AF_CLKMUL			8
