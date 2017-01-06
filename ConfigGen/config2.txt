@@ -1,0 +1,129 @@
+; example config
+
+begin SETTINGS
+	af_high_hz = 15
+	af_high_duty_pc = 50
+	af_low_hz = 5
+	af_low_duty_pc = 50
+end
+
+; PC Engine translation
+begin PCE
+	up = up
+	down = down
+	left = left
+	right = right
+	button1 = button2		; PC Engine buttons are numbered right-to-left
+	button2 = button1
+	button1 = button5
+	button2 = button4
+
+	select = button3
+	select = button6
+	start = start
+end
+
+begin PCE8
+	up = up
+	down = down
+	left = left
+	right = right
+	button1 = button1
+	button2 = button2
+	button3 = button3
+	button4 = button4
+	button5 = button5
+	button6 = button6
+	select = meta + _up
+	start = meta + down
+end
+
+; default 8 button mapping
+begin MAPPING1
+	up		= _up
+	down	= _down
+	left	= _left
+	right	= _right
+
+	button1 = _b1
+	button2 = _b2
+	button3 = _b3
+	button4 = _b4
+	button5 = _b5
+	button6 = _b6
+	button7 = _b7
+	button8 = _b8
+	start = _start
+
+	meta = _b8
+	start = meta + _down
+	select = meta + _up
+	
+	af1_high = a1
+	af2_high = a2
+	af3_high = a3
+	af4_high = a4
+	af5_high = a5
+	af6_high = a6
+	af7_high = a7
+	af8_high = a8
+
+	af1_low = a9
+	af2_low = a10
+	af3_low = a11
+	af4_low = a12
+	af5_low = a13
+	af6_low = a14
+	af7_low = a15
+	af8_low = a16
+
+	select_mapping1 = r1
+	select_mapping2 = r2
+	select_mapping3 = r3
+	select_mapping4 = r4
+end
+
+; 4 button mapping
+begin MAPPING1
+	up		= _up
+	down	= _down
+	left	= _left
+	right	= _right
+
+	button1 = _b1
+	button2 = _b2
+	button3 = _b3
+	button4 = _b4
+	button1 = _b5
+	button2 = _b6
+	button3 = _b7
+	button4 = _b8
+	start = _start
+
+	meta = _b8
+	start = meta + _down
+	select = meta + _up
+	
+	af1_high = a1
+	af2_high = a2
+	af3_high = a3
+	af4_high = a4
+	af5_high = a5
+	af6_high = a6
+	af7_high = a7
+	af8_high = a8
+
+	af1_low = a9
+	af2_low = a10
+	af3_low = a11
+	af4_low = a12
+	af5_low = a13
+	af6_low = a14
+	af7_low = a15
+	af8_low = a16
+
+	select_mapping1 = r1
+	select_mapping2 = r2
+	select_mapping3 = r3
+	select_mapping4 = r4
+end

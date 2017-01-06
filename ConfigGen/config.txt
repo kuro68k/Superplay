@@ -1,0 +1,85 @@
+; example config
+
+begin SETTINGS
+	af_high_hz = 15
+	af_high_duty_pc = 50
+	af_low_hz = 5
+	af_low_duty_pc = 50
+
+	led1 = _a9
+	led2 = _a10
+	led3 = _a11
+	led_display_mapping = 1				; 0 = off, 1 = position, 2 = binary
+	led_display_timeout_s = 2
+
+	meta_af_toggle = 0b111				; button bitmap
+	meta_af_select_with_stick = 1
+	meta_mapping_select_with_stick = 1
+end
+
+; PC Engine translation
+begin PCE
+	up = up
+	down = down
+	left = left
+	right = right
+	button1 = button2		; PC Engine buttons are numbered right-to-left
+	button2 = button1
+	select = button3
+	run = start
+end
+
+; default button mapping
+begin MAPPING1
+	up		= _up
+	down	= _down
+	left	= _left
+	right	= _right
+
+	button1 = _b1
+	button2 = _b2
+	button3 = _b3
+	start = _start
+
+	meta = _start
+
+	led1 = af_high1
+	led2 = af_high2
+	led3 = af_high3
+end
+
+begin MAPPING2
+	up		= _up
+	down	= _down
+	left	= _left
+	right	= _right
+
+	button1 = _b3
+	button2 = _b2
+	button3 = _b1
+	start = _start
+
+	meta = _start
+
+	led1 = af_high1
+	led2 = af_high2
+	led3 = af_high3
+end
+
+begin MAPPING3
+	up		= _up
+	down	= _down
+	left	= _left
+	right	= _right
+
+	button1 = _b1
+	button1 = _b2
+	button1 = _b3
+	button1 = _b4
+
+	meta = _start
+
+	led1 = af_high1
+	led2 = af_high2
+	led3 = af_high3
+end

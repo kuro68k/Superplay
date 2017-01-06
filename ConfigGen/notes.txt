@@ -1,0 +1,2 @@
+Autofire affects _b inputs, not logical buttons. This allows physical buttons with and without AF for each logical button.
+
