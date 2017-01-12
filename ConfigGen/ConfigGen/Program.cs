@@ -27,7 +27,7 @@ namespace ConfigGen
 
 			foreach (Config cfg in config_list)
 			{
-				if (cfg.identifier == "SETTINGS")
+				if (cfg.identifier == "OUTPUTS")
 				{
 					byte[] buffer = cfg.CompileToBinary();
 					Console.WriteLine(cfg.identifier + " = " + buffer.Length + " bytes");

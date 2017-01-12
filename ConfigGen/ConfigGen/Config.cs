@@ -46,6 +46,7 @@ namespace ConfigGen
 		// compile parameters to binary format
 		public byte[] CompileToBinary()
 		{
+			// fill out all non-custom fields
 			FieldInfo[] fieldinfo = Type.GetType(GetType().FullName + "+BinaryFormat").GetFields(BindingFlags.Instance | BindingFlags.Public);
 			if (fieldinfo == null)
 				throw new Exception("Config " + identifier + " does not have a BinaryFormat struct.");
@@ -54,11 +55,15 @@ namespace ConfigGen
 			foreach (FieldInfo field in fieldinfo)
 			{
 				string field_id = field.Name;
+
 				if (field_id == "_config_length")
 				{
 					field.SetValue(binary_struct, size);
 					continue;
 				}
+
+				if (field_id.StartsWith("_"))	// custom field
+					continue;
 
 				if (field.FieldType.IsArray)
 				{
@@ -79,6 +84,12 @@ namespace ConfigGen
 					throw new Exception("Struct field with no matching parameter (" + field_id + ")");
 				field.SetValue(binary_struct, Convert.ChangeType(param.value, field.FieldType));
 			}
+
+			// custom fields
+			Type type = GetType();
+			MethodInfo method = type.GetMethod("CustomBinaryFormat");
+			if (method != null)
+				method.Invoke(this, null);
 
 			byte[] buffer = new byte[size];
 			IntPtr ptr = Marshal.AllocHGlobal(size);

@@ -67,29 +67,5 @@ namespace ConfigGen
 			public sbyte rotary_enable_pov;
 			public sbyte rotary_enable_buttons;
 		}
-
-		//public byte[] CompileToBinary()
-		//{
-		//	ConfigStruct cfg = new ConfigStruct();
-
-		//	foreach (var field in typeof(ConfigStruct).GetFields(BindingFlags.Instance | BindingFlags.Public))
-		//	{
-		//		string identifier = field.Name;
-		//		ConfigParameter param = FindParameterByIdentifier(identifier);
-		//		if (param == null)
-		//			throw new Exception("Struct field with no matching parameter (" + identifier + ")");
-		//		field.SetValue(null, param.value);
-		//	}
-
-		//	int size = Marshal.SizeOf(cfg);
-		//	cfg._config_length = (UInt16)size;
-		//	byte[] buffer = new byte[size];
-		//	IntPtr ptr = Marshal.AllocHGlobal(size);
-		//	Marshal.StructureToPtr(cfg, ptr, true);
-		//	Marshal.Copy(ptr, buffer, 0, size);
-		//	Marshal.FreeHGlobal(ptr);
-
-		//	return buffer;
-		//}
 	}
 }
