@@ -1,0 +1,136 @@
+00	off
+
+01	up
+02	down
+03	left
+04	right
+
+0F	meta
+
+10	button1
+11	button2
+12	button3
+13	button4
+14	button5
+15	button6
+16	button7
+17	button8
+18	button9
+19	button10
+1A	button11
+1B	button12
+1C	button13
+1D	button14
+1E	button15
+1F	button16
+
+20	af1_low
+21	af2_low
+22	af3_low
+23	af4_low
+24	af5_low
+25	af6_low
+26	af7_low
+27	af8_low
+28	af9_low
+29	af10_low
+2A	af11_low
+2B	af12_low
+2C	af13_low
+2D	af14_low
+2E	af15_low
+2F	af16_low
+
+30	af1_high
+31	af2_high
+32	af3_high
+33	af4_high
+34	af5_high
+35	af6_high
+36	af7_high
+37	af8_high
+38	af9_high
+39	af10_high
+3A	af11_high
+3B	af12_high
+3C	af13_high
+3D	af14_high
+3E	af15_high
+3F	af16_high
+
+
+80	_off
+81	_up
+82	_down
+83	_left
+84	_right
+
+8F	_meta
+
+90	_button1
+91	_button2
+92	_button3
+93	_button4
+94	_button5
+95	_button6
+96	_button7
+97	_button8
+98	_button9
+99	_button10
+9A	_button11
+9B	_button12
+9C	_button13
+9D	_button14
+9E	_button15
+9F	_button16
+
+A0	_af1_low
+A1	_af2_low
+A2	_af3_low
+A3	_af4_low
+A4	_af5_low
+A5	_af6_low
+A6	_af7_low
+A7	_af8_low
+A8	_af9_low
+A9	_af10_low
+AA	_af11_low
+AB	_af12_low
+AC	_af13_low
+AD	_af14_low
+AE	_af15_low
+AF	_af16_low
+
+B0	_af1_high
+B1	_af2_high
+B2	_af3_high
+B3	_af4_high
+B4	_af5_high
+B5	_af6_high
+B6	_af7_high
+B7	_af8_high
+B8	_af9_high
+B9	_af10_high
+BA	_af11_high
+BB	_af12_high
+BC	_af13_high
+BD	_af14_high
+BE	_af15_high
+BF	_af16_high
+
+F0	_led1
+F1	_led2
+F2	_led3
+F3	_led4
+F4	_led5
+F5	_led6
+F6	_led7
+F7	_led8
+F8	_led9
+F9	_led10
+FA	_led11
+FB	_led12
+FC	_led13
+FD	_led14
+FE	_led15
+FF	_led16

@@ -20,10 +20,10 @@ begin PCE
 
 	select = button3
 	select = button6
-	start = start
+	run = start
 end
 
-begin PCE8
+begin PCE6
 	up = up
 	down = down
 	left = left
@@ -34,12 +34,12 @@ begin PCE8
 	button4 = button4
 	button5 = button5
 	button6 = button6
-	select = meta + _up
-	start = meta + down
+	select = meta + up
+	run = meta + down
 end
 
 ; default 8 button mapping
-begin MAPPING1
+begin MAPPING	; 1
 	up		= _up
 	down	= _down
 	left	= _left
@@ -84,7 +84,7 @@ begin MAPPING1
 end
 
 ; 4 button mapping
-begin MAPPING1
+begin MAPPING	; 2
 	up		= _up
 	down	= _down
 	left	= _left

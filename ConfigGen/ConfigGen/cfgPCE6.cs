@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace ConfigGen
 {
-	class cfgPCE : Config
+	class cfgPCE6 : Config
 	{
-		public static string _identifier = "PCE";
+		public static string _identifier = "PCE6";
 
-		public cfgPCE()
+		public cfgPCE6()
 		{
 			identifier = _identifier;
-			index_number = 17;
+			index_number = 18;
 			allows_multiple = false;
 			configs = new List<ConfigParameter>();
 
@@ -24,6 +24,10 @@ namespace ConfigGen
 
 			configs.Add(new ConfigParameter("button1", 0));
 			configs.Add(new ConfigParameter("button2", 0));
+			configs.Add(new ConfigParameter("button3", 0));
+			configs.Add(new ConfigParameter("button4", 0));
+			configs.Add(new ConfigParameter("button5", 0));
+			configs.Add(new ConfigParameter("button6", 0));
 			configs.Add(new ConfigParameter("select", 0));
 			configs.Add(new ConfigParameter("run", 0));
 		}

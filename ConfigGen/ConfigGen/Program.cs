@@ -11,10 +11,27 @@ namespace ConfigGen
 	{
 		static void Main(string[] args)
 		{
-			var types = GetCfgTypes();
-			foreach (var t in types)
+			//var types = GetCfgTypes();
+			//foreach (var t in types)
+			//{
+			//	//Console.WriteLine(t.identifier + " (" + t.ToString() + ")");
+			//	t.DumpToConsole();
+			//}
+
+			List<Config> config_list = Config.LoadConfigFromFile("config.txt");
+			if (config_list == null)
 			{
-				Console.WriteLine(t.identifier + " (" + t.ToString() + ")");
+				Console.WriteLine("Failed to load config.txt.");
+				return;
+			}
+
+			foreach (Config cfg in config_list)
+			{
+				if (cfg.identifier == "SETTINGS")
+				{
+					byte[] buffer = cfg.CompileToBinary();
+					Console.WriteLine(cfg.identifier + " = " + buffer.Length + " bytes");
+				}
 			}
 		}
 
