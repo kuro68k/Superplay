@@ -190,7 +190,7 @@ namespace ConfigGen
 		{
 			foreach (KeyValuePair<string, int> pair in _logicalDict)
 			{
-				configs.Add(new ConfigParameter(pair.Key, pair.Value));
+				configs.Add(new ConfigParameter(pair.Key, 0));
 			}
 		}
 
@@ -198,7 +198,7 @@ namespace ConfigGen
 		{
 			foreach (KeyValuePair<string, int> pair in _physicalDict)
 			{
-				configs.Add(new ConfigParameter(pair.Key, pair.Value));
+				configs.Add(new ConfigParameter(pair.Key, 0));
 			}
 		}
 	}

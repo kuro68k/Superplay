@@ -56,13 +56,35 @@ namespace ConfigGen
 			{
 				string field_id = field.Name;
 
+				// known custom fields
 				if (field_id == "_config_length")
 				{
 					field.SetValue(binary_struct, size);
 					continue;
 				}
 
-				if (field_id.StartsWith("_"))	// custom field
+				if (field_id == "_mapping")
+				{
+					int count = CountNonZeroParams();
+					foreach (FieldInfo fi in fieldinfo)
+					{
+						if (fi.Name == "_count")
+							fi.SetValue(binary_struct, (sbyte)count);
+					}
+
+					sbyte[] map = new sbyte[count];
+					count = 0;
+					for (int i = 0; i < configs.Count; i++)
+					{
+						if (configs[i].value != 0)
+							map[count++] = (sbyte)configs[i].value;
+					}
+
+					field.SetValue(binary_struct, map);
+				}
+
+				// unknown custom field
+				if (field_id.StartsWith("_"))
 					continue;
 
 				if (field.FieldType.IsArray)
@@ -93,7 +115,7 @@ namespace ConfigGen
 
 			byte[] buffer = new byte[size];
 			IntPtr ptr = Marshal.AllocHGlobal(size);
-			Marshal.StructureToPtr(binary_struct, ptr, true);
+			Marshal.StructureToPtr(binary_struct, ptr, false);
 			Marshal.Copy(ptr, buffer, 0, size);
 			Marshal.FreeHGlobal(ptr);
 
@@ -324,6 +346,33 @@ namespace ConfigGen
 			if (i == -1)
 				return false;
 			return true;
+		}
+
+		// count the number of non-zero value parameters
+		public int CountNonZeroParams()
+		{
+			int count = 0;
+			for (int i = 0; i < configs.Count; i++)
+			{
+				if (configs[i].value != 0)
+					count++;
+			}
+			return count;
+		}
+
+		// standard mapper type binary formatter
+		public void MapperBinaryFormatter(dynamic binary_struct)
+		{
+			int count = CountNonZeroParams();
+			binary_struct._mapping = new sbyte[count];
+			binary_struct._count = (sbyte)count;
+
+			count = 0;
+			for (int i = 0; i < configs.Count; i++)
+			{
+				if (configs[i].value != 0)
+					binary_struct._mapping[count++] = (sbyte)configs[i].value;
+			}
 		}
 	}
 }

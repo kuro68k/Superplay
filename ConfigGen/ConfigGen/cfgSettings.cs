@@ -43,7 +43,7 @@ namespace ConfigGen
 
 		}
 
-		[StructLayout(LayoutKind.Sequential)]
+		[StructLayout(LayoutKind.Sequential, Pack = 1)]
 		private struct BinaryFormat
 		{
 			public UInt16 _config_length;
