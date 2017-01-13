@@ -28,7 +28,7 @@ namespace ConfigGen
 		{
 			public UInt16 _config_length;
 			public sbyte _count;
-			public sbyte[] _mapping;
+			public sbyte[,] _mapping;
 		}
 	}
 }

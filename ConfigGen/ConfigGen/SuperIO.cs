@@ -188,17 +188,19 @@ namespace ConfigGen
 
 		public static void AddLogicalMappings(ref List<ConfigParameter> configs)
 		{
+			int i = 0;
 			foreach (KeyValuePair<string, int> pair in _logicalDict)
 			{
-				configs.Add(new ConfigParameter(pair.Key, 0));
+				configs.Add(new ConfigParameter(pair.Key, 0, i++));
 			}
 		}
 
 		public static void AddPhysicalMappings(ref List<ConfigParameter> configs)
 		{
+			int i = 0;
 			foreach (KeyValuePair<string, int> pair in _physicalDict)
 			{
-				configs.Add(new ConfigParameter(pair.Key, 0));
+				configs.Add(new ConfigParameter(pair.Key, 0, i++));
 			}
 		}
 	}

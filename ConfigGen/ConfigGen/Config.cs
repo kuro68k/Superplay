@@ -12,6 +12,7 @@ namespace ConfigGen
 	class ConfigParameter
 	{
 		public string identifier;
+		public int index;
 		public int value;
 		public int min;
 		public int max;
@@ -22,6 +23,16 @@ namespace ConfigGen
 			value = _value;
 			min = 0;
 			max = 255;
+			index = 0;
+		}
+
+		public ConfigParameter(string _identifier, int _value, int _index)
+		{
+			identifier = _identifier;
+			value = _value;
+			min = 0;
+			max = 255;
+			index = _index;
 		}
 
 		public ConfigParameter(string _identifier, int _value, int _min, int _max)
@@ -30,6 +41,7 @@ namespace ConfigGen
 			value = _value;
 			min = _min;
 			max = _max;
+			index = 0;
 		}
 	}
 
@@ -46,23 +58,58 @@ namespace ConfigGen
 		// compile parameters to binary format
 		public byte[] CompileToBinary()
 		{
+			PopulateBinaryStruct();
+
+			MemoryStream ms = new MemoryStream();
+			FieldInfo[] fieldinfo = Type.GetType(GetType().FullName + "+BinaryFormat").GetFields(BindingFlags.Instance | BindingFlags.Public);
+			foreach (FieldInfo field in fieldinfo)
+			{
+				dynamic d = Activator.CreateInstance(field.GetType());
+				d = field.GetValue();
+				int size = Marshal.SizeOf(field);
+				byte[] buffer = new byte[size];
+				IntPtr ptr = Marshal.AllocHGlobal(size);
+				Marshal.StructureToPtr(binary_struct, ptr, false);
+				Marshal.Copy(ptr, buffer, 0, size);
+				Marshal.FreeHGlobal(ptr);
+				
+				ms.Write(buffer, 0, buffer.Length);
+			}
+
+			//// set size last, after arrays etc have been allocated
+			//UInt16 size = (UInt16)Marshal.SizeOf(binary_struct);
+			//FieldInfo[] fieldinfo = Type.GetType(GetType().FullName + "+BinaryFormat").GetFields(BindingFlags.Instance | BindingFlags.Public);
+			//foreach (FieldInfo field in fieldinfo)
+			//{
+			//	if (field.Name == "_config_length")
+			//	{
+			//		field.SetValue(binary_struct, size);
+			//		continue;
+			//	}
+			//}
+
+			//byte[] buffer = new byte[size];
+			//IntPtr ptr = Marshal.AllocHGlobal(size);
+			//Marshal.StructureToPtr(binary_struct, ptr, false);
+			//Marshal.Copy(ptr, buffer, 0, size);
+			//Marshal.FreeHGlobal(ptr);
+
+			//return buffer;
+			return null;
+		}
+
+		private void PopulateBinaryStruct()
+		{
 			// fill out all non-custom fields
 			FieldInfo[] fieldinfo = Type.GetType(GetType().FullName + "+BinaryFormat").GetFields(BindingFlags.Instance | BindingFlags.Public);
 			if (fieldinfo == null)
 				throw new Exception("Config " + identifier + " does not have a BinaryFormat struct.");
-			UInt16 size = (UInt16)Marshal.SizeOf(binary_struct);
 
 			foreach (FieldInfo field in fieldinfo)
 			{
 				string field_id = field.Name;
 
-				// known custom fields
-				if (field_id == "_config_length")
-				{
-					field.SetValue(binary_struct, size);
-					continue;
-				}
-
+				// mapping array
 				if (field_id == "_mapping")
 				{
 					int count = CountNonZeroParams();
@@ -72,12 +119,16 @@ namespace ConfigGen
 							fi.SetValue(binary_struct, (sbyte)count);
 					}
 
-					sbyte[] map = new sbyte[count];
+					sbyte[,] map = new sbyte[count, 2];
 					count = 0;
 					for (int i = 0; i < configs.Count; i++)
 					{
 						if (configs[i].value != 0)
-							map[count++] = (sbyte)configs[i].value;
+						{
+							map[count, 0] = (sbyte)configs[i].index;
+							map[count, 1] = (sbyte)configs[i].value;
+							count++;
+						}
 					}
 
 					field.SetValue(binary_struct, map);
@@ -87,6 +138,7 @@ namespace ConfigGen
 				if (field_id.StartsWith("_"))
 					continue;
 
+				// array fields need to be split into individual numbered parameters
 				if (field.FieldType.IsArray)
 				{
 					Array array = field.GetValue(binary_struct) as Array;
@@ -101,6 +153,7 @@ namespace ConfigGen
 					continue;
 				}
 
+				// standard field
 				ConfigParameter param = FindParameterByIdentifier(field_id);
 				if (param == null)
 					throw new Exception("Struct field with no matching parameter (" + field_id + ")");
@@ -112,14 +165,6 @@ namespace ConfigGen
 			MethodInfo method = type.GetMethod("CustomBinaryFormat");
 			if (method != null)
 				method.Invoke(this, null);
-
-			byte[] buffer = new byte[size];
-			IntPtr ptr = Marshal.AllocHGlobal(size);
-			Marshal.StructureToPtr(binary_struct, ptr, false);
-			Marshal.Copy(ptr, buffer, 0, size);
-			Marshal.FreeHGlobal(ptr);
-
-			return buffer;
 		}
 
 		// dump all config items in this config
