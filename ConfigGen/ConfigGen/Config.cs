@@ -64,42 +64,62 @@ namespace ConfigGen
 			FieldInfo[] fieldinfo = Type.GetType(GetType().FullName + "+BinaryFormat").GetFields(BindingFlags.Instance | BindingFlags.Public);
 			foreach (FieldInfo field in fieldinfo)
 			{
-				dynamic d = Activator.CreateInstance(field.GetType());
-				d = field.GetValue();
-				int size = Marshal.SizeOf(field);
-				byte[] buffer = new byte[size];
-				IntPtr ptr = Marshal.AllocHGlobal(size);
-				Marshal.StructureToPtr(binary_struct, ptr, false);
-				Marshal.Copy(ptr, buffer, 0, size);
-				Marshal.FreeHGlobal(ptr);
-				
-				ms.Write(buffer, 0, buffer.Length);
+				dynamic d;
+				int size;
+				Type t = field.FieldType;
+				if (t.IsArray)
+				{
+					Array array = field.GetValue(binary_struct) as Array;
+					// convert to a 1D array for easy processing
+					d = Array.CreateInstance(t.GetElementType(), array.Length);
+					Buffer.BlockCopy(array, 0, d, 0, array.Length);
+
+					size = Marshal.SizeOf(t.GetElementType());
+					byte[] buffer = new byte[size];
+
+					for (int i = 0; i < d.Length; i++)
+					{
+						IntPtr ptr = Marshal.AllocHGlobal(size);
+						Marshal.StructureToPtr(d[i], ptr, false);
+						Marshal.Copy(ptr, buffer, 0, size);
+						Marshal.FreeHGlobal(ptr);
+						ms.Write(buffer, 0, buffer.Length);
+					}
+				}
+				else
+				{
+					d = Convert.ChangeType(field.GetValue(binary_struct), t);
+					size = Marshal.SizeOf(d);
+
+					byte[] buffer = new byte[size];
+					IntPtr ptr = Marshal.AllocHGlobal(size);
+					Marshal.StructureToPtr(d, ptr, false);
+					Marshal.Copy(ptr, buffer, 0, size);
+					Marshal.FreeHGlobal(ptr);
+					ms.Write(buffer, 0, buffer.Length);
+				}
 			}
 
-			//// set size last, after arrays etc have been allocated
-			//UInt16 size = (UInt16)Marshal.SizeOf(binary_struct);
-			//FieldInfo[] fieldinfo = Type.GetType(GetType().FullName + "+BinaryFormat").GetFields(BindingFlags.Instance | BindingFlags.Public);
-			//foreach (FieldInfo field in fieldinfo)
-			//{
-			//	if (field.Name == "_config_length")
-			//	{
-			//		field.SetValue(binary_struct, size);
-			//		continue;
-			//	}
-			//}
+			return ms.ToArray();
+		}
 
-			//byte[] buffer = new byte[size];
-			//IntPtr ptr = Marshal.AllocHGlobal(size);
+		private void MarshallToMemoryStream(dynamic d, MemoryStream ms)
+		{
+			int size = Marshal.SizeOf(d);
+			byte[] buffer = new byte[size];
+			IntPtr ptr = Marshal.AllocHGlobal(size);
 			//Marshal.StructureToPtr(binary_struct, ptr, false);
-			//Marshal.Copy(ptr, buffer, 0, size);
-			//Marshal.FreeHGlobal(ptr);
+			Marshal.StructureToPtr(d, ptr, false);
+			Marshal.Copy(ptr, buffer, 0, size);
+			Marshal.FreeHGlobal(ptr);
 
-			//return buffer;
-			return null;
+			ms.Write(buffer, 0, buffer.Length);
 		}
 
 		private void PopulateBinaryStruct()
 		{
+			int byte_size = 0;
+
 			// fill out all non-custom fields
 			FieldInfo[] fieldinfo = Type.GetType(GetType().FullName + "+BinaryFormat").GetFields(BindingFlags.Instance | BindingFlags.Public);
 			if (fieldinfo == null)
@@ -120,6 +140,8 @@ namespace ConfigGen
 					}
 
 					sbyte[,] map = new sbyte[count, 2];
+					byte_size += count * 2;
+
 					count = 0;
 					for (int i = 0; i < configs.Count; i++)
 					{
@@ -132,11 +154,15 @@ namespace ConfigGen
 					}
 
 					field.SetValue(binary_struct, map);
+					continue;
 				}
 
 				// unknown custom field
 				if (field_id.StartsWith("_"))
+				{
+					byte_size += Marshal.SizeOf(field.FieldType);
 					continue;
+				}
 
 				// array fields need to be split into individual numbered parameters
 				if (field.FieldType.IsArray)
@@ -150,6 +176,7 @@ namespace ConfigGen
 						array.SetValue(Convert.ChangeType(paramA.value, field.FieldType.GetElementType()), i);
 					}
 					field.SetValue(binary_struct, array);
+					byte_size += Marshal.SizeOf(field.FieldType.GetElementType()) * array.Length;
 					continue;
 				}
 
@@ -158,13 +185,24 @@ namespace ConfigGen
 				if (param == null)
 					throw new Exception("Struct field with no matching parameter (" + field_id + ")");
 				field.SetValue(binary_struct, Convert.ChangeType(param.value, field.FieldType));
+				byte_size += Marshal.SizeOf(field.FieldType);
 			}
 
 			// custom fields
-			Type type = GetType();
-			MethodInfo method = type.GetMethod("CustomBinaryFormat");
-			if (method != null)
-				method.Invoke(this, null);
+			//Type type = GetType();
+			//MethodInfo method = type.GetMethod("CustomBinaryFormat");
+			//if (method != null)
+			//	method.Invoke(this, null);
+
+			fieldinfo = Type.GetType(GetType().FullName + "+BinaryFormat").GetFields(BindingFlags.Instance | BindingFlags.Public);
+			foreach (FieldInfo field in fieldinfo)
+			{
+				if (field.Name == "_config_length")
+				{
+					field.SetValue(binary_struct, (UInt16)byte_size);
+					continue;
+				}
+			}
 		}
 
 		// dump all config items in this config
