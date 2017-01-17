@@ -15,7 +15,7 @@ namespace ConfigGen
 		public cfgSettings()
 		{
 			identifier = _identifier;
-			index_number = 1;
+			id_number = 1;
 			allows_multiple = false;
 			binary_struct = new BinaryFormat();
 			binary_struct.led = new sbyte[16];
@@ -47,6 +47,7 @@ namespace ConfigGen
 		private struct BinaryFormat
 		{
 			public UInt16 _config_length;
+			public sbyte _id;
 
 			public sbyte af_high_hz;
 			public sbyte af_high_duty_pc;

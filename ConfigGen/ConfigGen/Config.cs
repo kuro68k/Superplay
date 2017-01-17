@@ -50,7 +50,7 @@ namespace ConfigGen
 	class Config
 	{
 		public string identifier;			// string identifier in config file
-		public int index_number;			// logical index number used by firmware
+		public int id_number;				// logical ID number used by firmware
 		public bool allows_multiple;		// more than one of this config is allowed
 		public dynamic binary_struct;
 		public List<ConfigParameter> configs;	// configurable items
@@ -103,19 +103,7 @@ namespace ConfigGen
 			return ms.ToArray();
 		}
 
-		private void MarshallToMemoryStream(dynamic d, MemoryStream ms)
-		{
-			int size = Marshal.SizeOf(d);
-			byte[] buffer = new byte[size];
-			IntPtr ptr = Marshal.AllocHGlobal(size);
-			//Marshal.StructureToPtr(binary_struct, ptr, false);
-			Marshal.StructureToPtr(d, ptr, false);
-			Marshal.Copy(ptr, buffer, 0, size);
-			Marshal.FreeHGlobal(ptr);
-
-			ms.Write(buffer, 0, buffer.Length);
-		}
-
+		// fill out BinaryFormat struct with data from parameters and class
 		private void PopulateBinaryStruct()
 		{
 			int byte_size = 0;
@@ -154,6 +142,13 @@ namespace ConfigGen
 					}
 
 					field.SetValue(binary_struct, map);
+					continue;
+				}
+
+				// config index number
+				if (field_id == "_id")
+				{
+					field.SetValue(binary_struct, Convert.ChangeType(id_number, field.FieldType));
 					continue;
 				}
 
@@ -208,7 +203,7 @@ namespace ConfigGen
 		// dump all config items in this config
 		public void DumpToConsole()
 		{
-			Console.WriteLine(identifier + " (" + index_number.ToString() + ")");
+			Console.WriteLine(identifier + " (" + id_number.ToString() + ")");
 			foreach (ConfigParameter item in configs)
 			{
 				Console.WriteLine("\t" + item.identifier + " = " + item.value.ToString() + " (" + item.min.ToString() + ".." + item.max.ToString() + ")");
@@ -347,7 +342,8 @@ namespace ConfigGen
 						throw new Exception("Unable to parse value \"" + value + "\" at line " + line_num.ToString());
 					item.value = i;
 
-					Console.WriteLine(cfg.identifier + "->" + item.identifier + " = " + item.value.ToString());
+					if (Program.opt_verbose)
+						Console.WriteLine(cfg.identifier + "->" + item.identifier + " = " + item.value.ToString());
 				}
 
 			}
@@ -441,21 +437,6 @@ namespace ConfigGen
 					count++;
 			}
 			return count;
-		}
-
-		// standard mapper type binary formatter
-		public void MapperBinaryFormatter(dynamic binary_struct)
-		{
-			int count = CountNonZeroParams();
-			binary_struct._mapping = new sbyte[count];
-			binary_struct._count = (sbyte)count;
-
-			count = 0;
-			for (int i = 0; i < configs.Count; i++)
-			{
-				if (configs[i].value != 0)
-					binary_struct._mapping[count++] = (sbyte)configs[i].value;
-			}
 		}
 	}
 }

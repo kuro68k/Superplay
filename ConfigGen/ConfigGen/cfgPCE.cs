@@ -14,7 +14,7 @@ namespace ConfigGen
 		public cfgPCE()
 		{
 			identifier = _identifier;
-			index_number = 17;
+			id_number = 17;
 			allows_multiple = false;
 			binary_struct = new BinaryFormat();
 			configs = new List<ConfigParameter>();
@@ -34,8 +34,9 @@ namespace ConfigGen
 		private struct BinaryFormat
 		{
 			public UInt16 _config_length;
+			public sbyte _id;
 			public sbyte _count;
-			public sbyte[] _mapping;
+			public sbyte[,] _mapping;
 		}
 	}
 }

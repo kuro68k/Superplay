@@ -4,13 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
+using System.IO;
 
 namespace ConfigGen
 {
 	class Program
 	{
+		static bool opt_generate_hex = false;
+		static bool opt_generate_bin = false;
+		static string opt_input_file;
+		static string opt_output_file;
+		public static bool opt_verbose = false;
+
 		static void Main(string[] args)
 		{
+			if (!ParseArgs(args))
+				return;
+
 			//var types = GetCfgTypes();
 			//foreach (var t in types)
 			//{
@@ -25,14 +35,178 @@ namespace ConfigGen
 				return;
 			}
 
+			List<byte[]> buffer_list = new List<byte[]>();
+			int byte_size = 0;
 			foreach (Config cfg in config_list)
 			{
-				if (cfg.identifier == "OUTPUTS")
+				byte[] buffer = cfg.CompileToBinary();
+				byte_size += buffer.Length;
+				buffer_list.Add(buffer);
+				Console.WriteLine(cfg.identifier + " = " + buffer.Length + " bytes");
+			}
+
+			Console.WriteLine(buffer_list.Count.ToString() + " config(s) generated, totaling " + byte_size.ToString() + " bytes.");
+			if (opt_generate_bin)
+				GenerateBinFile(buffer_list);
+			if (opt_generate_hex)
+				GenerateHexFile(buffer_list);
+		}
+
+		private static bool ParseArgs(string[] args)
+		{
+			if (args.Length < 2)
+			{
+				PrintUsage();
+				return false;
+			}
+
+			int non_option_count = 0;
+			for (int i = 0; i < args.Length; i++)
+			{
+				// option
+				if ((args[i].StartsWith("-")) || (args[i].StartsWith("/")))
 				{
-					byte[] buffer = cfg.CompileToBinary();
-					Console.WriteLine(cfg.identifier + " = " + buffer.Length + " bytes");
+					string a = args[i].Substring(1);
+					switch(a)
+					{
+						case "h":
+						case "hex":
+							opt_generate_hex = true;
+							break;
+
+						case "b":
+						case "bin":
+							opt_generate_bin = true;
+							break;
+
+						case "v":
+						case "verbose":
+							opt_verbose = true;
+							break;
+
+						default:
+							Console.WriteLine("Unknown option \"" + a + "\"");
+							PrintUsage();
+							return false;
+					}
+				}
+				// file name
+				else
+				{
+					switch(non_option_count)
+					{
+						case 0:
+							opt_input_file = args[i];
+							break;
+						case 1:
+							opt_output_file = args[i];
+							break;
+						default:
+							Console.WriteLine("Extra filename \"" + args[i] + "\"");
+							return false;
+					}
+					non_option_count++;
 				}
 			}
+
+			if (non_option_count != 2)
+			{
+				PrintUsage();
+				return false;
+			}
+			return true;
+		}
+
+		private static void PrintUsage()
+		{
+			Console.WriteLine("ConfigGen [options] <config file> <output file>");
+			Console.WriteLine("  -b,bin\tProduce binary file");
+			Console.WriteLine("  -h,hex\tProduce hex file");
+			Console.WriteLine("  -v,verbose\tVerbose output");
+		}
+
+		private static bool GenerateBinFile(List<byte[]> buffer_list)
+		{
+			BinaryWriter bw;
+			try
+			{
+				bw = new BinaryWriter(File.Open(opt_output_file, FileMode.Create));
+			}
+			catch
+			{
+				Console.WriteLine("Unable to open \"" + opt_output_file + "\" for writing.");
+				return false;
+			}
+
+			foreach(byte[] buffer in buffer_list)
+				bw.Write(buffer);
+
+			bw.Close();
+			Console.WriteLine("Wrote \"" + opt_output_file + "\".");
+			return true;
+		}
+
+		private static bool GenerateHexFile(List<byte[]> buffer_list)
+		{
+			StreamWriter sw;
+			try
+			{
+				sw = new StreamWriter(opt_output_file);
+			}
+			catch
+			{
+				Console.WriteLine("Unable to open \"" + opt_output_file + "\" for writing.");
+				return false;
+			}
+
+			MemoryStream ms = new MemoryStream();
+			foreach (byte[] buffer in buffer_list)
+				ms.Write(buffer, 0, buffer.Length);
+			byte[] terminator = new byte[2] { 0, 0 };
+			ms.Write(terminator, 0, 2);
+			//byte[] buffer = new byte[512];
+			//for (int i = 0; i < buffer.Length; i++)
+			//	buffer[i] = 0xFF;
+			//ms.Write(buffer, 0, buffer.Length);
+			
+			ms.Seek(0, SeekOrigin.Begin);
+			sbyte checksum = 0;
+			for (int address = 0; address < ms.Length; address++)
+			{
+				if (address % 0x10 == 0)	// new line
+				{
+					checksum = (sbyte)(~checksum);
+					checksum++;
+					if (address != 0)
+						sw.WriteLine(checksum.ToString("X2"));
+
+					sw.Write(":");
+					int available_bytes = (int)ms.Length - address;
+					if (available_bytes > 0x10)
+						available_bytes = 0x10;
+					sw.Write(available_bytes.ToString("X2"));
+					sw.Write(address.ToString("X4"));
+					sw.Write("00");
+
+					checksum = (sbyte)(available_bytes);
+					checksum += (sbyte)(address >> 8);
+					checksum += (sbyte)(address & 0xFF);
+					//checksum = 0;
+				}
+
+				sbyte b = (sbyte)ms.ReadByte();
+				sw.Write(b.ToString("X2"));
+				checksum += b;
+			}
+
+			checksum = (sbyte)(~checksum);
+			checksum++;
+			sw.WriteLine(checksum.ToString("X2"));
+			sw.WriteLine(":00000001FF");
+
+			sw.Close();
+			Console.WriteLine("Wrote \"" + opt_output_file + "\".");
+			return true;
 		}
 
 		// find all available config types using reflection

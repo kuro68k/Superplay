@@ -14,7 +14,7 @@ namespace ConfigGen
 		public cfgMapping()
 		{
 			identifier = _identifier;
-			index_number = 4;
+			id_number = 4;
 			allows_multiple = true;
 			binary_struct = new BinaryFormat();
 			configs = new List<ConfigParameter>();
@@ -27,6 +27,7 @@ namespace ConfigGen
 		private struct BinaryFormat
 		{
 			public UInt16 _config_length;
+			public sbyte _id;
 			public sbyte _count;
 			public sbyte[,] _mapping;
 		}
