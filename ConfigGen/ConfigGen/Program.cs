@@ -169,40 +169,7 @@ namespace ConfigGen
 			//	buffer[i] = 0xFF;
 			//ms.Write(buffer, 0, buffer.Length);
 			
-			ms.Seek(0, SeekOrigin.Begin);
-			sbyte checksum = 0;
-			for (int address = 0; address < ms.Length; address++)
-			{
-				if (address % 0x10 == 0)	// new line
-				{
-					checksum = (sbyte)(~checksum);
-					checksum++;
-					if (address != 0)
-						sw.WriteLine(checksum.ToString("X2"));
-
-					sw.Write(":");
-					int available_bytes = (int)ms.Length - address;
-					if (available_bytes > 0x10)
-						available_bytes = 0x10;
-					sw.Write(available_bytes.ToString("X2"));
-					sw.Write(address.ToString("X4"));
-					sw.Write("00");
-
-					checksum = (sbyte)(available_bytes);
-					checksum += (sbyte)(address >> 8);
-					checksum += (sbyte)(address & 0xFF);
-					//checksum = 0;
-				}
-
-				sbyte b = (sbyte)ms.ReadByte();
-				sw.Write(b.ToString("X2"));
-				checksum += b;
-			}
-
-			checksum = (sbyte)(~checksum);
-			checksum++;
-			sw.WriteLine(checksum.ToString("X2"));
-			sw.WriteLine(":00000001FF");
+			sw.Write(IntelHEX.GenerateHEX(ms));
 
 			sw.Close();
 			Console.WriteLine("Wrote \"" + opt_output_file + "\".");
