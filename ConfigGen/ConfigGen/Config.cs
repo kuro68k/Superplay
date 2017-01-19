@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Keio.Utils;
 
 namespace ConfigGen
 {
