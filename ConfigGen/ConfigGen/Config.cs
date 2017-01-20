@@ -63,43 +63,10 @@ namespace ConfigGen
 
 			MemoryStream ms = new MemoryStream();
 			FieldInfo[] fieldinfo = Type.GetType(GetType().FullName + "+BinaryFormat").GetFields(BindingFlags.Instance | BindingFlags.Public);
-			foreach (FieldInfo field in fieldinfo)
-			{
-				dynamic d;
-				int size;
-				Type t = field.FieldType;
-				if (t.IsArray)
-				{
-					Array array = field.GetValue(binary_struct) as Array;
-					// convert to a 1D array for easy processing
-					d = Array.CreateInstance(t.GetElementType(), array.Length);
-					Buffer.BlockCopy(array, 0, d, 0, array.Length);
+			BinaryStructToByteStream(fieldinfo, ms);
 
-					size = Marshal.SizeOf(t.GetElementType());
-					byte[] buffer = new byte[size];
-
-					for (int i = 0; i < d.Length; i++)
-					{
-						IntPtr ptr = Marshal.AllocHGlobal(size);
-						Marshal.StructureToPtr(d[i], ptr, false);
-						Marshal.Copy(ptr, buffer, 0, size);
-						Marshal.FreeHGlobal(ptr);
-						ms.Write(buffer, 0, buffer.Length);
-					}
-				}
-				else
-				{
-					d = Convert.ChangeType(field.GetValue(binary_struct), t);
-					size = Marshal.SizeOf(d);
-
-					byte[] buffer = new byte[size];
-					IntPtr ptr = Marshal.AllocHGlobal(size);
-					Marshal.StructureToPtr(d, ptr, false);
-					Marshal.Copy(ptr, buffer, 0, size);
-					Marshal.FreeHGlobal(ptr);
-					ms.Write(buffer, 0, buffer.Length);
-				}
-			}
+			byte[] buffer = MarshalDynamic(CRC.crc32(ms));
+			ms.Write(buffer, 0, buffer.Length);
 
 			return ms.ToArray();
 		}
@@ -197,6 +164,55 @@ namespace ConfigGen
 				{
 					field.SetValue(binary_struct, (UInt16)byte_size);
 					continue;
+				}
+			}
+		}
+
+		// marshal an object to a byte[] buffer
+		private byte[] MarshalDynamic(dynamic d)
+		{
+			int size = Marshal.SizeOf(d);
+			byte[] buffer = new byte[size];
+
+			IntPtr ptr = Marshal.AllocHGlobal(size);
+			Marshal.StructureToPtr(d, ptr, false);
+			Marshal.Copy(ptr, buffer, 0, size);
+			Marshal.FreeHGlobal(ptr);
+			return buffer;
+		}
+
+		// convert BinaryStruct to byte stream
+		private void BinaryStructToByteStream(FieldInfo[] fieldinfo, MemoryStream ms)
+		{
+			foreach (FieldInfo field in fieldinfo)
+			{
+				dynamic d;
+				int size;
+				Type t = field.FieldType;
+				if (t.IsArray)
+				{
+					Array array = field.GetValue(binary_struct) as Array;
+					// convert to a 1D array for easy processing
+					d = Array.CreateInstance(t.GetElementType(), array.Length);
+					Buffer.BlockCopy(array, 0, d, 0, array.Length);
+
+					size = Marshal.SizeOf(t.GetElementType());
+					byte[] buffer = new byte[size];
+
+					for (int i = 0; i < d.Length; i++)
+					{
+						IntPtr ptr = Marshal.AllocHGlobal(size);
+						Marshal.StructureToPtr(d[i], ptr, false);
+						Marshal.Copy(ptr, buffer, 0, size);
+						Marshal.FreeHGlobal(ptr);
+						ms.Write(buffer, 0, buffer.Length);
+					}
+				}
+				else
+				{
+					d = Convert.ChangeType(field.GetValue(binary_struct), t);
+					byte[] buffer = MarshalDynamic(d);
+					ms.Write(buffer, 0, buffer.Length);
 				}
 			}
 		}
