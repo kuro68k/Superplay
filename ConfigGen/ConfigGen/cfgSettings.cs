@@ -26,6 +26,7 @@ namespace ConfigGen
 			configs.Add(new ConfigParameter("af_high_duty_pc", 50, 0, 100));
 			configs.Add(new ConfigParameter("af_low_hz", 5, 1, 120));
 			configs.Add(new ConfigParameter("af_low_duty_pc", 50, 0, 100));
+			configs.Add(new ConfigParameter("af_remember_state", 0, 0, 1));
 
 			for (int i = 1; i <= 16; i++)
 				configs.Add(new ConfigParameter("led" + i.ToString(), 0, 0, 255));
@@ -53,6 +54,7 @@ namespace ConfigGen
 			public sbyte af_high_duty_pc;
 			public sbyte af_low_hz;
 			public sbyte af_low_duty_pc;
+			public sbyte af_remember_state;
 
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
 			public sbyte[] led;
