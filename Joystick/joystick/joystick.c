@@ -1,9 +1,7 @@
 /*
  * joystick.c
  *
- * Created: 29/03/2015 16:17:58
- *  Author: Paul Qureshi
- */ 
+ */
 
 
 #include <avr/io.h>
@@ -50,7 +48,7 @@ volatile const __flash FW_INFO_t firmware_info =	{	{ 0x59, 0x61, 0x6d, 0x61, 0x4
 int main(void)
 {
 	firmware_info.magic_string[0];	// prevent firmware_info being optimized away
-	
+
 	PORTF.DIRSET = PIN0_bm | PIN1_bm | PIN2_bm;
 	PORTF.OUTCLR = PIN0_bm | PIN1_bm | PIN2_bm;
 
@@ -80,7 +78,7 @@ int main(void)
 
 		if (cfg->aux_mode == AUX_MODE_BUTTONS)
 			AB_send_report();
-		
+
 		//if (HID_enabled && !VEN_enabled)
 			HID_send_report();
 		//if (VEN_enabled)

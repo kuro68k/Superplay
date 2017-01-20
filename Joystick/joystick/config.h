@@ -1,9 +1,7 @@
 /*
  * config.h
  *
- * Created: 15/07/2015 16:32:00
- *  Author: Paul Qureshi
- */ 
+ */
 
 
 #ifndef CONFIG_H_
@@ -19,15 +17,15 @@
 enum LOGICAL_INPUTS_enum
 {
 	LNONE = 0,
-	
+
 	LJOY_UP,
 	LJOY_DN,
 	LJOY_LF,
 	LJOY_RT,
-	
+
 	LSTART,
 	LCOIN,
-	
+
 	LBUTTON1,
 	LBUTTON2,
 	LBUTTON3,
@@ -44,7 +42,7 @@ enum LOGICAL_INPUTS_enum
 	LBUTTON14,
 	LBUTTON15,
 	LBUTTON16,
-	
+
 	LROTARY1,
 	LROTARY2,
 	LROTARY3,
@@ -57,7 +55,7 @@ enum LOGICAL_INPUTS_enum
 	LROTARY10,
 	LROTARY11,
 	LROTARY12,
-	
+
 	LAF_LOW_1,
 	LAF_LOW_2,
 	LAF_LOW_3,
@@ -74,7 +72,7 @@ enum LOGICAL_INPUTS_enum
 	LAF_LOW_14,
 	LAF_LOW_15,
 	LAF_LOW_16,
-	
+
 	LAF_HIGH_1,
 	LAF_HIGH_2,
 	LAF_HIGH_3,
@@ -91,13 +89,13 @@ enum LOGICAL_INPUTS_enum
 	LAF_HIGH_14,
 	LAF_HIGH_15,
 	LAF_HIGH_16,
-	
+
 	LUNUSED,
 	LMODE_4,
 	LMODE_4AF,
-	
+
 	LCONTROL,
-	
+
 	NUM_LOGICAL_INPUTS,					// must not be >127
 	LFORCED = 127
 };
@@ -109,17 +107,14 @@ enum LOGICAL_INPUTS_enum
 #define MAPPING_CONFIG_ID		0x256A
 #define NUM_MAPPINGS			124
 
+// generic mapping config
 typedef struct
 {
-	uint16_t	config_id;					// must be MAPPING_CONFIG_ID
-	uint16_t	config_size;
-
-	uint8_t		logical[NUM_MAPPINGS];		// logical to physical mapping
-	uint8_t		physical[NUM_MAPPINGS];
-
-	uint32_t	crc32;
+	uint16_t	length;
+	uint8_t		id;
+	uint8_t		count;
+	uint8_t		mapping[][2];
 } MAPPING_CONFIG_t;
-
 
 
 
@@ -130,21 +125,23 @@ typedef struct
 #define AUX_MODE_KBUS			1
 #define AUX_MODE_BUTTONS		2
 
+// misc settings
 typedef struct
 {
-	uint16_t	config_id;				// must be MISC_CONFIG_ID
-	uint16_t	config_size;
-	
-	uint8_t		af_high_05hz;
-	uint8_t		af_low_05hz;
-	uint8_t		af_save_state;			// save state to EEPROM
+	uint16_t	length;
+	uint8_t		id;
+
+	uint8_t		af_high_hz;
+	uint8_t		af_high_duty_pc;
+	uint8_t		af_low_hz;
+	uint8_t		af_low_duty_pc;
 
 	uint8_t		aux_mode;
 
 	uint8_t		padding[20];
 
 	uint32_t	crc32;
-} MISC_CONFIG_t;
+} SETTINGS_CONFIG_t;
 
 
 
