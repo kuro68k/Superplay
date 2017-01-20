@@ -64,6 +64,7 @@ namespace ConfigGen
 			MemoryStream ms = new MemoryStream();
 			FieldInfo[] fieldinfo = Type.GetType(GetType().FullName + "+BinaryFormat").GetFields(BindingFlags.Instance | BindingFlags.Public);
 			BinaryStructToByteStream(fieldinfo, ms);
+			CustomByteSteamFormat(ms);
 
 			byte[] buffer = MarshalDynamic(CRC.crc32(ms));
 			ms.Write(buffer, 0, buffer.Length);
@@ -151,12 +152,6 @@ namespace ConfigGen
 				byte_size += Marshal.SizeOf(field.FieldType);
 			}
 
-			// custom fields
-			//Type type = GetType();
-			//MethodInfo method = type.GetMethod("CustomBinaryFormat");
-			//if (method != null)
-			//	method.Invoke(this, null);
-
 			fieldinfo = Type.GetType(GetType().FullName + "+BinaryFormat").GetFields(BindingFlags.Instance | BindingFlags.Public);
 			foreach (FieldInfo field in fieldinfo)
 			{
@@ -166,6 +161,11 @@ namespace ConfigGen
 					continue;
 				}
 			}
+		}
+
+		// child classes can add any custom data (e.g. padding) here
+		public virtual void CustomByteSteamFormat(MemoryStream ms)
+		{
 		}
 
 		// marshal an object to a byte[] buffer
