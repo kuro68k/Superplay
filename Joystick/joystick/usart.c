@@ -5,7 +5,7 @@
  *  Author: Paul Qureshi
  *
  * USART comms using KBUS protocol, with main (shared with USB) and aux ports.
- */ 
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -70,9 +70,9 @@ inline void usart_reset_aux_dma_tx_pointer(void)
 */
 void USART_init(void)
 {
-	// USARTs	
+	// USARTs
 	USART_t *u = &MAIN_USART;
-	
+
 	for (uint8_t i = 0; i < 2; i++)
 	{
 		u->CTRLA = 0;
@@ -81,15 +81,17 @@ void USART_init(void)
 		u->BAUDCTRLA = USART_BSEL & 0xFF;
 		u->BAUDCTRLB = ((USART_BSCALE << 4) & 0xF0) | ((USART_BSEL >> 8) & 0x0F);
 		u = &AUX_USART;
-		if (cfg->aux_mode != AUX_MODE_KBUS)
-			break;
+		// FIXME
+		//if (cfg->aux_mode != AUX_MODE_KBUS)
+		//	break;
 	}
-	
+
+	/* FIXME
 	if (cfg->aux_mode == AUX_MODE_KBUS)
 	{
 		AUX_USART.CTRLB |= USART_RXEN_bm | USART_TXEN_bm;
 		AUX_USART.CTRLA |= USART_RXCINTLVL_HI_gc;
-	}
+	}*/
 
 
 	// RX DMA
@@ -103,10 +105,11 @@ void USART_init(void)
 					  DMA_CH_DESTRELOAD_TRANSACTION_gc | DMA_CH_DESTDIR_INC_gc;
 		ch->TRFCNT = BUFFER_SIZE;	// maximum packet size
 		ch->REPCNT = 0;
-		
+
 		ch = &AUX_RX_DMA_CH;
-		if (cfg->aux_mode != AUX_MODE_KBUS)
-			break;
+		// FIXME
+		//if (cfg->aux_mode != AUX_MODE_KBUS)
+		//	break;
 	}
 
 	MAIN_TX_DMA_CH.TRIGSRC = MAIN_RX_DMA_TRIGSRC;
@@ -115,6 +118,7 @@ void USART_init(void)
 	MAIN_TX_DMA_CH.SRCADDR2 = 0;
 	usart_reset_main_dma_rx_pointer();
 
+	/* FIXME
 	if (cfg->aux_mode == AUX_MODE_KBUS)
 	{
 		AUX_TX_DMA_CH.TRIGSRC = MAIN_RX_DMA_TRIGSRC;
@@ -122,7 +126,7 @@ void USART_init(void)
 		AUX_TX_DMA_CH.SRCADDR1 = ((uint16_t)&MAIN_USART.DATA >> 8) & 0xFF;
 		AUX_TX_DMA_CH.SRCADDR2 = 0;
 		usart_reset_aux_dma_rx_pointer();
-	}
+	}*/
 
 	// TX DMA
 	ch = &MAIN_TX_DMA_CH;
@@ -135,10 +139,11 @@ void USART_init(void)
 					  DMA_CH_DESTRELOAD_BURST_gc | DMA_CH_DESTDIR_FIXED_gc;
 		ch->TRFCNT = 4;	// minimum packet size
 		ch->REPCNT = 0;
-		
+
 		ch = &AUX_TX_DMA_CH;
-		if (cfg->aux_mode != AUX_MODE_KBUS)
-			break;
+		// FIXME
+		//if (cfg->aux_mode != AUX_MODE_KBUS)
+		//	break;
 	}
 
 	MAIN_TX_DMA_CH.TRIGSRC = MAIN_TX_DMA_TRIGSRC;
@@ -147,6 +152,7 @@ void USART_init(void)
 	MAIN_TX_DMA_CH.DESTADDR2 = 0;
 	usart_reset_main_dma_tx_pointer();
 
+	/* FIXME
 	if (cfg->aux_mode == AUX_MODE_KBUS)
 	{
 		AUX_TX_DMA_CH.TRIGSRC = AUX_TX_DMA_TRIGSRC;
@@ -154,7 +160,7 @@ void USART_init(void)
 		AUX_TX_DMA_CH.DESTADDR1 = ((uint16_t)&AUX_USART.DATA >> 8) & 0xFF;
 		AUX_TX_DMA_CH.DESTADDR2 = 0;
 		usart_reset_aux_dma_tx_pointer();
-	}
+	}*/
 
 	// RX timers
 	TC0_t *tc = (TC0_t *)&MAIN_RX_TC;
@@ -173,22 +179,24 @@ void USART_init(void)
 		tc->CCA = USART_TC_CCA;					// end of frame detection
 		tc->CNT = USART_TC_CCA+1;				// avoid triggering after starting timer
 		tc->CTRLA = USART_TC_DIV;				// start timer
-		
+
 		tc = &AUX_RX_TC;
-		if (cfg->aux_mode != AUX_MODE_KBUS)
-			break;
+		// FIXME
+		//if (cfg->aux_mode != AUX_MODE_KBUS)
+		//	break;
 	}
-	
+
 	EVSYS.CH0CTRL = 0;
 	EVSYS.CH0MUX = MAIN_RX_EVENT_CHMUX;
 	MAIN_RX_TC.CTRLD |= TC_TC0_EVSEL_CH0_gc;
 
+	/* FIXME
 	if (cfg->aux_mode == AUX_MODE_KBUS)
 	{
 		EVSYS.CH1CTRL = 0;
 		EVSYS.CH1MUX = AUX_RX_EVENT_CHMUX;
 		AUX_RX_TC.CTRLD |= TC_TC0_EVSEL_CH1_gc;
-	}
+	}*/
 }
 
 /**************************************************************************************************
@@ -225,10 +233,10 @@ bool usart_check_crc(const uint8_t *buffer)
 	uint8_t		len = buffer[1];
 	len += 2;	// add command and length
 	uint16_t	crc = *(uint16_t *)&buffer[len];
-	
+
 	if (len > KBUS_PACKET_DATA_SIZE)	// sanity check
 		return false;
-	
+
 	CRC.CTRL = CRC_RESET_RESET1_gc;
 	asm("nop");
 	CRC.CTRL = CRC_SOURCE_IO_gc;
@@ -247,10 +255,10 @@ void usart_add_crc(uint8_t *buffer)
 	uint8_t		len = buffer[1];
 	len += 2;	// add command and length
 	uint16_t	*crc = (uint16_t *)&buffer[len];
-	
+
 	if (len > KBUS_PACKET_DATA_SIZE)	// sanity check
 		return;
-	
+
 	CRC.CTRL = CRC_RESET_RESET1_gc;
 	asm("nop");
 	CRC.CTRL = CRC_SOURCE_IO_gc;

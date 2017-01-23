@@ -31,8 +31,6 @@ void RPT_init(void)
 */
 void rpt_physical_inputs_refresh(void)
 {
-	memset(physical_inputs, 0, NUM_LOGICAL_INPUTS);
-
 	// PORTA
 	uint8_t p = PORTA.IN;
 	if (!(p & JOY_UP_PIN_bm))		input_matrix[PJOY_UP] = 1;
@@ -100,7 +98,7 @@ void rpt_physical_inputs_refresh(void)
 /**************************************************************************************************
 ** Map physical to logical inputs and apply forced inputs
 */
-void RPT_logical_inputs_refresh(void)
+void RPT_refresh_input_matrix(void)
 {
 	rpt_physical_inputs_refresh();
 
@@ -110,7 +108,7 @@ void RPT_logical_inputs_refresh(void)
 	//uint8_t i = 0;
 	//while (map->mapping[i, 0] != 0)
 	for (uint8_t i = 0; i < map->count; i++)
-		input_matrix[map->mapping[i, 0]] = input_matrix[map->mapping[i, 1]];
+		input_matrix[map->mapping[i][0]] = input_matrix[map->mapping[i][1]];
 }
 
 /**************************************************************************************************
@@ -128,9 +126,9 @@ void RPT_refresh(void)
 	if (input_matrix[LJOY_RT])		b |= JOY_RIGHT_bm;
 
 	// meta buttons
-	if (input_matrix[LSTART])			b |= BUTTON_START_bm;
-	if (input_matrix[LCOIN])			b |= BUTTON_COIN_bm;
-	if (input_matrix[LCONTROL])		b |= BUTTON_CONTROL_bm;
+	//if (input_matrix[LSTART])			b |= BUTTON_START_bm;
+	//if (input_matrix[LCOIN])			b |= BUTTON_COIN_bm;
+	//if (input_matrix[LCONTROL])		b |= BUTTON_CONTROL_bm;
 	report.udlr_sscc = b;
 
 	// fire buttons

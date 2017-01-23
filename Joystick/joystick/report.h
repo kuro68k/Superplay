@@ -3,7 +3,7 @@
  *
  * Created: 05/04/2015 23:19:49
  *  Author: Paul Qureshi
- */ 
+ */
 
 
 #ifndef REPORT_H_
@@ -52,9 +52,9 @@ typedef struct
 
 
 extern REPORT_t	report;
-extern uint8_t	logical_inputs[128];
+extern uint8_t	input_matrix[256];
 
-extern void RPT_logical_inputs_refresh(void);
+extern void RPT_refresh_input_matrix(void);
 extern void RPT_refresh(void);
 
 

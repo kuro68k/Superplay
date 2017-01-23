@@ -37,14 +37,14 @@ uint16_t	AF_low_map = 0;
 ** Find the best timer settings for a given frequency. Returns true if a usable (but possibly
 ** very inaccurate) setting is found.
 */
-bool af_calc_timer(float freq, uint8_t *clksel, uint16_t *period)
+bool af_calc_timer(float freq_hz, uint8_t *clksel, uint16_t *period)
 {
 	uint32_t	cycles;
 	uint32_t	per;
 	uint32_t	lowest_error = UINT32_MAX;
 	bool		found = false;
 
-	cycles = F_CPU / freq;
+	cycles = F_CPU / freq_hz;
 
 	// find best prescaler
 	for (uint8_t i = 0; i < (sizeof(prescalers) / sizeof(uint16_t)); i++)
@@ -78,11 +78,11 @@ void AF_init(void)
 
 	uint16_t	per = AF1_PER;
 	uint8_t		clksel = AF1_CLKSEL;
-	float		freq;
-
-	freq = cfg->af_high_05hz / 2;	// convert to Hz
-	freq *= AF_CLKMUL;				// timer runs AF_CLKMUL times faster than autofire
-	if (!af_calc_timer(freq, &clksel, &per))
+	float		freq_hz;
+/*
+	freq_hz = settings->af_high_hz;
+	freq_hz *= AF_CLKMUL;				// timer runs AF_CLKMUL times faster than autofire
+	if (!af_calc_timer(freq_hz, &clksel, &per))
 	{
 		clksel = AF1_CLKSEL;
 		per = AF1_PER;
@@ -99,9 +99,9 @@ void AF_init(void)
 	AF_TC1.PER = per;
 	AF_TC1.CTRLA = clksel;
 
-	freq = cfg->af_low_05hz / 2;	// convert to Hz
-	freq *= 8;						// timer runs 8x faster than autofire
-	if (!af_calc_timer(freq, &clksel, &per))
+	freq_hz = cfg->af_low_05hz / 2;	// convert to Hz
+	freq_hz *= 8;						// timer runs 8x faster than autofire
+	if (!af_calc_timer(freq_hz, &clksel, &per))
 	{
 		clksel = AF2_CLKSEL;
 		per = AF2_PER;
@@ -117,6 +117,7 @@ void AF_init(void)
 	AF_TC2.CNT = 0;
 	AF_TC2.PER = per;
 	AF_TC2.CTRLA = clksel;
+*/
 }
 
 /**************************************************************************************************
@@ -151,6 +152,7 @@ void AF_apply(void)
 
 
 	// decrement counters
+	/* FIXME
 	mask = 1;
 	for (i = 0; i < 16; i++)
 	{
@@ -192,4 +194,5 @@ void AF_apply(void)
 		if (!(af_map & mask))
 			logical_inputs[LBUTTON1 + i] = 0;
 	}
+	*/
 }

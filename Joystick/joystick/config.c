@@ -20,7 +20,7 @@ const SETTINGS_CONFIG_t *settings = &default_settings;
 const MAPPING_CONFIG_t default_mapping = {
 	.length = sizeof(default_mapping),
 	.id = MAPPING_CONFIG_ID,
-	.count = sizeof(default_mapping.mapping) / 2,
+	.count = (sizeof(default_mapping) - 4) / 2,
 	.mapping = {	{	LJOY_UP,	PJOY_UP		},
 					{	LJOY_DN,	PJOY_DN		},
 					{	LJOY_LF,	PJOY_LF		},
@@ -44,10 +44,8 @@ const MAPPING_CONFIG_t default_mapping = {
 					{	LBUTTON16,	PB16		},
 					{	0,			0			}
 				},
-}
-const MAPPING_CONFIG_t map = &default_mapping;
-
-const MAPPING_CONFIG_t * const map = (MAPPING_CONFIG_t *)(EEP_MAPPED_ADDR(EEP_MAPPING_CFG_PAGE, 0));
+};
+const MAPPING_CONFIG_t *map = &default_mapping;
 
 
 /**************************************************************************************************
@@ -81,12 +79,12 @@ void * CFG_find_config(uint8_t id)
 		if (header->id == id)
 		{
 			// check CRC
-			uint32_t *crc = (uint16_t *)header + header->length;
+			uint32_t *crc = (uint32_t *)header + header->length;
 			if (*crc != cfg_calc_crc(header, header->length))
 				break;
 			return header;
 		}
-	} while (header < (MAPPED_EEPROM_START + EEPROM_SIZE));
+	} while ((uint16_t)header < (MAPPED_EEPROM_START + EEPROM_SIZE));
 	return 0;
 }
 
@@ -102,7 +100,7 @@ void CFG_init(void)
 	{
 		settings = ptr;
 		if (settings->length != sizeof(SETTINGS_CONFIG_t))
-			settings = default_settings;
+			settings = &default_settings;
 	}
 
 	if ((ptr = CFG_find_config(MAPPING_CONFIG_ID)))

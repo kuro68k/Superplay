@@ -5,7 +5,7 @@
  *  Author: paul.qureshi
  *
  * Serial output to multiple NPIC6C596As to simulate button presses.
- */ 
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -35,15 +35,17 @@ void AB_send_report(void)
 */
 void AB_init(void)
 {
+	/*
 	if (cfg->aux_mode != AUX_MODE_BUTTONS)
 		return;
-	
+
 	AB_PORT.OUTSET = AB_OE_PIN_bm | AB_DAT_PIN_bm | AB_CLK_PIN_bm;
 	AB_PORT.DIRSET = AB_OE_PIN_bm | AB_DAT_PIN_bm | AB_LAT_PIN_bm | AB_CLK_PIN_bm;
-	
+
 	AB_USART.CTRLA = 0;
 	AB_USART.CTRLB = USART_TXEN_bm;
 	AB_USART.CTRLC = USART_CMODE_MSPI_gc | USART_CHSIZE_8BIT_gc;
 	AB_USART.BAUDCTRLA = AB_USART_BSEL & 0xFF;
 	AB_USART.BAUDCTRLB = ((AB_USART_BSCALE << 4) & 0xF0) | ((AB_USART_BSEL >> 8) & 0x0F);
+	*/
 }

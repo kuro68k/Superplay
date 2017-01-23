@@ -3,7 +3,7 @@
  *
  * Created: 18/12/2014 21:22:20
  *  Author: Paul Qureshi
- */ 
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -45,7 +45,7 @@ void HW_init(void)
 	PORTA.OUT = 0;
 	//if (cfg->af_mode == CFG_AF_MODE_HIGH_LOW)
 	//	PORTA.DIR = 0;
-	//else		
+	//else
 		PORTA.DIR = AUTO_LOW_5_PIN_bm | AUTO_LOW_6_PIN_bm;
 	PORTCFG.MPCMASK = 0xFF;
 	ENABLE_PULLUP(PORTA.PIN0CTRL);
@@ -82,7 +82,7 @@ void HW_init(void)
 	// port R
 	PORTR.DIR = 0;
 
-
+/* FIXME
 	// reconfigure output pins based on mapping
 	for (uint8_t i = 0; i < NUM_MAPPINGS; i++)
 	{
@@ -92,11 +92,11 @@ void HW_init(void)
 			io_pin_table[io].port->DIRSET = io_pin_table[io].pin_mask;
 		}
 	}
+*/
 
 
-	
 	SLEEP.CTRL = SLEEP_SMODE_IDLE_gc | SLEEP_SEN_bm;
-	
+
 	// DMA
 	DMA.CTRL = DMA_RESET_bm;
 	asm("nop");
@@ -117,7 +117,7 @@ void HW_CCPWrite(volatile uint8_t *address, uint8_t value)
 	// disable interrupts if running
 	saved_sreg = SREG;
 	cli();
-	
+
 	volatile uint8_t * tmpAddr = address;
 	RAMPZ = 0;
 
