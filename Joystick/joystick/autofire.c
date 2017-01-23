@@ -1,9 +1,7 @@
 /*
  * autofire.c
  *
- * Created: 03/06/2015 21:17:54
- *  Author: Paul Qureshi
- */ 
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -66,7 +64,7 @@ bool af_calc_timer(float freq, uint8_t *clksel, uint16_t *period)
 			found = true;
 		}
 	}
-	
+
 	return found;
 }
 
@@ -81,7 +79,7 @@ void AF_init(void)
 	uint16_t	per = AF1_PER;
 	uint8_t		clksel = AF1_CLKSEL;
 	float		freq;
-	
+
 	freq = cfg->af_high_05hz / 2;	// convert to Hz
 	freq *= AF_CLKMUL;				// timer runs AF_CLKMUL times faster than autofire
 	if (!af_calc_timer(freq, &clksel, &per))
@@ -162,7 +160,7 @@ void AF_apply(void)
 			af_high_count += AF_CLKMUL;
 			if (logical_inputs[LAF_HIGH_1 + i])
 				af_map ^= mask;
-		}	
+		}
 
 		af_low_counters[i] -= af_low_count;
 		while (af_low_count > AF_CLKMUL)	// counter underflowed
@@ -170,10 +168,10 @@ void AF_apply(void)
 			af_low_count += AF_CLKMUL;
 			if (logical_inputs[LAF_LOW_1 + i])
 				af_map ^= mask;
-		}	
+		}
 	}
 
-	
+
 	// handle unpressed buttons
 	mask = 1;
 	for (i = 0; i < 16; i++)

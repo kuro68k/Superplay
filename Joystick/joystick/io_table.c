@@ -1,9 +1,7 @@
 /*
  * io_table.c
  *
- * Created: 20/10/2015 15:54:57
- *  Author: MoJo
- */ 
+ */
 
 #include <avr/io.h>
 #include "io_table.h"

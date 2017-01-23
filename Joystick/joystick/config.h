@@ -1,9 +1,7 @@
 /*
  * config.h
  *
- * Created: 15/07/2015 16:32:00
- *  Author: Paul Qureshi
- */ 
+ */
 
 
 #ifndef CONFIG_H_
@@ -18,17 +16,16 @@
 // logical inputs
 enum LOGICAL_INPUTS_enum
 {
-	LNONE = 0,
-	
-	LJOY_UP,
+	LOFF = 0x00,
+	LON,
+
+	LJOY_UP = 0x02,
 	LJOY_DN,
 	LJOY_LF,
 	LJOY_RT,
-	
-	LSTART,
-	LCOIN,
-	
-	LBUTTON1,
+	LMETA = 0x0F,
+
+	LBUTTON1 = 0x10,
 	LBUTTON2,
 	LBUTTON3,
 	LBUTTON4,
@@ -44,21 +41,8 @@ enum LOGICAL_INPUTS_enum
 	LBUTTON14,
 	LBUTTON15,
 	LBUTTON16,
-	
-	LROTARY1,
-	LROTARY2,
-	LROTARY3,
-	LROTARY4,
-	LROTARY5,
-	LROTARY6,
-	LROTARY7,
-	LROTARY8,
-	LROTARY9,
-	LROTARY10,
-	LROTARY11,
-	LROTARY12,
-	
-	LAF_LOW_1,
+
+	LAF_LOW_1 = 0x20,
 	LAF_LOW_2,
 	LAF_LOW_3,
 	LAF_LOW_4,
@@ -74,8 +58,8 @@ enum LOGICAL_INPUTS_enum
 	LAF_LOW_14,
 	LAF_LOW_15,
 	LAF_LOW_16,
-	
-	LAF_HIGH_1,
+
+	LAF_HIGH_1 = 0x30,
 	LAF_HIGH_2,
 	LAF_HIGH_3,
 	LAF_HIGH_4,
@@ -91,60 +75,153 @@ enum LOGICAL_INPUTS_enum
 	LAF_HIGH_14,
 	LAF_HIGH_15,
 	LAF_HIGH_16,
-	
-	LUNUSED,
-	LMODE_4,
-	LMODE_4AF,
-	
-	LCONTROL,
-	
-	NUM_LOGICAL_INPUTS,					// must not be >127
-	LFORCED = 127
+
+	LROTARY1 = 0x40,
+	LROTARY2,
+	LROTARY3,
+	LROTARY4,
+	LROTARY5,
+	LROTARY6,
+	LROTARY7,
+	LROTARY8,
+	LROTARY9,
+	LROTARY10,
+	LROTARY11,
+	LROTARY12,
+	LROTARY13,
+	LROTARY14,
+	LROTARY15,
+	LROTARY16,
+
+	LLED1 = 0x70,
+	LLED2,
+	LLED3,
+	LLED4,
+	LLED5,
+	LLED6,
+	LLED7,
+	LLED8,
+	LLED9,
+	LLED10,
+	LLED11,
+	LLED12,
+	LLED13,
+	LLED14,
+	LLED15,
+	LLED16,
+};
+
+enum PHYSICAL_INPUTS_enum
+{
+	POFF = 0x80,
+	PON,
+
+	PJOY_UP = 0x82,
+	PJOY_DN,
+	PJOY_LF,
+	PJOY_RT,
+	PMETA = 0x8F,
+
+	PB1 = 0x90,
+	PB2,
+	PB3,
+	PB4,
+	PB5,
+	PB6,
+	PB7,
+	PB8,
+	PB9,
+	PB10,
+	PB11,
+	PB12,
+	PB13,
+	PB14,
+	PB15,
+	PB16,
+
+	PA1 = 0xA0,
+	PA2,
+	PA3,
+	PA4,
+	PA5,
+	PA6,
+	PA7,
+	PA8,
+	PA9,
+	PA10,
+	PA11,
+	PA12,
+	PA13,
+	PA14,
+	PA15,
+	PA16,
+
+	PR1 = 0xB0,
+	PR2,
+	PR3,
+	PR4,
+	PR5,
+	PR6,
+	PR7,
+	PR8,
+	PR9,
+	PR10,
+	PR11,
+	PR12,
+	PR13,
+	PR14,
+	PR15,
+	PR16,
 };
 
 #define LOGICAL_OUTPUT_MASK		0x80
 
-
-// physical input map
-#define MAPPING_CONFIG_ID		0x256A
-#define NUM_MAPPINGS			124
-
+// header block for all configs
 typedef struct
 {
-	uint16_t	config_id;					// must be MAPPING_CONFIG_ID
-	uint16_t	config_size;
+	uint16_t	length;
+	uint8_t		id;
+} CONFIG_HEADER_t;
 
-	uint8_t		logical[NUM_MAPPINGS];		// logical to physical mapping
-	uint8_t		physical[NUM_MAPPINGS];
 
-	uint32_t	crc32;
+// generic mapping config
+typedef struct
+{
+	uint16_t	length;
+	uint8_t		id;
+	uint8_t		count;
+	uint8_t		mapping[][2];
 } MAPPING_CONFIG_t;
 
 
+#define SETTINGS_CONFIG_ID		1
+#define MAPPING_CONFIG_ID		4
 
 
-
-#define MISC_CONFIG_ID			0x97B2
-
-#define AUX_MODE_DISABLED		0
-#define AUX_MODE_KBUS			1
-#define AUX_MODE_BUTTONS		2
-
+// misc settings
 typedef struct
 {
-	uint16_t	config_id;				// must be MISC_CONFIG_ID
-	uint16_t	config_size;
-	
-	uint8_t		af_high_05hz;
-	uint8_t		af_low_05hz;
-	uint8_t		af_save_state;			// save state to EEPROM
+	uint16_t	length;
+	uint8_t		id;
 
-	uint8_t		aux_mode;
+	uint8_t		af_high_hz;
+	uint8_t		af_high_duty_pc;
+	uint8_t		af_low_hz;
+	uint8_t		af_low_duty_pc;
+	uint8_t		af_remember_state;
 
-	uint8_t		padding[20];
+	uint8_t		leds[16];
+	uint8_t		led_display_mapping;
+	uint16_t	led_display_timeout_ms;
 
-	uint32_t	crc32;
-} MISC_CONFIG_t;
+	uint8_t		meta_af_toggle;
+	uint8_t		meta_af_select_with_stick;
+	uint8_t		meta_mapping_select_with_stick;
+
+	uint8_t		rotary_num_positions;
+	uint8_t		rotary_enable_pov;
+	uint8_t		rotary_enable_buttons;
+} SETTINGS_CONFIG_t;
 
 
 

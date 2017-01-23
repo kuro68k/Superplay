@@ -1,9 +1,7 @@
 /*
  * io_table.h
  *
- * Created: 20/10/2015 14:16:58
- *  Author: MoJo
- */ 
+ */
 
 
 #ifndef IO_TABLE_H_
