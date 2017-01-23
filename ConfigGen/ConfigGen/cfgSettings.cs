@@ -71,8 +71,8 @@ namespace ConfigGen
 			public sbyte rotary_enable_pov;
 			public sbyte rotary_enable_buttons;
 
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-			public sbyte[] _padding;
+			//[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+			//public sbyte[] _padding;
 		}
 
 		public override void CustomByteSteamFormat(MemoryStream ms)
