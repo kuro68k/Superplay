@@ -3,7 +3,7 @@
  *
  * Created: 01/09/2015 10:25:16
  *  Author: Paul Qureshi
- */ 
+ */
 
 
 #ifndef KBUS_H_
@@ -39,7 +39,7 @@ typedef struct
 //#define KCMD_READ_AUTOFIRE_RATE		0x57
 //#define KCMD_SET_AUTOFIRE_MAP		0x58
 //#define KCMD_READ_AUTOFIRE_MAP		0x59
-//#define KCMD_READ_REPORT			0x5A
+#define KCMD_READ_REPORT			0x5A
 #define KCMD_ENTER_BOOTLOADER		0x5B
 
 

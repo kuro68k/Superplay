@@ -105,8 +105,6 @@ void RPT_refresh_input_matrix(void)
 	input_matrix[LOFF] = 0;
 	input_matrix[LON] = 1;
 
-	//uint8_t i = 0;
-	//while (map->mapping[i, 0] != 0)
 	for (uint8_t i = 0; i < map->count; i++)
 		input_matrix[map->mapping[i][0]] = input_matrix[map->mapping[i][1]];
 }

@@ -25,6 +25,8 @@ const __flash uint8_t clksel[] = {	TC_TC0_CLKSEL_DIV1_gc, TC_TC0_CLKSEL_DIV2_gc,
 
 uint8_t	af_high_counters[16];
 uint8_t af_low_counters[16];
+uint8_t	af_high_duty = 3;			// 50% duty cycle
+uint8_t af_low_duty = 3;
 uint8_t volatile af_high_count_AT = 0;	// !! ATOMIC !!
 uint8_t volatile af_low_count_AT = 0;	// !! ATOMIC !!
 
@@ -79,7 +81,7 @@ void AF_init(void)
 	uint16_t	per = AF1_PER;
 	uint8_t		clksel = AF1_CLKSEL;
 	float		freq_hz;
-/*
+
 	freq_hz = settings->af_high_hz;
 	freq_hz *= AF_CLKMUL;				// timer runs AF_CLKMUL times faster than autofire
 	if (!af_calc_timer(freq_hz, &clksel, &per))
@@ -99,7 +101,7 @@ void AF_init(void)
 	AF_TC1.PER = per;
 	AF_TC1.CTRLA = clksel;
 
-	freq_hz = cfg->af_low_05hz / 2;	// convert to Hz
+	freq_hz = settings->af_low_hz;
 	freq_hz *= 8;						// timer runs 8x faster than autofire
 	if (!af_calc_timer(freq_hz, &clksel, &per))
 	{
@@ -117,7 +119,6 @@ void AF_init(void)
 	AF_TC2.CNT = 0;
 	AF_TC2.PER = per;
 	AF_TC2.CTRLA = clksel;
-*/
 }
 
 /**************************************************************************************************
@@ -139,60 +140,27 @@ ISR(AF_TC2_OVF_vect)
 void AF_apply(void)
 {
 	uint8_t		i;
-	uint16_t	mask;
 	uint8_t		af_high_count, af_low_count;
 
 
 	cli();
 	af_high_count = af_high_count_AT;
-	af_high_count_AT = 0;
 	af_low_count = af_low_count_AT;
-	af_low_count_AT = 0;
 	sei();
 
 
-	// decrement counters
-	/* FIXME
-	mask = 1;
-	for (i = 0; i < 16; i++)
-	{
-		af_high_counters[i] -= af_high_count;
-		while (af_high_count > AF_CLKMUL)	// counter underflowed
-		{
-			af_high_count += AF_CLKMUL;
-			if (logical_inputs[LAF_HIGH_1 + i])
-				af_map ^= mask;
-		}
-
-		af_low_counters[i] -= af_low_count;
-		while (af_low_count > AF_CLKMUL)	// counter underflowed
-		{
-			af_low_count += AF_CLKMUL;
-			if (logical_inputs[LAF_LOW_1 + i])
-				af_map ^= mask;
-		}
-	}
-
-
 	// handle unpressed buttons
-	mask = 1;
+	uint8_t high_temp = af_high_count + 1;
+	uint8_t low_temp = af_low_count + 1;
 	for (i = 0; i < 16; i++)
 	{
-		if (!logical_inputs[LBUTTON1 + i])		// button not pressed
+		if (!input_matrix[LBUTTON1 + i])		// button not pressed
 		{
-			af_high_counters[i] = AF_CLKMUL;	// reset counters so button engages instantly when pressed
-			af_low_counters[i] = AF_CLKMUL;
-			af_map |= mask;
+			af_high_counters[i] = high_temp;	// reset so button engages instantly when pressed
+			af_low_counters[i] = low_temp;
 		}
-	}
 
-
-	// apply AF settings
-	mask = 1;
-	for (i = 0; i < 16; i++)
-	{
-		if (!(af_map & mask))
-			logical_inputs[LBUTTON1 + i] = 0;
+		if (((af_high_count - af_high_counters[i]) & AF_CLKMUL_MASK) > af_high_duty)
+			input_matrix[LBUTTON1 + i] = 0;		// force off to modulate fire button
 	}
-	*/
 }

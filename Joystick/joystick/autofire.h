@@ -1,9 +1,7 @@
 /*
  * autofire.h
  *
- * Created: 03/06/2015 21:19:14
- *  Author: Paul Qureshi
- */ 
+ */
 
 
 #ifndef AUTOFIRE_H_
@@ -27,6 +25,7 @@
 
 
 #define AF_CLKMUL			8
+#define AF_CLKMUL_MASK		0x07
 
 
 
