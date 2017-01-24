@@ -15,7 +15,7 @@ typedef struct
 } IO_PIN_t;
 
 
-extern const __flash  IO_PIN_t	io_pin_table[];
+extern const __flash  IO_PIN_t	io_pin_table[256];
 
 
 

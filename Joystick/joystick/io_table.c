@@ -4,63 +4,62 @@
  */
 
 #include <avr/io.h>
+#include "config.h"
 #include "io_table.h"
 
 // logical input to physical IO port mapping
 #define IO_TABLE \
-		ENTRY(NONE,			0, 0) \
+		ENTRY(PJOY_UP,		&PORTA, PIN0_bm) \
+		ENTRY(PJOY_DN,		&PORTA, PIN1_bm) \
+		ENTRY(PJOY_LF,		&PORTA, PIN2_bm) \
+		ENTRY(PJOY_RT,		&PORTA, PIN3_bm) \
+		ENTRY(PB16,			&PORTA, PIN4_bm) \
+		ENTRY(PB15,			&PORTA, PIN5_bm) \
+		ENTRY(PA5,			&PORTA, PIN6_bm) \
+		ENTRY(PA6,			&PORTA, PIN7_bm) \
 		\
-		ENTRY(JOY_UP,		&PORTA, PIN0_bm) \
-		ENTRY(JOY_DN,		&PORTA, PIN1_bm) \
-		ENTRY(JOY_LF,		&PORTA, PIN2_bm) \
-		ENTRY(JOY_RT,		&PORTA, PIN3_bm) \
-		ENTRY(START,		&PORTA, PIN4_bm) \
-		ENTRY(COIN,			&PORTA, PIN5_bm) \
-		ENTRY(AUTO_LOW_5,	&PORTA, PIN6_bm) \
-		ENTRY(AUTO_LOW_6,	&PORTA, PIN7_bm) \
+		ENTRY(PB1,			&PORTB, PIN0_bm) \
+		ENTRY(PB2,			&PORTB, PIN1_bm) \
+		ENTRY(PB3,			&PORTB, PIN2_bm) \
+		ENTRY(PB4,			&PORTB, PIN3_bm) \
+		ENTRY(PB5,			&PORTB, PIN4_bm) \
+		ENTRY(PB6,			&PORTB, PIN5_bm) \
+		ENTRY(PB7,			&PORTB, PIN6_bm) \
+		ENTRY(PB8,			&PORTB, PIN7_bm) \
 		\
-		ENTRY(BUTTON1,		&PORTB, PIN0_bm) \
-		ENTRY(BUTTON2,		&PORTB, PIN1_bm) \
-		ENTRY(BUTTON3,		&PORTB, PIN2_bm) \
-		ENTRY(BUTTON4,		&PORTB, PIN3_bm) \
-		ENTRY(BUTTON5,		&PORTB, PIN4_bm) \
-		ENTRY(BUTTON6,		&PORTB, PIN5_bm) \
-		ENTRY(BUTTON7,		&PORTB, PIN6_bm) \
-		ENTRY(BUTTON8,		&PORTB, PIN7_bm) \
+		ENTRY(PA1,			&PORTC, PIN0_bm) \
+		ENTRY(PA2,			&PORTC, PIN1_bm) \
+		ENTRY(PA3,			&PORTC, PIN2_bm) \
+		ENTRY(PA4,			&PORTC, PIN3_bm) \
 		\
-		ENTRY(AUTO_LOW_1,	&PORTC, PIN0_bm) \
-		ENTRY(AUTO_LOW_2,	&PORTC, PIN1_bm) \
-		ENTRY(AUTO_LOW_3,	&PORTC, PIN2_bm) \
-		ENTRY(AUTO_LOW_4,	&PORTC, PIN3_bm) \
+		ENTRY(PA9,			&PORTD, PIN0_bm) \
+		ENTRY(PA10,			&PORTD, PIN1_bm) \
+		ENTRY(PA11,			&PORTD, PIN2_bm) \
+		ENTRY(PA12,			&PORTD, PIN3_bm) \
+		ENTRY(PA13,			&PORTD, PIN4_bm) \
+		ENTRY(PA14,			&PORTD, PIN5_bm) \
 		\
-		ENTRY(AUTO_HIGH_1,	&PORTD, PIN0_bm) \
-		ENTRY(AUTO_HIGH_2,	&PORTD, PIN1_bm) \
-		ENTRY(AUTO_HIGH_3,	&PORTD, PIN2_bm) \
-		ENTRY(AUTO_HIGH_4,	&PORTD, PIN3_bm) \
-		ENTRY(AUTO_HIGH_5,	&PORTD, PIN4_bm) \
-		ENTRY(AUTO_HIGH_6,	&PORTD, PIN5_bm) \
+		ENTRY(PR1,			&PORTE, PIN0_bm) \
+		ENTRY(PR2,			&PORTE, PIN1_bm) \
+		ENTRY(PR3,			&PORTE, PIN2_bm) \
+		ENTRY(PR4,			&PORTE, PIN3_bm) \
+		ENTRY(PR5,			&PORTE, PIN4_bm) \
+		ENTRY(PR6,			&PORTE, PIN5_bm) \
+		ENTRY(PR7,			&PORTE, PIN6_bm) \
+		ENTRY(PR8,			&PORTE, PIN7_bm) \
 		\
-		ENTRY(ROTARY1,		&PORTE, PIN0_bm) \
-		ENTRY(ROTARY2,		&PORTE, PIN1_bm) \
-		ENTRY(ROTARY3,		&PORTE, PIN2_bm) \
-		ENTRY(ROTARY4,		&PORTE, PIN3_bm) \
-		ENTRY(ROTARY5,		&PORTE, PIN4_bm) \
-		ENTRY(ROTARY6,		&PORTE, PIN5_bm) \
-		ENTRY(ROTARY7,		&PORTE, PIN6_bm) \
-		ENTRY(ROTARY8,		&PORTE, PIN7_bm) \
-		\
-		ENTRY(ROTARY9,		&PORTF, PIN0_bm) \
-		ENTRY(ROTARY10,		&PORTE, PIN1_bm) \
-		ENTRY(ROTARY11,		&PORTE, PIN2_bm) \
-		ENTRY(ROTARY12,		&PORTE, PIN3_bm) \
-		ENTRY(UNUSED,		&PORTE, PIN4_bm) \
-		ENTRY(MODE_4,		&PORTE, PIN5_bm) \
-		ENTRY(MODE_4AF,		&PORTE, PIN6_bm) \
-		ENTRY(CONTROL,		&PORTE, PIN7_bm)
+		ENTRY(PR9,			&PORTF, PIN0_bm) \
+		ENTRY(PR10,			&PORTE, PIN1_bm) \
+		ENTRY(PR11,			&PORTE, PIN2_bm) \
+		ENTRY(PR12,			&PORTE, PIN3_bm) \
+		ENTRY(PB12,			&PORTE, PIN4_bm) \
+		ENTRY(PB13,			&PORTE, PIN5_bm) \
+		ENTRY(PB14,			&PORTE, PIN6_bm) \
+		ENTRY(PMETA,		&PORTE, PIN7_bm)
 
 
-const __flash  IO_PIN_t	io_pin_table[] = {
-#define	ENTRY(name, port, pin_mask)		{port, pin_mask},
+const __flash  IO_PIN_t	io_pin_table[256] = {
+#define	ENTRY(name, port, pin_mask)		[name] = {port, pin_mask},
 	IO_TABLE
 #undef ENTRY
 };

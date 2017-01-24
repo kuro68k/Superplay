@@ -211,6 +211,7 @@ typedef struct
 	uint8_t		af_remember_state;
 
 	uint8_t		leds[16];
+	uint16_t	led_output_inversion_map;
 	uint8_t		led_display_mapping;
 	uint16_t	led_display_timeout_ms;
 

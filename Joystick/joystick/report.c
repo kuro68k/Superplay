@@ -110,6 +110,26 @@ void RPT_refresh_input_matrix(void)
 }
 
 /**************************************************************************************************
+** Update LED control outputs
+*/
+void RPT_refresh_leds(void)
+{
+	// set output pins
+	for (uint8_t i = 0; i < 16; i++)
+	{
+		uint8_t pio = settings->leds[i];	// physical I/O
+		if ((pio != 0) &&
+			io_pin_table[pio].port != 0)
+		{
+			if (input_matrix[LLED1 + i])
+				io_pin_table[pio].port->OUTSET = io_pin_table[pio].pin_mask;
+			else
+				io_pin_table[pio].port->OUTCLR = io_pin_table[pio].pin_mask;
+		}
+	}
+}
+
+/**************************************************************************************************
 ** Refresh report with current values
 */
 void RPT_refresh(void)

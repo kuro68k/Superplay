@@ -32,6 +32,7 @@ namespace ConfigGen
 			for (int i = 1; i <= 16; i++)
 				configs.Add(new ConfigParameter("led" + i.ToString(), 0, 0, 255));
 
+			configs.Add(new ConfigParameter("led_output_inversion_map", 0, 0, 65535));
 			configs.Add(new ConfigParameter("led_display_mapping", 0, 0, 2));
 			configs.Add(new ConfigParameter("led_display_timeout_ms", 0, 0, 65535));
 
@@ -60,6 +61,7 @@ namespace ConfigGen
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
 			public sbyte[] led;
 
+			public UInt16 led_output_inversion_map;
 			public sbyte led_display_mapping;
 			public UInt16 led_display_timeout_ms;
 

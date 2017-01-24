@@ -55,6 +55,7 @@ extern REPORT_t	report;
 extern uint8_t	input_matrix[256];
 
 extern void RPT_refresh_input_matrix(void);
+extern void RPT_refresh_leds(void);
 extern void RPT_refresh(void);
 
 
