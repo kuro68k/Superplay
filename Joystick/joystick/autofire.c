@@ -119,6 +119,9 @@ void AF_init(void)
 	AF_TC2.CNT = 0;
 	AF_TC2.PER = per;
 	AF_TC2.CTRLA = clksel;
+
+	af_high_duty = (float)settings->af_high_duty_pc * (AF_CLKMUL / 100.0);
+	af_low_duty = (float)settings->af_low_duty_pc * (AF_CLKMUL / 100.0);
 }
 
 /**************************************************************************************************
