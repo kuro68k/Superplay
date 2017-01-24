@@ -28,6 +28,53 @@ uint8_t	HW_last_reset_status;
 
 
 /**************************************************************************************************
+** Reconfigure output pins based on settings
+*/
+void hw_configure_outputs(void)
+{
+	uint16_t mask = 1;
+	for (uint8_t i = 0; i < 16; i++)
+	{
+		uint8_t pio = settings->leds[i];	// physical I/O
+		if ((pio != 0) &&
+			io_pin_table[pio].port != 0)
+		{
+			io_pin_table[pio].port->DIRSET = io_pin_table[pio].pin_mask;
+			if (settings->led_output_inversion_map & mask)
+			{
+				switch(io_pin_table[pio].pin_mask)
+				{
+					case PIN0_bm:
+						ENABLE_PULLUP(io_pin_table[pio].port->PIN0CTRL);
+						break;
+					case PIN1_bm:
+						ENABLE_PULLUP(io_pin_table[pio].port->PIN1CTRL);
+						break;
+					case PIN2_bm:
+						ENABLE_PULLUP(io_pin_table[pio].port->PIN2CTRL);
+						break;
+					case PIN3_bm:
+						ENABLE_PULLUP(io_pin_table[pio].port->PIN3CTRL);
+						break;
+					case PIN4_bm:
+						ENABLE_PULLUP(io_pin_table[pio].port->PIN4CTRL);
+						break;
+					case PIN5_bm:
+						ENABLE_PULLUP(io_pin_table[pio].port->PIN5CTRL);
+						break;
+					case PIN6_bm:
+						ENABLE_PULLUP(io_pin_table[pio].port->PIN6CTRL);
+						break;
+					case PIN7_bm:
+						ENABLE_PULLUP(io_pin_table[pio].port->PIN7CTRL);
+						break;
+				}
+			}
+		}
+	}
+}
+
+/**************************************************************************************************
 ** Set up hardware after reset
 */
 void HW_init(void)
@@ -82,18 +129,7 @@ void HW_init(void)
 	// port R
 	PORTR.DIR = 0;
 
-/* FIXME
-	// reconfigure output pins based on mapping
-	for (uint8_t i = 0; i < NUM_MAPPINGS; i++)
-	{
-		if (map->physical[i] > 127)		// output
-		{
-			uint8_t io = map->physical[i];
-			io_pin_table[io].port->DIRSET = io_pin_table[io].pin_mask;
-		}
-	}
-*/
-
+	hw_configure_outputs();
 
 	SLEEP.CTRL = SLEEP_SMODE_IDLE_gc | SLEEP_SEN_bm;
 
