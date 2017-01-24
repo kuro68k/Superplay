@@ -12,10 +12,11 @@ namespace ConfigGen
 		{
 			// logical I/O
 			{ "off", 0x00 },
-			{ "up", 0x01 },
-			{ "down", 0x02 },
-			{ "left", 0x03 },
-			{ "right", 0x04 },
+			{ "on", 0x01 },
+			{ "up", 0x02 },
+			{ "down", 0x03 },
+			{ "left", 0x04 },
+			{ "right", 0x05 },
 			{ "meta", 0x0F },
 
 			{ "button1", 0x10 },
@@ -112,10 +113,11 @@ namespace ConfigGen
 		{
 			// physical I/O
 			{ "_off", 0x80 },
-			{ "_up", 0x81 },
-			{ "_down", 0x82 },
-			{ "_left", 0x83 },
-			{ "_right", 0x84 },
+			{ "_on", 0x81 },
+			{ "_up", 0x82 },
+			{ "_down", 0x83 },
+			{ "_left", 0x84 },
+			{ "_right", 0x85 },
 			{ "_meta", 0x8F },
 
 			{ "_b1", 0x90 },
