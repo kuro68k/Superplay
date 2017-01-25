@@ -3,7 +3,7 @@
  *
  * Created: 04/04/2015 16:10:43
  *  Author: Paul Qureshi
- */ 
+ */
 
 
 #ifndef HID_H_
@@ -19,8 +19,8 @@ typedef struct
 } HID_REPORT_t;
 
 
-#define HID_ROTATE_LEFT_BUTTON_bm		(1<<4)
-#define HID_ROTATE_RIGHT_BUTTON_bm		(1<<5)
+#define HID_ROTATE_LEFT_BUTTON_bm		(1<<5)
+#define HID_ROTATE_RIGHT_BUTTON_bm		(1<<6)
 
 #define HID_TC							TCF0
 #define HID_TC_CLKSEL					TC_TC0_CLKSEL_DIV64_gc

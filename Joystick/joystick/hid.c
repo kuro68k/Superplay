@@ -74,54 +74,17 @@ inline int8_t hid_find_rotary_pos(void)
 }
 
 /**************************************************************************************************
-** Send a latest report over HID
+** Rotary buttons
 */
-void HID_send_report(void)
+void hid_rotary_buttons(HID_REPORT_t *hid_report)
 {
 	static uint8_t last_rot = 0xFF;
 	static bool rot_left = false;
 	static bool rot_right = false;
 	static bool inhibit = false;
 
-	HID_REPORT_t	hid_report;
-
-	if (!HID_enabled)
-		return;
-
-	memset(&hid_report, 0, sizeof(hid_report));
-
-	if (!VEN_enabled)	// only send HID reports if not using high frequency interface
+	if (settings->rotary_enable_buttons)
 	{
-		hid_report.x = 0;
-		hid_report.y = 0;
-		if (input_matrix[LJOY_UP])		hid_report.y = -127;
-		if (input_matrix[LJOY_DN])		hid_report.y = 127;
-		if (input_matrix[LJOY_RT])		hid_report.x = 127;
-		if (input_matrix[LJOY_LF])		hid_report.x = -127;
-
-		if (input_matrix[LBUTTON1])		hid_report.buttons1 |= (1<<0);
-		if (input_matrix[LBUTTON2])		hid_report.buttons1 |= (1<<1);
-		if (input_matrix[LBUTTON3])		hid_report.buttons1 |= (1<<2);
-		if (input_matrix[LBUTTON4])		hid_report.buttons1 |= (1<<3);
-		if (input_matrix[LBUTTON5])		hid_report.buttons1 |= (1<<4);
-		if (input_matrix[LBUTTON6])		hid_report.buttons1 |= (1<<5);
-		if (input_matrix[LBUTTON7])		hid_report.buttons1 |= (1<<6);
-		if (input_matrix[LBUTTON8])		hid_report.buttons1 |= (1<<7);
-		if (input_matrix[LBUTTON9])		hid_report.buttons2 |= (1<<0);
-		if (input_matrix[LBUTTON10])		hid_report.buttons2 |= (1<<1);
-		if (input_matrix[LBUTTON11])		hid_report.buttons2 |= (1<<2);
-		if (input_matrix[LBUTTON12])		hid_report.buttons2 |= (1<<3);
-		if (input_matrix[LBUTTON13])		hid_report.buttons2 |= (1<<4);
-		if (input_matrix[LBUTTON14])		hid_report.buttons2 |= (1<<5);
-		if (input_matrix[LBUTTON15])		hid_report.buttons2 |= (1<<6);
-		if (input_matrix[LBUTTON16])		hid_report.buttons2 |= (1<<7);
-
-		//if (input_matrix[LSTART])			hid_report.buttons3 |= (1<<0);
-		//if (input_matrix[LCOIN])			hid_report.buttons3 |= (1<<1);
-		//if (input_matrix[LCONTROL])		hid_report.buttons3 |= (1<<2);
-		//if (input_matrix[LUNUSED])		hid_report.buttons3 |= (1<<3);
-
-		// rotary
 		if (!rot_left && !rot_right && !inhibit)
 		{
 			uint8_t new_rot = hid_find_rotary_pos();
@@ -174,8 +137,56 @@ void HID_send_report(void)
 			}
 		}
 
-		if (rot_left)	hid_report.buttons3 |= HID_ROTATE_LEFT_BUTTON_bm;
-		if (rot_right)	hid_report.buttons3 |= HID_ROTATE_RIGHT_BUTTON_bm;
+		if (rot_left)	hid_report->buttons3 |= HID_ROTATE_LEFT_BUTTON_bm;
+		if (rot_right)	hid_report->buttons3 |= HID_ROTATE_RIGHT_BUTTON_bm;
+	}
+}
+
+/**************************************************************************************************
+** Send a latest report over HID
+*/
+void HID_send_report(void)
+{
+	HID_REPORT_t	hid_report;
+
+	if (!HID_enabled)
+		return;
+
+	memset(&hid_report, 0, sizeof(hid_report));
+
+	if (!VEN_enabled)	// only send HID reports if not using high frequency interface
+	{
+		hid_report.x = 0;
+		hid_report.y = 0;
+		if (input_matrix[LJOY_UP])		hid_report.y = -127;
+		if (input_matrix[LJOY_DN])		hid_report.y = 127;
+		if (input_matrix[LJOY_RT])		hid_report.x = 127;
+		if (input_matrix[LJOY_LF])		hid_report.x = -127;
+
+		if (input_matrix[LBUTTON1])		hid_report.buttons1 |= (1<<0);
+		if (input_matrix[LBUTTON2])		hid_report.buttons1 |= (1<<1);
+		if (input_matrix[LBUTTON3])		hid_report.buttons1 |= (1<<2);
+		if (input_matrix[LBUTTON4])		hid_report.buttons1 |= (1<<3);
+		if (input_matrix[LBUTTON5])		hid_report.buttons1 |= (1<<4);
+		if (input_matrix[LBUTTON6])		hid_report.buttons1 |= (1<<5);
+		if (input_matrix[LBUTTON7])		hid_report.buttons1 |= (1<<6);
+		if (input_matrix[LBUTTON8])		hid_report.buttons1 |= (1<<7);
+		if (input_matrix[LBUTTON9])		hid_report.buttons2 |= (1<<0);
+		if (input_matrix[LBUTTON10])	hid_report.buttons2 |= (1<<1);
+		if (input_matrix[LBUTTON11])	hid_report.buttons2 |= (1<<2);
+		if (input_matrix[LBUTTON12])	hid_report.buttons2 |= (1<<3);
+		if (input_matrix[LBUTTON13])	hid_report.buttons2 |= (1<<4);
+		if (input_matrix[LBUTTON14])	hid_report.buttons2 |= (1<<5);
+		if (input_matrix[LBUTTON15])	hid_report.buttons2 |= (1<<6);
+		if (input_matrix[LBUTTON16])	hid_report.buttons2 |= (1<<7);
+
+		//if (input_matrix[LSTART])			hid_report.buttons3 |= (1<<0);
+		//if (input_matrix[LCOIN])			hid_report.buttons3 |= (1<<1);
+		//if (input_matrix[LCONTROL])		hid_report.buttons3 |= (1<<2);
+		//if (input_matrix[LUNUSED])		hid_report.buttons3 |= (1<<3);
+		if (input_matrix[LMETA])		hid_report.buttons3 |= (1<<7);
+
+		hid_rotary_buttons(&hid_report);
 	}
 
 	udi_hid_generic_send_report_in((uint8_t *)&hid_report);
