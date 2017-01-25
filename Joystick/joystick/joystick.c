@@ -74,7 +74,8 @@ int main(void)
 		WDR();
 
 		RPT_refresh_input_matrix();
-		//AF_apply();
+		RPT_refresh_leds();
+		AF_apply();
 
 		//if (cfg->aux_mode == AUX_MODE_BUTTONS)
 		//	AB_send_report();
