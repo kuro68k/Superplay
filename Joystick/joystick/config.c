@@ -13,7 +13,13 @@
 
 const SETTINGS_CONFIG_t default_settings = {
 	.length = sizeof(SETTINGS_CONFIG_t),
-	.id = SETTINGS_CONFIG_ID
+	.id = SETTINGS_CONFIG_ID,
+
+	.af_high_hz = 15,
+	.af_high_duty_pc = 50,
+	.af_low_hz = 5,
+	.af_low_duty_pc = 25,
+	.af_remember_state = 0
 };
 const SETTINGS_CONFIG_t *settings = &default_settings;
 

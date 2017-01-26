@@ -83,6 +83,7 @@ void AF_init(void)
 	float		freq_hz;
 
 	freq_hz = settings->af_high_hz;
+	if (freq_hz < 1) freq_hz = 1;
 	freq_hz *= AF_CLKMUL;				// timer runs AF_CLKMUL times faster than autofire
 	if (!af_calc_timer(freq_hz, &clksel, &per))
 	{
@@ -102,7 +103,8 @@ void AF_init(void)
 	AF_TC1.CTRLA = clksel;
 
 	freq_hz = settings->af_low_hz;
-	freq_hz *= 8;						// timer runs 8x faster than autofire
+	if (freq_hz < 1) freq_hz = 1;
+	freq_hz *= AF_CLKMUL;
 	if (!af_calc_timer(freq_hz, &clksel, &per))
 	{
 		clksel = AF2_CLKSEL;
