@@ -12,7 +12,6 @@
 #include "report.h"
 #include "io_table.h"
 
-REPORT_t	report;
 uint8_t		input_matrix[256];
 
 
@@ -35,8 +34,8 @@ void rpt_physical_inputs_refresh(void)
 	uint8_t p = PORTA.IN;
 	if (!(p & JOY_UP_PIN_bm))		input_matrix[PJOY_UP] = 1;
 	if (!(p & JOY_DOWN_PIN_bm))		input_matrix[PJOY_DN] = 1;
-	if (!(p & JOY_LEFT_bm))			input_matrix[PJOY_LF] = 1;
-	if (!(p & JOY_RIGHT_bm))		input_matrix[PJOY_RT] = 1;
+	if (!(p & JOY_LEFT_PIN_bm))		input_matrix[PJOY_LF] = 1;
+	if (!(p & JOY_RIGHT_PIN_bm))	input_matrix[PJOY_RT] = 1;
 	if (!(p & START_PIN_bm))		input_matrix[PB16] = 1;
 	if (!(p & COIN_PIN_bm))			input_matrix[PB15] = 1;
 	if (!(p & AUTO_LOW_5_PIN_bm))	input_matrix[PA5] = 1;
@@ -130,75 +129,42 @@ void RPT_refresh_leds(void)
 }
 
 /**************************************************************************************************
-** Refresh report with current values
+** Generate a 128 bit (16 byte) report. Buffer must be at least 16 bytes.
 */
-void RPT_refresh(void)
+void RPT_generate_report(uint8_t *buffer)
 {
-	memset(&report, 0, sizeof(report));
-
-	// joystick
-	uint8_t b = 0;
-	if (input_matrix[LJOY_UP])		b |= JOY_UP_bm;
-	if (input_matrix[LJOY_DN])		b |= JOY_DOWN_bm;
-	if (input_matrix[LJOY_LF])		b |= JOY_LEFT_bm;
-	if (input_matrix[LJOY_RT])		b |= JOY_RIGHT_bm;
-
-	// meta buttons
-	//if (input_matrix[LSTART])			b |= BUTTON_START_bm;
-	//if (input_matrix[LCOIN])			b |= BUTTON_COIN_bm;
-	//if (input_matrix[LCONTROL])		b |= BUTTON_CONTROL_bm;
-	report.udlr_sscc = b;
-
-	// fire buttons
-	uint16_t w = 0;
-	if (input_matrix[LBUTTON1])		w |= (1<<0);
-	if (input_matrix[LBUTTON2])		w |= (1<<1);
-	if (input_matrix[LBUTTON3])		w |= (1<<2);
-	if (input_matrix[LBUTTON4])		w |= (1<<3);
-	if (input_matrix[LBUTTON5])		w |= (1<<4);
-	if (input_matrix[LBUTTON6])		w |= (1<<5);
-	if (input_matrix[LBUTTON7])		w |= (1<<6);
-	if (input_matrix[LBUTTON8])		w |= (1<<7);
-	if (input_matrix[LBUTTON9])		w |= (1<<8);
-	if (input_matrix[LBUTTON10])		w |= (1<<9);
-	if (input_matrix[LBUTTON11])		w |= (1<<10);
-	if (input_matrix[LBUTTON12])		w |= (1<<11);
-	if (input_matrix[LBUTTON13])		w |= (1<<12);
-	if (input_matrix[LBUTTON14])		w |= (1<<13);
-	if (input_matrix[LBUTTON15])		w |= (1<<14);
-	if (input_matrix[LBUTTON16])		w |= (1<<15);
-	report.buttons = w;
-
-/*
-	// button mode
-	if (logical_inputs[LMODE_4])
-		report.rot_mode |= BUTTON_MODE_4_gc;
-	else if (logical_inputs[LMODE_4AF])
-		report.rot_mode |= BUTTON_MODE_4AF_gc;
-	else
-		report.rot_mode |= BUTTON_MODE_8_gc;
-
-	// remap depending on the mode
-	if (logical_inputs[LMODE_4] || logical_inputs[LMODE_4AF])
-	{
-		report.buttons |= (report.buttons & 0xF) << 4;
-		report.buttons &= 0xFF0F;
-	}
-
-	// rotary controller
-	uint8_t rot = ROTARY_NONE_gc;
-	if (logical_inputs[LROTARY1])	rot = 0;
-	if (logical_inputs[LROTARY2])	rot = 1;
-	if (logical_inputs[LROTARY3])	rot = 2;
-	if (logical_inputs[LROTARY4])	rot = 3;
-	if (logical_inputs[LROTARY5])	rot = 4;
-	if (logical_inputs[LROTARY6])	rot = 5;
-	if (logical_inputs[LROTARY7])	rot = 6;
-	if (logical_inputs[LROTARY8])	rot = 7;
-	if (logical_inputs[LROTARY9])	rot = 8;
-	if (logical_inputs[LROTARY10])	rot = 9;
-	if (logical_inputs[LROTARY11])	rot = 10;
-	if (logical_inputs[LROTARY12])	rot = 11;
-	report.rot_mode |= rot << ROTARY_gp;
-*/
+	asm volatile(
+		"ldi	r18, 16"			"\n\t"
+		"loop%=:"
+		"ld		__tmp_reg__, X+"	"\n\t"	// 0
+		"bst	__tmp_reg__, 0"		"\n\t"
+		"bld	r19, 0"				"\n\t"
+		"ld		__tmp_reg__, X+"	"\n\t"	// 1
+		"bst	__tmp_reg__, 0"		"\n\t"
+		"bld	r19, 1"				"\n\t"
+		"ld		__tmp_reg__, X+"	"\n\t"	// 2
+		"bst	__tmp_reg__, 0"		"\n\t"
+		"bld	r19, 2"				"\n\t"
+		"ld		__tmp_reg__, X+"	"\n\t"	// 3
+		"bst	__tmp_reg__, 0"		"\n\t"
+		"bld	r19, 3"				"\n\t"
+		"ld		__tmp_reg__, X+"	"\n\t"	// 4
+		"bst	__tmp_reg__, 0"		"\n\t"
+		"bld	r19, 4"				"\n\t"
+		"ld		__tmp_reg__, X+"	"\n\t"	// 5
+		"bst	__tmp_reg__, 0"		"\n\t"
+		"bld	r19, 5"				"\n\t"
+		"ld		__tmp_reg__, X+"	"\n\t"	// 6
+		"bst	__tmp_reg__, 0"		"\n\t"
+		"bld	r19, 6"				"\n\t"
+		"ld		__tmp_reg__, X+"	"\n\t"	// 7
+		"bst	__tmp_reg__, 0"		"\n\t"
+		"bld	r19, 7"				"\n\t"
+		"st		Z+, r19"			"\n\t"
+		"dec	r18"				"\n\t"
+		"brne	loop%="
+	:
+	: [input] "x" (input_matrix), [output] "z" (buffer)
+	: "r18", "r19"
+	);
 }

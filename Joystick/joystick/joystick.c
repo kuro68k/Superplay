@@ -47,6 +47,8 @@ volatile const __flash FW_INFO_t firmware_info =	{	{ 0x59, 0x61, 0x6d, 0x61, 0x4
 
 int main(void)
 {
+	uint8_t report_buffer[16];
+
 	firmware_info.magic_string[0];	// prevent firmware_info being optimized away
 
 	PORTF.DIRSET = PIN0_bm | PIN1_bm | PIN2_bm;
@@ -82,11 +84,10 @@ int main(void)
 
 		//if (HID_enabled && !VEN_enabled)
 			HID_send_report();
-		//if (VEN_enabled)
-		if(1)
+		if (VEN_enabled)
 		{
-			RPT_refresh();
-			udi_vendor_interrupt_in_run((uint8_t *)&report, sizeof(report), NULL);
+			RPT_generate_report(report_buffer);
+			udi_vendor_interrupt_in_run(report_buffer, sizeof(report_buffer), NULL);
 		}
 	}
 }

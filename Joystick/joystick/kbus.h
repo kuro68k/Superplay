@@ -1,8 +1,6 @@
 /*
  * kbus.h
  *
- * Created: 01/09/2015 10:25:16
- *  Author: Paul Qureshi
  */
 
 

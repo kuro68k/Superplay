@@ -21,6 +21,7 @@
 */
 void AB_send_report(void)
 {
+	/*
 	AB_USART.DATA = report.buttons & 0xFF;
 	while(!(AB_USART.STATUS & USART_DREIF_bm));		// FIFO has a free slot
 	AB_USART.DATA = report.udlr_sscc;
@@ -28,6 +29,7 @@ void AB_send_report(void)
 	AB_PORT.OUTSET = AB_LAT_PIN_bm;
 	NOP();
 	AB_PORT.OUTCLR = AB_LAT_PIN_bm | AB_OE_PIN_bm;	// also enable outputs if this is the first report
+	*/
 }
 
 /**************************************************************************************************
