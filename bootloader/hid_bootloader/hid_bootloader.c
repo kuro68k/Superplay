@@ -1,9 +1,7 @@
 /*
  * hid_bootloader.c
  *
- * Created: 29/03/2015 21:15:01
- *  Author: MoJo
- */ 
+ */
 
 
 #include <avr/io.h>
@@ -32,7 +30,7 @@ int main(void)
 	EEP_EnableMapping();
 	uint32_t marker = *eeprom_marker;
 	EEP_DisableMapping();
-	
+
 	// check for VUSB
 	if ((marker != 0x4c4f4144) &&				// "LOAD" signal from application
 		(SP_ReadWord(0x00000000) != 0xFFFF))	// application reset vector not blank
@@ -50,7 +48,7 @@ int main(void)
 	PMIC.CTRL |= PMIC_IVSEL_bm;		// set interrupt vector table to bootloader section
 
 	EEP_ErasePage(31);			// clear "LOAD" signal from application
-	
+
 	// set up USB HID bootloader interface
 	sysclk_init();
 	irq_initialize_vectors();
@@ -70,7 +68,7 @@ uint8_t hex_to_char(uint8_t hex)
 		hex += '0';
 	else
 		hex += 'A' - 10;
-	
+
 	return(hex);
 }
 
@@ -93,7 +91,7 @@ void HID_set_feature_report_out(uint8_t *report)
 	response[0] = report[0] | 0x80;
 	response[1] = report[1];
 	response[2] = report[2];
-	
+
 	uint16_t	addr;
 	addr = *(uint16_t *)(report+1);
 
@@ -102,7 +100,7 @@ void HID_set_feature_report_out(uint8_t *report)
 		// no-op
 		case CMD_NOP:
 			break;
-		
+
 		// write to RAM page buffer
 		case CMD_RESET_POINTER:
 			page_ptr = 0;
@@ -135,7 +133,7 @@ void HID_set_feature_report_out(uint8_t *report)
 			response[5] = MCU.DEVID2;
 			response[6] = MCU.REVID;
 			break;
-		
+
 		// read fuses
 		case CMD_READ_FUSES:
 			response[3] = SP_ReadFuseByte(0);
@@ -145,7 +143,7 @@ void HID_set_feature_report_out(uint8_t *report)
 			response[7] = SP_ReadFuseByte(4);
 			response[8] = SP_ReadFuseByte(5);
 			break;
-		
+
 		// write RAM page buffer to application section page
 		case CMD_WRITE_PAGE:
 			if (addr > (APP_SECTION_SIZE / APP_SECTION_PAGE_SIZE))	// out of range
@@ -174,13 +172,13 @@ void HID_set_feature_report_out(uint8_t *report)
 				page_ptr = 0;
 			}
 			break;
-		
+
 		// erase user signature row
 		case CMD_ERASE_USER_SIG_ROW:
 			SP_WaitForSPM();
 			SP_EraseUserSignatureRow();
 			break;
-		
+
 		// write RAM buffer to user signature row
 		case CMD_WRITE_USER_SIG_ROW:
 			SP_WaitForSPM();
@@ -208,7 +206,7 @@ void HID_set_feature_report_out(uint8_t *report)
 				uint8_t	i;
 				uint8_t	j = 3;
 				uint8_t b;
-	
+
 				for (i = 0; i < 6; i++)
 				{
 					b = SP_ReadCalibrationByte(offsetof(NVM_PROD_SIGNATURES_t, LOTNUM0) + i);
@@ -231,16 +229,16 @@ void HID_set_feature_report_out(uint8_t *report)
 				response[j] = '\0';
 				break;
 			}
-		
+
 		case CMD_READ_BOOTLOADER_VERSION:
 			response[3] = BOOTLOADER_VERSION;
 			break;
-		
+
 		case CMD_RESET_MCU:
 			reset_do_soft_reset();
 			response[1] = 0xFF;	// failed
 			break;
-		
+
 		case CMD_READ_EEPROM:
 			if (addr > (EEPROM_SIZE - 32))
 			{
@@ -269,7 +267,7 @@ void HID_set_feature_report_out(uint8_t *report)
 				EEP_AtomicWritePage(addr);
 			}
 			break;
-		
+
 		// unknown command
 		default:
 			response[0] = 0xFF;

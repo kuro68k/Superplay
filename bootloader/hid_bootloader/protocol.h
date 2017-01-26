@@ -1,9 +1,7 @@
 /*
  * protocol.h
  *
- * Created: 29/03/2015 21:41:15
- *  Author: MoJo
- */ 
+ */
 
 
 #ifndef PROTOCOL_H_
