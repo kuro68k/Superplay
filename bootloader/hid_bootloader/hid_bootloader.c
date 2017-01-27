@@ -31,11 +31,8 @@ int main(void)
 	uint32_t marker = *eeprom_marker;
 	EEP_DisableMapping();
 */
-	uint8_t reset_status = RST.STATUS;
-	RST.STATUS = 0xFF;			// clear reset flags
-
 	//if ((marker != 0x4c4f4144) &&				// "LOAD" signal from application
-	if ((reset_status == RST_SWRST_bm) &&		// software reset
+	if ((RST.STATUS == RST_SWRST_bm) &&			// software reset
 		(SP_ReadWord(0x00000000) != 0xFFFF))	// application reset vector not blank
 	{
 		// exit bootloader
