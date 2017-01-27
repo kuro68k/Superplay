@@ -95,7 +95,7 @@ void rpt_physical_inputs_refresh(void)
 }
 
 /**************************************************************************************************
-** Map physical to logical inputs and apply forced inputs
+** Map physical to logical inputs
 */
 void RPT_refresh_input_matrix(void)
 {
@@ -135,7 +135,7 @@ void RPT_generate_report(uint8_t *buffer)
 {
 	asm volatile(
 		"ldi	r18, 16"			"\n\t"
-		"loop%=:"
+		"loop%=:"					"\n\t"
 		"ld		__tmp_reg__, X+"	"\n\t"	// 0
 		"bst	__tmp_reg__, 0"		"\n\t"
 		"bld	r19, 0"				"\n\t"
