@@ -20,7 +20,8 @@ typedef void (*AppPtr)(void) __attribute__ ((noreturn));
 uint8_t		page_buffer[APP_SECTION_PAGE_SIZE + UDI_HID_REPORT_OUT_SIZE];	// needed size + safety buffer
 uint16_t	page_ptr = 0;
 
-//uint32_t	*eeprom_marker = (uint32_t *)EEP_MAPPED_ADDR(31, 0);
+// optional bootloader entry button
+#define ENTRY_BUTTON	((PORTB.IN & PIN0_bm) == 0)
 
 /**************************************************************************************************
 * Main entry point
@@ -32,8 +33,12 @@ int main(void)
 	EEP_DisableMapping();
 */
 	//if ((marker != 0x4c4f4144) &&				// "LOAD" signal from application
-	if ((RST.STATUS == RST_SWRST_bm) &&			// software reset
-		(SP_ReadWord(0x00000000) != 0xFFFF))	// application reset vector not blank
+	if ((RST.STATUS != RST_SWRST_bm) &&			// software reset
+		(SP_ReadWord(0x00000000) != 0xFFFF)		// application reset vector not blank
+#ifdef ENTRY_BUTTON
+		&& (!ENTRY_BUTTON)
+#endif
+		)
 	{
 		// exit bootloader
 		AppPtr application_vector = (AppPtr)0x000000;
