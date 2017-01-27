@@ -221,7 +221,6 @@ typedef struct
 
 
 extern const MAPPING_CONFIG_t * map;
-extern const MAPPING_CONFIG_t * const forced;
 extern const SETTINGS_CONFIG_t * settings;
 
 extern void CFG_init(void);
