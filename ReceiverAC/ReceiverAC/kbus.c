@@ -17,7 +17,8 @@
 enum
 {
 	STATE_POLLING,
-	STATE_QUERY,
+	STATE_PING_TEST,
+	STATE_GET_CONFIG,
 	STATE_UPDATE
 };
 
@@ -28,6 +29,7 @@ volatile uint8_t		timeout_SIG = 0;
 
 KBUS_PACKET_t			packet;
 
+#pragma region Transport Layer
 
 /**************************************************************************************************
 * Reset DMA to start of input buffer. DMA is NOT enabled.
@@ -170,6 +172,49 @@ bool kbus_validate_packet(uint8_t command)
 	return true;
 }
 
+#pragma endregion
+
+/**************************************************************************************************
+* State machine STATE_PING_TEST. Does an echo test to check that the link is working.
+*/
+inline bool kbus_state_ping_test(void)
+{
+	uint8_t retries = 0;
+
+	do
+	{
+		KBUS_PACKET_t cmd;
+		cmd.command = CMD_START_REPORTING;
+		cmd.length = 63;
+		for (uint8_t i = 0; i < 63; i++)
+			cmd.data[i] = i;
+		*(uint16_t *)&cmd.data[64] = HW_crc16(&cmd, 2 + 63);
+		kbus_send(&cmd, 2 + 63 + 2);
+
+		// get response
+		for(;;)
+		{
+			if (timeout_SIG)
+				break;
+
+			if (packet_ready_SIG)
+			{
+				if (!kbus_validate_packet(cmd.command) ||
+					memcmp(&input_buffer.data, &cmd.data, 63) != 0)
+				{
+					break;
+				}
+				return true;
+			}
+		}
+
+		retries++;
+		_delay_ms(1);
+	} while(retries < 3);
+
+	return false;
+}
+
 /**************************************************************************************************
 * Main loop, continually reads updates from K-BUS
 */
@@ -182,15 +227,69 @@ void KBUS_run(void)
 
 	for(;;)
 	{
+		// find device to talk to
+		for(;;)
+		{
+			kbus_find_device();				// wait for device to be connected
+			if (kbus_state_ping_test())		// test link is working
+				break;
+		}
+
+		// keep polling for updates
+		{
+			// ask for a report
+			KBUS_PACKET_t cmd;
+			cmd.command = CMD_READ_REPORT;
+			cmd.length = 0;
+			*(uint16_t *)&cmd.data[0] = HW_crc16(&cmd, 2);
+			kbus_send(&cmd, 4);
+
+			// get response
+			for(;;)
+			{
+				if (timeout_SIG)
+				{
+					fail = true;
+					break;
+				}
+
+				if (packet_ready_SIG)
+				{
+					if (!kbus_validate_packet(cmd.command) ||
+						packet.length != sizeof(REPORT_t))
+					{
+						fail = true;
+					}
+					else
+						AC_update((REPORT_t *)&input_buffer.data);
+					break;
+				}
+			}
+
+			if (fail)
+			{
+				retries++;
+				if (retries > 1)
+					state = STATE_POLLING;
+				_delay_ms(1);
+			}
+			break;
+
+		}
+	}
+
+/*
+	for(;;)
+	{
 		switch(state)
 		{
 			case STATE_POLLING:
 				kbus_find_device();
-				state = STATE_QUERY;
+				state = STATE_PING_TEST;
 				retries = 0;
 				break;
 
-			case STATE_QUERY:
+			case STATE_PING_TEST:
 			{
 				// do an echo test
 				KBUS_PACKET_t cmd;
@@ -281,61 +380,6 @@ void KBUS_run(void)
 			default:
 				state = STATE_POLLING;
 				break;
-		}
-	}
-
-/*
-	for(;;)
-	{
-		WDR();
-
-		// no response from controller before timeout
-		if (timeout_SIG)
-		{
-			timeout_SIG = 0;
-
-			// ask for updates
-			KBUS_PACKET_t cmd;
-			cmd.command = CMD_START_REPORTING;
-			cmd.length = 0;
-			*(uint16_t *)&cmd.data[0] = HW_crc16(&cmd, 2);
-			kbus_send(&cmd, 4);
-
-			kbus_reset_dma();
-			KBUS_DMA_CH.CTRLA |= EDMA_CH_ENABLE_bm;
-			kbus_restart_timeout();
-		}
-
-		// packet arrived
-		if (packet_ready_SIG)
-		{
-			packet_ready_SIG = 0;
-
-			// make sure DMA isn't still writing to the buffer
-			KBUS_DMA_CH.CTRLA &= ~EDMA_CH_ENABLE_bm;
-			while(KBUS_DMA_CH.CTRLA & EDMA_CH_ENABLE_bm);
-
-			// copy buffer and reset DMA for next packet
-			memcpy(&packet, (void *)&input_buffer, sizeof(packet));
-			kbus_reset_dma();
-			KBUS_DMA_CH.CTRLA |= EDMA_CH_ENABLE_bm;
-
-			// validate packet
-			if (packet.length > 63)
-				continue;
-			if (*(uint16_t *)&packet.data[packet.length] != HW_crc16(&packet, 2 + packet.length))
-				continue;
-
-			if (input_buffer.command == (CMD_READ_REPORT | RESPONSE_BIT_bm))
-			{
-				if (packet.length != sizeof(REPORT_t))
-					continue;
-
-				// handle packet
-				AC_update((REPORT_t *)&packet.data);
-			}
-
-			kbus_restart_timeout();
 		}
 	}
 */
