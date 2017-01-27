@@ -1,9 +1,7 @@
 /*
  * atari.h
  *
- * Created: 04/05/2016 15:39:20
- *  Author: kuro68k
- */ 
+ */
 
 
 #ifndef ATARI_H_

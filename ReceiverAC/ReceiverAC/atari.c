@@ -1,9 +1,7 @@
 /*
  * atari.c
  *
- * Created: 04/05/2016 15:39:10
- *  Author: kuro68k
- */ 
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -25,10 +23,10 @@ void AC_init(void)
 void AC_update(REPORT_t *report)
 {
 	uint8_t	m0, m1;
-	
+
 	m0 = report->udlr_sscc & 0x0F;	// UDLR bits
 
-	
+
 	if (1)	// Atari / Commodore
 	{
 		if (report->buttons1_8 & 0x55)	// odd buttons

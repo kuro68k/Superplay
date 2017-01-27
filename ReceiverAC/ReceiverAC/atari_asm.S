@@ -2,9 +2,7 @@
 /*
  * atari_asm.S
  *
- * Created: 14/07/2016 11:56:08
- *  Author: kuro68k
- */ 
+ */
 
 #include <avr/io.h>
 

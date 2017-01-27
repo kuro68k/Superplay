@@ -1,9 +1,7 @@
 /*
  * hw_misc.c
  *
- * Created: 27/03/2015 15:19:04
- *  Author: kuro68k
- */ 
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -37,12 +35,12 @@ void HW_init(void)
 	PORTD.OUT = LED_PIN_bm | KBUS_TX_PIN_bm;
 	PORTD.DIR = ~KBUS_RX_PIN_bm;
 	ENABLE_PULLUP(PORTD.PIN6CTRL);		// KBUS RX
-	
+
 	// PORT R, xtal
 	PORTR.OUT = 0;
 	PORTR.DIR = 0;
-	
-	
+
+
 	// DMA
 	EDMA.CTRL = EDMA_RESET_bm;
 	NOP();
@@ -62,7 +60,7 @@ void HW_CCPWrite(volatile uint8_t *address, uint8_t value)
         // disable interrupts if running
 		saved_sreg = SREG;
 		cli();
-		
+
 		volatile uint8_t * tmpAddr = address;
         RAMPZ = 0;
 
@@ -87,7 +85,7 @@ uint16_t HW_crc16(const void *buffer, uint8_t length)
 	CRC.CTRL = CRC_RESET1_bm;
 	NOP();
 	CRC.CTRL = CRC_SOURCE_IO_gc;
-	
+
 	while(length--)
 		CRC.DATAIN = *(uint8_t *)buffer++;
 	return ((CRC.CHECKSUM1 << 8) | CRC.CHECKSUM0);

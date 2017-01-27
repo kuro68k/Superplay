@@ -1,8 +1,6 @@
 /*
  * kbus.h
  *
- * Created: 28/05/2015 11:37:47
- *  Author: kuro68k
  */
 
 

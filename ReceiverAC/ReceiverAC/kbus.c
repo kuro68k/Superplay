@@ -1,8 +1,6 @@
 /*
  * kbus.c
  *
- * Created: 28/05/2015 11:37:30
- *  Author: kuro68k
  */
 
 #include <avr/io.h>

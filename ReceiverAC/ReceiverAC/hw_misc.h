@@ -1,9 +1,7 @@
 /*
  * hw_misc.h
  *
- * Created: 27/03/2015 15:21:00
- *  Author: kuro68k
- */ 
+ */
 
 
 #ifndef HW_MISC_H_

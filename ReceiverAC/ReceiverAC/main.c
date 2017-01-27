@@ -1,11 +1,8 @@
 /*
  * ReceiverAC.c
  *
- * Created: 04/05/2016 15:10:55
- * Author : kuro68k
- *
  * KBUS receiver for Atari/Commodore and other simple directly connected controllers
- */ 
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -43,7 +40,7 @@ int main(void)
 	firmware_info.magic_string[0];	// prevent firmware_info being optimized away
 
 	WATCHDOG_ON;
-	
+
 	// set idle sleep mode, turn off stuff we don't need
 	SLEEP.CTRL	= SLEEP_SMODE_IDLE_gc | SLEEP_SEN_bm;
 	PR.PRGEN	= PR_XCL_bm | PR_RTC_bm;
@@ -57,7 +54,7 @@ int main(void)
 	// start interrupts
 	HW_CCPWrite(&PMIC.CTRL, PMIC_RREN_bm | PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_HILVLEN_bm);
 	sei();
-	
+
 	KBUS_run();
 }
 

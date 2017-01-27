@@ -1,9 +1,7 @@
 /*
  * report.h
  *
- * Created: 02/03/2015 15:37:23
- *  Author: kuro68k
- */ 
+ */
 
 
 #ifndef REPORT_H_
@@ -41,13 +39,13 @@ typedef struct
 #define BUTTON_MODE_gm				(0b11<<4)
 
 
-typedef struct 
+typedef struct
 {
 	uint8_t		command;
 	REPORT_t	report;
 } USB_REPORT_t;
 
-typedef struct 
+typedef struct
 {
 	uint8_t		command;
 	REPORT_t	report;
