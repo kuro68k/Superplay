@@ -6,6 +6,7 @@
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 #include <string.h>
 #include <asf.h>
@@ -15,13 +16,17 @@
 
 #define BOOTLOADER_VERSION	1
 
+// optional bootloader entry button
+#define ENTRY_BUTTON	((PORTB.IN & PIN0_bm) == 0)
+
+// optional LED flash
+#define LED_PORT		PORTF
+#define LED_PIN_bm		PIN4_bm
+
 typedef void (*AppPtr)(void) __attribute__ ((noreturn));
 
 uint8_t		page_buffer[APP_SECTION_PAGE_SIZE + UDI_HID_REPORT_OUT_SIZE];	// needed size + safety buffer
 uint16_t	page_ptr = 0;
-
-// optional bootloader entry button
-#define ENTRY_BUTTON	((PORTB.IN & PIN0_bm) == 0)
 
 /**************************************************************************************************
 * Main entry point
@@ -42,17 +47,24 @@ int main(void)
 	{
 		// exit bootloader
 		AppPtr application_vector = (AppPtr)0x000000;
-		CCP = CCP_IOREG_gc;		// unlock IVSEL
-		PMIC.CTRL = 0;			// disable interrupts, set vector table to app section
-		EIND = 0;				// indirect jumps go to app section
-		RAMPZ = 0;				// LPM uses lower 64k of flash
+		CCP = CCP_IOREG_gc;			// unlock IVSEL
+		PMIC.CTRL = 0;				// disable interrupts, set vector table to app section
+		EIND = 0;					// indirect jumps go to app section
+		RAMPZ = 0;					// LPM uses lower 64k of flash
 		application_vector();
 	}
+
+#ifdef LED_PORT
+	LED_PORT.DIRSET = LED_PIN_bm;
+	TCC0.INTCTRLA = TC_TC0_OVFINTLVL_LO_gc;
+	TCC0.PER = 0x1E83;				// 2 Hz
+	TCC0.CTRLA = TC_TC0_CLKSEL_DIV1024_gc;
+#endif
 
 	CCP = CCP_IOREG_gc;				// unlock IVSEL
 	PMIC.CTRL |= PMIC_IVSEL_bm;		// set interrupt vector table to bootloader section
 
-	EEP_ErasePage(31);			// clear "LOAD" signal from application
+	EEP_ErasePage(31);				// clear "LOAD" signal from application
 
 	// set up USB HID bootloader interface
 	sysclk_init();
@@ -63,6 +75,16 @@ int main(void)
 
 	for(;;);
 }
+
+#ifdef LED_PORT
+/**************************************************************************************************
+** LED flash interrupt
+*/
+ISR(TCC0_OVF_vect)
+{
+	LED_PORT.OUTTGL = LED_PIN_bm;
+}
+#endif
 
 /**************************************************************************************************
 ** Convert lower nibble to hex char
