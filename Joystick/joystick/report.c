@@ -101,11 +101,11 @@ void RPT_refresh_input_matrix(void)
 {
 	rpt_physical_inputs_refresh();
 
-	input_matrix[LOFF] = 0;
+	memset(input_matrix, 0, 128);	// clear logical inputs
 	input_matrix[LON] = 1;
 
 	for (uint8_t i = 0; i < map->count; i++)
-		input_matrix[map->mapping[i][0]] = input_matrix[map->mapping[i][1]];
+		input_matrix[map->mapping[i][0]] |= input_matrix[map->mapping[i][1]];
 }
 
 /**************************************************************************************************
