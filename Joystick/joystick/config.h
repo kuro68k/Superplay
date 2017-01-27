@@ -8,11 +8,6 @@
 #define CONFIG_H_
 
 
-// storage locations in EEPROM
-#define EEP_MAPPING_CFG_PAGE	0		// 8 pages
-#define EEP_MISC_CFG_PAGE		16		// 1 page
-
-
 // logical inputs
 enum LOGICAL_INPUTS_enum
 {
@@ -174,7 +169,6 @@ enum PHYSICAL_INPUTS_enum
 	PR16,
 };
 
-#define LOGICAL_OUTPUT_MASK		0x80
 
 // header block for all configs
 typedef struct
