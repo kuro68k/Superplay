@@ -20,7 +20,7 @@ typedef void (*AppPtr)(void) __attribute__ ((noreturn));
 uint8_t		page_buffer[APP_SECTION_PAGE_SIZE + UDI_HID_REPORT_OUT_SIZE];	// needed size + safety buffer
 uint16_t	page_ptr = 0;
 
-uint32_t	*eeprom_marker = (uint32_t *)EEP_MAPPED_ADDR(31, 0);
+//uint32_t	*eeprom_marker = (uint32_t *)EEP_MAPPED_ADDR(31, 0);
 
 /**************************************************************************************************
 * Main entry point
