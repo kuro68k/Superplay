@@ -1,0 +1,11 @@
+0	not used
+1	Joystick settings
+2	Joystick outputs
+
+4	Mapping 1
+...
+16	Mapping 12
+
+17	PC Engine mapping
+18	PC Engine 6 button mode mapping
+19	Atari mapping
