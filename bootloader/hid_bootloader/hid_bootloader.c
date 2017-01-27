@@ -235,9 +235,11 @@ void HID_set_feature_report_out(uint8_t *report)
 			break;
 
 		case CMD_RESET_MCU:
-			reset_do_soft_reset();
-			response[1] = 0xFF;	// failed
-			break;
+			// use watchdog to cause reset
+			while (WDT.STATUS & WDT_SYNCBUSY_bm);
+			CCP = CCP_IOREG_gc;
+			WDT.CTRL = WDT_PER_8CLK_gc | WDT_ENABLE_bm | WDT_CEN_bm;
+			for(;;);
 
 		case CMD_READ_EEPROM:
 			if (addr > (EEPROM_SIZE - 32))
