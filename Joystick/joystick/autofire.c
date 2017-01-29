@@ -16,10 +16,10 @@
 #include "autofire.h"
 
 
-const __flash uint16_t prescalers[] = { 1, 2, 4, 8, 64, 256, 1024 };
-const __flash uint8_t clksel[] = {	TC_TC0_CLKSEL_DIV1_gc, TC_TC0_CLKSEL_DIV2_gc, TC_TC0_CLKSEL_DIV4_gc,
-									TC_TC0_CLKSEL_DIV8_gc, TC_TC0_CLKSEL_DIV64_gc, TC_TC0_CLKSEL_DIV256_gc,
-									TC_TC0_CLKSEL_DIV1024_gc };
+const __flash uint16_t prescalers_lut[] = { 1, 2, 4, 8, 64, 256, 1024 };
+const __flash uint8_t clksel_lut[] = {	TC_TC0_CLKSEL_DIV1_gc, TC_TC0_CLKSEL_DIV2_gc, TC_TC0_CLKSEL_DIV4_gc,
+										TC_TC0_CLKSEL_DIV8_gc, TC_TC0_CLKSEL_DIV64_gc, TC_TC0_CLKSEL_DIV256_gc,
+										TC_TC0_CLKSEL_DIV1024_gc };
 
 
 
@@ -49,19 +49,19 @@ bool af_calc_timer(float freq_hz, uint8_t *clksel, uint16_t *period)
 	cycles = F_CPU / freq_hz;
 
 	// find best prescaler
-	for (uint8_t i = 0; i < (sizeof(prescalers) / sizeof(uint16_t)); i++)
+	for (uint8_t i = 0; i < (sizeof(prescalers_lut) / sizeof(uint16_t)); i++)
 	{
-		per = cycles / prescalers[i];
+		per = cycles / prescalers_lut[i];
 		per--;
 		if (per > 0xFFFF)	// unusable
 			continue;
 
 		uint32_t error;
-		error = abs((int32_t)cycles - (int32_t)((per + 1) * prescalers[i]));
+		error = abs((int32_t)cycles - (int32_t)((per + 1) * prescalers_lut[i]));
 		if (error < lowest_error)
 		{
 			lowest_error = error;
-			*clksel = clksel[i];
+			*clksel = clksel_lut[i];
 			*period = per;
 			found = true;
 		}
@@ -170,6 +170,6 @@ void AF_apply(void)
 		if (((af_high_count - af_high_counters[i]) & AF_CLKMUL_MASK) > af_high_duty)
 			input_matrix[LBUTTON1 + i] = 0;		// force off to modulate fire button
 		
-		input_matrix[LBUTTON1] = af_high_count & 1;
+		//if (af_low_count & 0b100) input_matrix[LBUTTON1] = 1;
 	}
 }
