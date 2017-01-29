@@ -84,10 +84,12 @@ int main(void)
 
 		//if (HID_enabled && !VEN_enabled)
 			HID_send_report();
+		/*
 		if (VEN_enabled)
 		{
 			RPT_generate_report(report_buffer);
 			udi_vendor_interrupt_in_run(report_buffer, sizeof(report_buffer), NULL);
 		}
+		*/
 	}
 }

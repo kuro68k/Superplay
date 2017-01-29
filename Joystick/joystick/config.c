@@ -23,10 +23,10 @@ const SETTINGS_CONFIG_t default_settings = {
 };
 const SETTINGS_CONFIG_t *settings = &default_settings;
 
-const MAPPING_CONFIG_t default_mapping = {
-	.length = sizeof(default_mapping),
+MAPPING_CONFIG_t default_mapping = {
+//	.length = sizeof(default_mapping),
 	.id = MAPPING_CONFIG_ID,
-	.count = (sizeof(default_mapping) - 4) / 2,
+//	.count = (sizeof(default_mapping) - 4) / 2,
 	.mapping = {	{	LJOY_UP,	PJOY_UP		},
 					{	LJOY_DN,	PJOY_DN		},
 					{	LJOY_LF,	PJOY_LF		},
@@ -109,6 +109,14 @@ void CFG_init(void)
 			settings = &default_settings;
 	}
 
-	if ((ptr = CFG_find_config(MAPPING_CONFIG_ID)))
-		map = ptr;
+	// size of flexible arrays can't be computed at compile time
+	uint8_t count = 0;
+	while (default_mapping.mapping[count][0] != 0)
+		count++;
+
+	default_mapping.length = sizeof(default_mapping) + (count * 2);
+	default_mapping.count = count;
+
+//	if ((ptr = CFG_find_config(MAPPING_CONFIG_ID)))
+//		map = ptr;
 }
