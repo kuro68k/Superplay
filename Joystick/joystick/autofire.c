@@ -159,13 +159,17 @@ void AF_apply(void)
 	uint8_t low_temp = af_low_count + 1;
 	for (i = 0; i < 16; i++)
 	{
+		/*
 		if (!input_matrix[LBUTTON1 + i])		// button not pressed
 		{
 			af_high_counters[i] = high_temp;	// reset so button engages instantly when pressed
 			af_low_counters[i] = low_temp;
 		}
+		*/
 
 		if (((af_high_count - af_high_counters[i]) & AF_CLKMUL_MASK) > af_high_duty)
 			input_matrix[LBUTTON1 + i] = 0;		// force off to modulate fire button
+		
+		input_matrix[LBUTTON1] = af_high_count & 1;
 	}
 }
