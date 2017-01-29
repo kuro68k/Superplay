@@ -105,7 +105,7 @@ void RPT_refresh_input_matrix(void)
 
 	rpt_physical_inputs_refresh();
 
-	input_matrix[PB1] = 1;
+	//input_matrix[PB1] = 1;
 
 	for (uint8_t i = 0; i < map->count; i++)
 		input_matrix[map->mapping[i][0]] |= input_matrix[map->mapping[i][1]];

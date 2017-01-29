@@ -129,7 +129,7 @@ void HW_init(void)
 	// port R
 	PORTR.DIR = 0;
 
-	hw_configure_outputs();
+	//hw_configure_outputs();
 
 	SLEEP.CTRL = SLEEP_SMODE_IDLE_gc | SLEEP_SEN_bm;
 

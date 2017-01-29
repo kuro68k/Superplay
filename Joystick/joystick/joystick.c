@@ -77,12 +77,12 @@ int main(void)
 
 		RPT_refresh_input_matrix();
 		RPT_refresh_leds();
-		AF_apply();
+		//AF_apply();
 
 		//if (cfg->aux_mode == AUX_MODE_BUTTONS)
 		//	AB_send_report();
 
-		//if (HID_enabled && !VEN_enabled)
+		if (HID_enabled && !VEN_enabled)
 			HID_send_report();
 		/*
 		if (VEN_enabled)
