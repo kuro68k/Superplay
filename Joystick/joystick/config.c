@@ -24,9 +24,7 @@ const SETTINGS_CONFIG_t default_settings = {
 const SETTINGS_CONFIG_t *settings = &default_settings;
 
 MAPPING_CONFIG_t default_mapping = {
-//	.length = sizeof(default_mapping),
 	.id = MAPPING_CONFIG_ID,
-//	.count = (sizeof(default_mapping) - 4) / 2,
 	.mapping = {	{	LJOY_UP,	PJOY_UP		},
 					{	LJOY_DN,	PJOY_DN		},
 					{	LJOY_LF,	PJOY_LF		},
@@ -48,7 +46,6 @@ MAPPING_CONFIG_t default_mapping = {
 					{	LBUTTON14,	PB14		},
 					{	LBUTTON15,	PB15		},
 					{	LBUTTON16,	PB16		},
-					{	0,			0			}
 				},
 };
 const MAPPING_CONFIG_t *map = &default_mapping;
@@ -109,14 +106,10 @@ void CFG_init(void)
 			settings = &default_settings;
 	}
 
-	// size of flexible arrays can't be computed at compile time
-	uint8_t count = 0;
-	while (default_mapping.mapping[count][0] != 0)
-		count++;
+	// size of flexible arrays can't be computed inside initializer
+	default_mapping.length = __builtin_object_size(&default_mapping, 0);
+	default_mapping.count = (default_mapping.length - 4) / 2;
 
-	default_mapping.length = sizeof(default_mapping) + (count * 2);
-	default_mapping.count = count;
-
-//	if ((ptr = CFG_find_config(MAPPING_CONFIG_ID)))
-//		map = ptr;
+	if ((ptr = CFG_find_config(MAPPING_CONFIG_ID)))
+		map = ptr;
 }
