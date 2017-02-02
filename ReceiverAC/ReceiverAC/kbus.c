@@ -13,15 +13,6 @@
 #include "atari.h"
 #include "kbus.h"
 
-// main state machine
-enum
-{
-	STATE_POLLING,
-	STATE_PING_TEST,
-	STATE_GET_CONFIG,
-	STATE_UPDATE
-};
-
 volatile KBUS_PACKET_t	input_buffer;
 //volatile uint8_t		input_write_ptr_AT = 0;
 volatile uint8_t		packet_ready_SIG = 0;
@@ -225,6 +216,12 @@ void KBUS_run(void)
 
 	AC_init();
 
+	// ask for a report
+	KBUS_PACKET_t report_cmd;
+	report_cmd.command = CMD_READ_REPORT;
+	report_cmd.length = 0;
+	*(uint16_t *)&report_cmd.data[0] = HW_crc16(&report_cmd, 2);
+
 	for(;;)
 	{
 		// find device to talk to
@@ -236,151 +233,38 @@ void KBUS_run(void)
 		}
 
 		// keep polling for updates
+		retries = 0;
+		do
 		{
-			// ask for a report
-			KBUS_PACKET_t cmd;
-			cmd.command = CMD_READ_REPORT;
-			cmd.length = 0;
-			*(uint16_t *)&cmd.data[0] = HW_crc16(&cmd, 2);
-			kbus_send(&cmd, 4);
+			kbus_send(&report_cmd, 4);
 
 			// get response
 			for(;;)
 			{
 				if (timeout_SIG)
 				{
-					fail = true;
+					retries++;
 					break;
 				}
 
 				if (packet_ready_SIG)
 				{
-					if (!kbus_validate_packet(cmd.command) ||
+					if (!kbus_validate_packet(report_cmd.command) ||
 						packet.length != sizeof(REPORT_t))
 					{
-						fail = true;
+						retries++;
 					}
 					else
+					{
+						RPT_decode_kbus_matrix(&packet.data)
 						AC_update((REPORT_t *)&input_buffer.data);
+						retries = 0;
+					}
 					break;
 				}
 			}
+		} while (retries < 3);
 
-			if (fail)
-			{
-				retries++;
-				if (retries > 1)
-					state = STATE_POLLING;
-				_delay_ms(1);
-			}
-			break;
-
-		}
+		_delay_ms(1);
 	}
-
-/*
-	for(;;)
-	{
-		switch(state)
-		{
-			case STATE_POLLING:
-				kbus_find_device();
-				state = STATE_PING_TEST;
-				retries = 0;
-				break;
-
-			case STATE_PING_TEST:
-			{
-				// do an echo test
-				KBUS_PACKET_t cmd;
-				cmd.command = CMD_START_REPORTING;
-				cmd.length = 63;
-				for (uint8_t i = 0; i < 63; i++)
-					cmd.data[i] = i;
-				*(uint16_t *)&cmd.data[64] = HW_crc16(&cmd, 2);
-				kbus_send(&cmd, 4);
-
-				// get response
-				bool fail = false;
-				for(;;)
-				{
-					if (timeout_SIG)
-					{
-						fail = true;
-						break;
-					}
-
-					if (packet_ready_SIG)
-					{
-						if (!kbus_validate_packet(cmd.command) ||
-							memcmp(&input_buffer.data, &cmd.data, 63) != 0)
-						{
-							fail = true;
-						}
-						break;
-					}
-				}
-
-				if (fail)
-				{
-					retries++;
-					if (retries > 1)
-						state = STATE_POLLING;
-					_delay_ms(1);
-				}
-				else
-					state = STATE_UPDATE;
-				break;
-			}
-
-			case STATE_UPDATE:
-			{
-				// ask for a report
-				KBUS_PACKET_t cmd;
-				cmd.command = CMD_START_REPORTING;
-				cmd.length = 63;
-				for (uint8_t i = 0; i < 63; i++)
-					cmd.data[i] = i;
-				*(uint16_t *)&cmd.data[64] = HW_crc16(&cmd, 2);
-				kbus_send(&cmd, 4);
-
-				// get response
-				bool fail = false;
-				for(;;)
-				{
-					if (timeout_SIG)
-					{
-						fail = true;
-						break;
-					}
-
-					if (packet_ready_SIG)
-					{
-						if (!kbus_validate_packet(cmd.command) ||
-							packet.length != sizeof(REPORT_t))
-						{
-							fail = true;
-						}
-						else
-							AC_update((REPORT_t *)&input_buffer.data);
-						break;
-					}
-				}
-
-				if (fail)
-				{
-					retries++;
-					if (retries > 1)
-						state = STATE_POLLING;
-					_delay_ms(1);
-				}
-				break;
-			}
-
-			default:
-				state = STATE_POLLING;
-				break;
-		}
-	}
-*/
 }
