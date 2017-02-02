@@ -8,6 +8,7 @@
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include "hw_misc.h"
+#include "config.h"
 #include "kbus.h"
 
 typedef struct {
@@ -48,6 +49,7 @@ int main(void)
 	PR.PRPC		= PR_TWI_bm | PR_USART0_bm | PR_SPI_bm | PR_HIRES_bm | PR_TC5_bm;
 	PR.PRPD		= PR_TWI_bm | PR_SPI_bm | PR_HIRES_bm | PR_TC4_bm | PR_TC5_bm;
 
+	CFG_init();
 	HW_init();
 	KBUS_init();
 

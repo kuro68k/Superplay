@@ -45,7 +45,7 @@
 typedef struct
 {
 	uint8_t		command;
-	uint8_t		length;
+	uint8_t		length;			// data length, excluding checksum
 	uint8_t		data[63+2];		// up to 63 data bytes, plus 2 checksum bytes
 } KBUS_PACKET_t;
 

@@ -168,7 +168,7 @@ bool kbus_validate_packet(uint8_t command)
 /**************************************************************************************************
 * State machine STATE_PING_TEST. Does an echo test to check that the link is working.
 */
-inline bool kbus_state_ping_test(void)
+bool kbus_state_ping_test(void)
 {
 	uint8_t retries = 0;
 
@@ -212,7 +212,6 @@ inline bool kbus_state_ping_test(void)
 void KBUS_run(void)
 {
 	uint8_t retries = 0;
-	uint8_t	state = STATE_POLLING;
 
 	AC_init();
 
@@ -250,14 +249,15 @@ void KBUS_run(void)
 				if (packet_ready_SIG)
 				{
 					if (!kbus_validate_packet(report_cmd.command) ||
-						packet.length != sizeof(REPORT_t))
+						packet.length != 16)	// fixed report size
 					{
 						retries++;
 					}
 					else
 					{
-						RPT_decode_kbus_matrix(&packet.data)
-						AC_update((REPORT_t *)&input_buffer.data);
+						RPT_decode_kbus_matrix((uint8_t *)&packet.data);
+						RPT_refresh_input_matrix();
+						AC_update();
 						retries = 0;
 					}
 					break;

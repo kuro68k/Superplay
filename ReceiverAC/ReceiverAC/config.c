@@ -6,36 +6,31 @@
 
 #include <avr/io.h>
 #include <string.h>
-#include "global.h"
-#include "eeprom.h"
 #include "config.h"
 
 
-const MAPPING_CONFIG_t default_mapping = {
-	.length = sizeof(default_mapping),
-	.id = MAPPING_CONFIG_ID,
-	.count = (sizeof(default_mapping) - 4) / 2,
+MAPPING_CONFIG_t default_mapping = {
+	.id = ATARI_CONFIG_ID,
 	.mapping = {	{	LJOY_UP,	LJOY_UP		},
 					{	LJOY_DN,	LJOY_DN		},
 					{	LJOY_LF,	LJOY_LF		},
 					{	LJOY_RT,	LJOY_RT		},
 					{	LBUTTON1,	LBUTTON1	},
-					{	LBUTTON1,	LBUTTON2	},
-					{	LBUTTON1,	LBUTTON3	},
-					{	LBUTTON1,	LBUTTON4	},
-					{	LBUTTON1,	LBUTTON5	},
-					{	LBUTTON1,	LBUTTON6	},
-					{	LBUTTON1,	LBUTTON7	},
-					{	LBUTTON1,	LBUTTON8	},
-					{	LBUTTON1,	LBUTTON9	},
-					{	LBUTTON1,	LBUTTON10	},
-					{	LBUTTON1,	LBUTTON11	},
-					{	LBUTTON1,	LBUTTON12	},
-					{	LBUTTON1,	LBUTTON13	},
-					{	LBUTTON1,	LBUTTON14	},
-					{	LBUTTON1,	LBUTTON15	},
-					{	LBUTTON1,	LBUTTON16	},
-					{	0,			0			}
+					{	LBUTTON2,	LBUTTON2	},
+					{	LBUTTON3,	LBUTTON3	},
+					{	LBUTTON4,	LBUTTON4	},
+					{	LBUTTON5,	LBUTTON5	},
+					{	LBUTTON6,	LBUTTON6	},
+					{	LBUTTON7,	LBUTTON7	},
+					{	LBUTTON8,	LBUTTON8	},
+					{	LBUTTON9,	LBUTTON9	},
+					{	LBUTTON10,	LBUTTON10	},
+					{	LBUTTON11,	LBUTTON11	},
+					{	LBUTTON12,	LBUTTON12	},
+					{	LBUTTON13,	LBUTTON13	},
+					{	LBUTTON14,	LBUTTON14	},
+					{	LBUTTON15,	LBUTTON15	},
+					{	LBUTTON16,	LBUTTON16	}
 				},
 };
 const MAPPING_CONFIG_t *map = &default_mapping;
@@ -54,4 +49,14 @@ uint32_t cfg_calc_crc(const void *buffer, uint16_t size)
 		CRC.DATAIN = *ptr++;
 	CRC.CTRL |= CRC_BUSY_bm;
 	return CRC.CHECKSUM0 | ((uint32_t)CRC.CHECKSUM0 << 8) | ((uint32_t)CRC.CHECKSUM0 << 16) | ((uint32_t)CRC.CHECKSUM0 << 24);
+}
+
+/**************************************************************************************************
+** Prepare config for use
+*/
+void CFG_init(void)
+{
+	// size of flexible arrays can't be computed inside initializer
+	default_mapping.length = __builtin_object_size(&default_mapping, 0);
+	default_mapping.count = (default_mapping.length - 4) / 2;
 }

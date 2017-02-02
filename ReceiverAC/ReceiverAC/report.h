@@ -8,6 +8,9 @@
 #define REPORT_H_
 
 
+extern uint8_t	input_matrix[128];
+
+extern void RPT_decode_kbus_matrix(uint8_t *buffer);
 extern void RPT_refresh_input_matrix(void);
 
 

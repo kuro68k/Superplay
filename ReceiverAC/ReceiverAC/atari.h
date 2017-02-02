@@ -24,7 +24,7 @@
 
 
 extern void AC_init(void);
-extern void AC_update(REPORT_t *report);
+extern void AC_update(void);
 
 
 #endif /* ATARI_H_ */
