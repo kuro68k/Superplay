@@ -6,6 +6,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdbool.h>
+#include "config.h"
 #include "report.h"
 #include "atari.h"
 
@@ -20,69 +21,55 @@ void AC_init(void)
 /**************************************************************************************************
 * Update outputs
 */
-void AC_update(REPORT_t *report)
+void AC_update(void)
 {
-	uint8_t	m0, m1;
+	uint8_t m0 = 0;
+	uint8_t m1 = 0;
 
-	m0 = report->udlr_sscc & 0x0F;	// UDLR bits
-
+	// common to all
+	if (input_matrix[LJOY_UP])
+		m0 |= AC_JOY_UP_PIN_bm;
+	if (input_matrix[LJOY_DN])
+		m0 |= AC_JOY_DOWN_PIN_bm;
+	if (input_matrix[LJOY_LF])
+		m0 |= AC_JOY_LEFT_PIN_bm;
+	if (input_matrix[LJOY_RT])
+		m0 |= AC_JOY_RIGHT_PIN_bm;
 
 	if (1)	// Atari / Commodore
 	{
-		if (report->buttons1_8 & 0x55)	// odd buttons
+		if (input_matrix[LBUTTON1])
 			m0 |= AC_JOY_B1_PIN_bm;
-		if (report->buttons1_8 & 0xAA)	// even buttons
+		if (input_matrix[LBUTTON2])
 			m0 |= AC_JOY_B2_PIN_bm;
-
-		if (report->buttons9_16 & 0x55)	// odd buttons
-			m0 |= AC_JOY_B1_PIN_bm;
-		if (report->buttons9_16 & 0xAA)	// even buttons
-			m0 |= AC_JOY_B2_PIN_bm;
-
 		m1 = m0;
 	}
 
 	if (0)	// PC Engine
 	{
 		m1 = 0;
-		if (report->buttons1_8 & 0x11)	// I
+		if (input_matrix[LBUTTON1])		// I
 			m1 |= AC_JOY_UP_PIN_bm;
-		if (report->buttons1_8 & 0x22)	// II
+		if (input_matrix[LBUTTON2])		// II
 			m1 |= AC_JOY_RIGHT_PIN_bm;
-		if (report->buttons1_8 & 0x44)	// Select
+		if (input_matrix[LBUTTON15])	// Select
 			m1 |= AC_JOY_DOWN_PIN_bm;
-		if (report->buttons1_8 & 0x88)	// Run
-			m1 |= AC_JOY_LEFT_PIN_bm;
-
-		if (report->buttons9_16 & 0x11)	// I
-			m1 |= AC_JOY_UP_PIN_bm;
-		if (report->buttons9_16 & 0x22)	// II
-			m1 |= AC_JOY_RIGHT_PIN_bm;
-		if (report->buttons9_16 & 0x44)	// Select
-			m1 |= AC_JOY_DOWN_PIN_bm;
-		if (report->buttons9_16 & 0x88)	// Run
-			m1 |= AC_JOY_LEFT_PIN_bm;
-
-		if (report->udlr_sscc & BUTTON_SELECT_bm)
-			m1 |= AC_JOY_DOWN_PIN_bm;
-		if (report->udlr_sscc & BUTTON_START_bm)
+		if (input_matrix[LBUTTON16])	// Run
 			m1 |= AC_JOY_LEFT_PIN_bm;
 	}
 
 	if (0)	// Megadrive
 	{
 		m1 = m0;	// UDLR
-		if (report->buttons1_8 & 0x11)	// A
+		if (input_matrix[LBUTTON1]	)	// A
 			m0 |= AC_JOY_B1_PIN_bm;
-		if (report->buttons1_8 & 0x22)	// B
-			m1 |= AC_JOY_B1_PIN_bm;
-		if (report->buttons1_8 & 0x44)	// Start
+		if (input_matrix[LBUTTON16])	// Start
 			m0 |= AC_JOY_B2_PIN_bm;
-		if (report->buttons1_8 & 0x88)	// C
-			m1 |= AC_JOY_B2_PIN_bm;
 
-		if (report->udlr_sscc & (BUTTON_START_bm | BUTTON_SELECT_bm))
-			m0 |= AC_JOY_B2_PIN_bm;
+		if (input_matrix[LBUTTON2])		// B
+			m1 |= AC_JOY_B1_PIN_bm;
+		if (input_matrix[LBUTTON3])		// C
+			m1 |= AC_JOY_B2_PIN_bm;
 	}
 
 	cli();
