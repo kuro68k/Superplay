@@ -47,7 +47,6 @@ void AC_update(void)
 
 	if (0)	// PC Engine
 	{
-		m1 = 0;
 		if (input_matrix[LBUTTON1])		// I
 			m1 |= AC_JOY_UP_PIN_bm;
 		if (input_matrix[LBUTTON2])		// II
