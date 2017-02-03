@@ -22,6 +22,8 @@ AT_set_output:
 	ret
 
 
+// handle the select pin changing
+// does not affect the status register, no need to save it
 PORTC_INT0_vect:
 	push	r18
 	in		r18, GPIO0

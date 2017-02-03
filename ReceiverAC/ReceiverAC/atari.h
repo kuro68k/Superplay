@@ -26,5 +26,8 @@
 extern void AC_init(void);
 extern void AC_update(void);
 
+// atari_asm.S
+extern void AT_set_output(void);
+
 
 #endif /* ATARI_H_ */

@@ -76,21 +76,5 @@ void AC_update(void)
 	GPIO0 = m0;
 	GPIO1 = m1;
 	sei();
-/*
-	asm(
-		"push	r18						\n\t"
-		"in		r18, %[_GPIO0]			\n\t"
-		"cli							\n\t"
-		"sbic	%[_PORTC_IN], 2			\n\t"
-		"in		r18, %[_GPIO1]			\n\t"
-		"out	%[_VPORT0_OUT], r18		\n\t"
-		"sei							\n\t"
-		"pop	r18						\n\t"
-		:
-		: [_GPIO0]	"I" (_SFR_IO_ADDR(GPIO0))
-		, [_GPIO1]	"I" (_SFR_IO_ADDR(GPIO1))
-		, [_PORTC_IN]	"I" (_SFR_IO_ADDR(PORTC_IN))
-		, [_VPORT0_OUT]	"I" (_SFR_IO_ADDR(VPORT0_OUT))
-	);
-*/
+	AT_set_output();
 }
