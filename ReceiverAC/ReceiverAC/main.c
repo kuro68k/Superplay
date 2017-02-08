@@ -10,6 +10,7 @@
 #include "hw_misc.h"
 #include "config.h"
 #include "kbus.h"
+#include "version.h"
 
 typedef struct {
 	char		magic_string[8];
@@ -22,8 +23,6 @@ typedef struct {
 	uint16_t	eeprom_page_size_b;
 } FW_INFO_t;
 
-#define VERSION_MAJOR	0
-#define VERSION_MINOR	1
 
 // data embedded in firmware image so that the bootloader program can read it
 volatile const __flash FW_INFO_t firmware_info =	{	{ 0x59, 0x61, 0x6d, 0x61, 0x4e, 0x65, 0x6b, 0x6f },		// "YamaNeko" magic identifier

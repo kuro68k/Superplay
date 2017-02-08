@@ -23,13 +23,17 @@ void HW_init(void)
 	HW_CCPWrite(&CLK.CTRL, CLK_SCLKSEL_XOSC_gc);
 	OSC.CTRL = OSC_XOSCEN_bm;		// disable other clocks
 
-	// PORTA, open drain outputs
+	// PORTA, buffered open drain outputs
 	PORTA.OUT = 0x00;
-	PORTA.DIR = 0xFF;
+	PORTA.DIR = 0x00;
+	PORTCFG.MPCMASK = 0xFF;
+	ENABLE_PULLUP(PORTA.PIN0CTRL);
 
-	// PORT C, mode input
+	// PORT C, direct connect or buffered OD / level shifted
 	PORTC.OUT = 0x00;
-	PORTC.DIR = 0xFF;
+	PORTC.DIR = 0x00;
+	PORTCFG.MPCMASK = 0xFF;
+	ENABLE_PULLUP(PORTC.PIN0CTRL);
 
 	// PORT D, LED, direction, button, KBUS
 	PORTD.OUT = LED_PIN_bm | KBUS_TX_PIN_bm;

@@ -26,9 +26,6 @@
 #define ENABLE_PULLDOWN(A)			A = (A & ~PORT_OPC_gm) | PORT_OPC_PULLDOWN_gc
 #define ENABLE_TOTEM(A)				A = (A & ~PORT_OPC_gm) | PORT_OPC_TOTEM_gc
 
-// wait for NVM to wake up for reading the signature row
-#define HW_wait_for_sig_row()		while ((NVM.STATUS & NVM_NVMBUSY_bm) == NVM_NVMBUSY_bm)
-
 // Watchdog timer
 #define WATCHDOG_ON					do {	while (WDT.STATUS & WDT_SYNCBUSY_bm);									\
 											WDR();																	\

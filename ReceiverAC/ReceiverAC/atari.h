@@ -16,11 +16,11 @@
 #define AC_JOY_B1_PIN_bm		PIN4_bm
 #define AC_JOY_B2_PIN_bm		PIN5_bm
 
-#define MODE_PORT				PORTC
-#define MODE_PIN_bm				PIN2_bm
+#define SELECT_PORT				PORTC
+#define SELECT_PIN_bm			PIN2_bm
 
 #define DIR_PORT				PORTD
-#define DIR_PIN_bm				PIN4_bm
+#define DIR_PIN_bm				PIN7_bm
 
 
 extern void AC_init(void);
