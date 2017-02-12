@@ -60,7 +60,7 @@
             <Value>%24(PackRepoDir)\atmel\XMEGAE_DFP\1.0.30\include</Value>
           </ListValues>
         </avrgcc.compiler.directories.IncludePaths>
-        <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
+        <avrgcc.compiler.optimization.level>Optimize most (-O3)</avrgcc.compiler.optimization.level>
         <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
         <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
         <avrgcc.compiler.optimization.DebugLevel>Maximum (-g3)</avrgcc.compiler.optimization.DebugLevel>
@@ -78,6 +78,8 @@
         </avrgcc.assembler.general.IncludePaths>
       </AvrGcc>
     </ToolchainSettings>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
@@ -120,6 +122,21 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="atari.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="atari.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="atari_asm.S">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="config.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="config.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hw_misc.c">
       <SubType>compile</SubType>
     </Compile>
@@ -138,13 +155,13 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="psx.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="psx.c">
+    <Compile Include="report.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="report.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="version.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

@@ -1,6 +1,6 @@
 /*
  * hw_nvm.S
- * Author:	MoJo
+ * Author:	kuro68k
  * Created: 31/10/2011 16:52:59
  *
  * Most of this is adapted from app note AVR1316 sp_driver.S. NVM operations need things

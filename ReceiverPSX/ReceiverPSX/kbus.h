@@ -1,9 +1,7 @@
 /*
  * kbus.h
  *
- * Created: 28/05/2015 11:37:47
- *  Author: MoJo
- */ 
+ */
 
 
 #ifndef KBUS_H_
@@ -20,9 +18,9 @@
 
 
 #define KBUS_PORT				PORTD
-#define KBUS_RX_PIN_bm			PIN6_bm
-#define KBUS_TX_PIN_bm			PIN7_bm
-#define KBUS_RX_PINCTRL			PIN6CTRL
+#define KBUS_RX_PIN_bm			PIN2_bm
+#define KBUS_TX_PIN_bm			PIN3_bm
+#define KBUS_RX_PINCTRL			PIN2CTRL
 
 #define KBUS_USART				USARTD0
 #define KBUS_USART_RXC_vect		USARTD0_RXC_vect
@@ -35,6 +33,7 @@
 #define KBUS_DMA_TRIGGER_SRC	EDMA_CH_TRIGSRC_USARTC0_RXC_gc
 
 #define KBUS_EVENT_CTRL			EVSYS.CH0CTRL
+#define KBUS_EVENT_STROBE		EVSYS.STROBE
 #define KBUS_EVENT_MUX			EVSYS_CHMUX_PORTD_PIN6_gc
 #define KBUS_EVSEL				TC45_EVSEL_CH0_gc
 
@@ -46,12 +45,12 @@
 typedef struct
 {
 	uint8_t		command;
-	uint8_t		length;
+	uint8_t		length;			// data length, excluding checksum
 	uint8_t		data[63+2];		// up to 63 data bytes, plus 2 checksum bytes
 } KBUS_PACKET_t;
 
 
-#define CMD_LOOPBACK					0x50
+#define CMD_ECHO						0x50
 #define CMD_READ_STRING					0x51
 #define CMD_READ_VID_PID				0x52
 #define CMD_READ_DESCRIPTOR				0x53
@@ -62,7 +61,7 @@ typedef struct
 #define CMD_SET_BUTTON_AUTOFIRE			0x58
 #define CMD_READ_BUTTON_AUTOFIRE		0x59
 #define CMD_READ_REPORT					0x5A
-
+#define CMD_READ_CONFIG					0x5B
 
 #define ERROR_UNSPECIFIED_FAILURE		0x80
 #define	ERROR_UNKNOWN_COMMAND			0x81

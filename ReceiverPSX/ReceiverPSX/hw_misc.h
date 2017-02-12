@@ -1,9 +1,7 @@
 /*
  * hw_misc.h
  *
- * Created: 27/03/2015 15:21:00
- *  Author: MoJo
- */ 
+ */
 
 
 #ifndef HW_MISC_H_
@@ -15,7 +13,7 @@
 */
 
 #define LED_PORT				PORTD
-#define LED_PIN_bm				PIN0_bm
+#define LED_PIN_bm				PIN4_bm
 
 
 /**************************************************************************************************
@@ -27,9 +25,6 @@
 #define ENABLE_PULLUP(A)			A = (A & ~PORT_OPC_gm) | PORT_OPC_PULLUP_gc
 #define ENABLE_PULLDOWN(A)			A = (A & ~PORT_OPC_gm) | PORT_OPC_PULLDOWN_gc
 #define ENABLE_TOTEM(A)				A = (A & ~PORT_OPC_gm) | PORT_OPC_TOTEM_gc
-
-// wait for NVM to wake up for reading the signature row
-#define HW_wait_for_sig_row()		while ((NVM.STATUS & NVM_NVMBUSY_bm) == NVM_NVMBUSY_bm)
 
 // Watchdog timer
 #define WATCHDOG_ON					do {	while (WDT.STATUS & WDT_SYNCBUSY_bm);									\
