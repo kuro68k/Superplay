@@ -8,6 +8,7 @@
 *.sln.docstates
 _autosave-*
 svg/
+.old/
 
 # Build results
 [Dd]ebug/
