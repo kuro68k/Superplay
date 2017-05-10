@@ -1,8 +1,6 @@
 /*
  * kbus.h
  *
- * Created: 01/09/2015 10:25:16
- *  Author: Paul Qureshi
  */
 
 // UDI_HID_REPORT_SIZE defined in conf_usb.h
@@ -13,7 +11,7 @@ UDC_DESC_STORAGE udi_hid_generic_report_desc_t udi_hid_generic_report_desc = {
 		0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
 		0x09, 0x04,                    // USAGE (Joystick)
 		0xa1, 0x01,                    // COLLECTION (Application)
-		
+
 		0x05, 0x01,                    //   USAGE_PAGE (Generic Desktop)	joystick
 		0x09, 0x30,                    //   USAGE (X)
 		0x09, 0x31,                    //   USAGE (Y)
@@ -22,7 +20,7 @@ UDC_DESC_STORAGE udi_hid_generic_report_desc_t udi_hid_generic_report_desc = {
 		0x75, 0x08,                    //   REPORT_SIZE (8)
 		0x95, 0x02,                    //   REPORT_COUNT (2)
 		0x81, 0x02,                    //   INPUT (Data,Var,Abs)
-		
+
 		0x05, 0x09,                    //   USAGE_PAGE (Button)				buttons
 		0x19, 0x01,                    //   USAGE_MINIMUM (Button 1)
 		0x29, 0x18,                    //   USAGE_MAXIMUM (Button 24)
