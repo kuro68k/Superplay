@@ -1,8 +1,6 @@
 /*
  * hw_misc.c
  *
- * Created: 18/12/2014 21:22:20
- *  Author: Paul Qureshi
  */
 
 #include <avr/io.h>
@@ -17,7 +15,8 @@
 FUSES = {
 	0xFF,		// fusebyte 0
 	0x00,		// fusebyte 1
-	0xBE,		// fusebyte 2
+	//0xBE,		// fusebyte 2 bootloader
+	0xFE,		// fusebyte 2 application
 	0xFF,		// fusebyte	3
 	0xF3,		// fusebyte 4
 	0xE0,		// fusebyte 5
