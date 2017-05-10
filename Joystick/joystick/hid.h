@@ -27,11 +27,7 @@ typedef struct
 #define HID_TC_PER						0x1387	// 20ms
 
 
-extern bool HID_enabled;
-
 extern void HID_init(void);
-extern bool HID_callback_enable(void);
-extern bool HID_callback_disable(void);
 extern void HID_set_feature(uint8_t *report);
 extern void HID_send_report(void);
 

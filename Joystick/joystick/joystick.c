@@ -13,7 +13,6 @@
 #include "config.h"
 #include "hid.h"
 #include "report.h"
-#include "vendor.h"
 #include "autofire.h"
 #include "serial_num.h"
 #include "usart.h"
@@ -80,7 +79,6 @@ int main(void)
 		//if (cfg->aux_mode == AUX_MODE_BUTTONS)
 		//	AB_send_report();
 
-		if (HID_enabled && !VEN_enabled)
-			HID_send_report();
+		HID_send_report();
 	}
 }

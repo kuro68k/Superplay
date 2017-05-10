@@ -418,12 +418,6 @@
     <Compile Include="usb.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="vendor.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="vendor.h">
-      <SubType>compile</SubType>
-    </Compile>
     <None Include="src\ASF\common\boards\board.h">
       <SubType>compile</SubType>
     </None>
