@@ -1,0 +1,41 @@
+Title	KBUS Receiver
+Date	22/11/2016 09:59:38
+Source	ReceiverE5.sch
+Revsision	2.0
+
+Capacitors	6	X7R/X5R, 16V unless otherwise stated
+	C1, C2	22p	0603	
+	C6	680p	0603	
+	C4, C5, C10, C11, C12, C13	100n	0603	
+	C7, C9	10u	0603	
+	C8	10u	0805	
+	C3	4.7u	0603	
+
+Diodes	2
+	D2	MBR0520LT1G	SOD-123	
+	D1	LED	0603	
+
+Connectors	5
+	J1	KBUS	Type A, TH, FCI 87520	
+	J2	AVR-PDI-6A		
+
+Inductors	1
+	L1	6.8u		
+
+Resistors	5	1% unless otherwise stated
+	 R1, R2,R3	680	0603	
+	R7, R8	33	0603	
+	R6	2k2	0603	
+	R5	15k	0603	
+	R4	47k	0603	
+
+Integrated Circuits	5
+	U2	LM2731	SOT-23	
+	U5	TPS78233	SOT-23	
+	U1	ATXMEGA32E5-A	TQFP-32	
+	U3, U4	SN74LV07A	SSOP-14	
+	U6, U7	74LVC2T45	SOT-765-1	
+
+Crystals	1
+	Y1	Crystal	QC6CB/7A/ABM7 crystals	
+
