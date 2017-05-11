@@ -27,10 +27,10 @@
 		ENTRY(PB7,			&PORTB, PIN6_bm) \
 		ENTRY(PB8,			&PORTB, PIN7_bm) \
 		\
-		ENTRY(PA1,			&PORTC, PIN0_bm) \
-		ENTRY(PA2,			&PORTC, PIN1_bm) \
-		ENTRY(PA3,			&PORTC, PIN2_bm) \
-		ENTRY(PA4,			&PORTC, PIN3_bm) \
+		ENTRY(PA1,			&PORTC, PIN4_bm) \
+		ENTRY(PA2,			&PORTC, PIN5_bm) \
+		ENTRY(PA3,			&PORTC, PIN6_bm) \
+		ENTRY(PA4,			&PORTC, PIN7_bm) \
 		\
 		ENTRY(PA9,			&PORTD, PIN0_bm) \
 		ENTRY(PA10,			&PORTD, PIN1_bm) \
