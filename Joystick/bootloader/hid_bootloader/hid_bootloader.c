@@ -33,17 +33,8 @@ uint16_t	page_ptr = 0;
 */
 int main(void)
 {
-/*	EEP_EnableMapping();
-	uint32_t marker = *eeprom_marker;
-	EEP_DisableMapping();
-*/
-	//if ((marker != 0x4c4f4144) &&				// "LOAD" signal from application
-	if ((RST.STATUS != RST_SWRST_bm) &&			// software reset
-		(SP_ReadWord(0x00000000) != 0xFFFF)		// application reset vector not blank
-#ifdef ENTRY_BUTTON
-		&& (!ENTRY_BUTTON)
-#endif
-		)
+	if ((SP_ReadWord(0x00000000) != 0xFFFF)		// application reset vector not blank
+		&& (!ENTRY_BUTTON))
 	{
 		// exit bootloader
 		AppPtr application_vector = (AppPtr)0x000000;
@@ -56,15 +47,13 @@ int main(void)
 
 #ifdef LED_PORT
 	LED_PORT.DIRSET = LED_PIN_bm;
-	TCC0.INTCTRLA = TC_TC0_OVFINTLVL_LO_gc;
+	TCC0.INTCTRLA = TC_OVFINTLVL_LO_gc;
 	TCC0.PER = 0x1E83;				// 2 Hz
-	TCC0.CTRLA = TC_TC0_CLKSEL_DIV1024_gc;
+	TCC0.CTRLA = TC_CLKSEL_DIV1024_gc;
 #endif
 
 	CCP = CCP_IOREG_gc;				// unlock IVSEL
 	PMIC.CTRL |= PMIC_IVSEL_bm;		// set interrupt vector table to bootloader section
-
-	EEP_ErasePage(31);				// clear "LOAD" signal from application
 
 	// set up USB HID bootloader interface
 	sysclk_init();
