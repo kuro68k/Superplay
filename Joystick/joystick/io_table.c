@@ -49,13 +49,13 @@
 		ENTRY(PR8,			&PORTE, PIN7_bm) \
 		\
 		ENTRY(PR9,			&PORTF, PIN0_bm) \
-		ENTRY(PR10,			&PORTE, PIN1_bm) \
-		ENTRY(PR11,			&PORTE, PIN2_bm) \
-		ENTRY(PR12,			&PORTE, PIN3_bm) \
-		ENTRY(PB12,			&PORTE, PIN4_bm) \
-		ENTRY(PB13,			&PORTE, PIN5_bm) \
-		ENTRY(PB14,			&PORTE, PIN6_bm) \
-		ENTRY(PMETA,		&PORTE, PIN7_bm)
+		ENTRY(PR10,			&PORTF, PIN1_bm) \
+		ENTRY(PR11,			&PORTF, PIN2_bm) \
+		ENTRY(PR12,			&PORTF, PIN3_bm) \
+		ENTRY(PB12,			&PORTF, PIN4_bm) \
+		ENTRY(PB13,			&PORTF, PIN5_bm) \
+		ENTRY(PB14,			&PORTF, PIN6_bm) \
+		ENTRY(PMETA,		&PORTF, PIN7_bm)
 
 
 const __flash  IO_PIN_t	io_pin_table[256] = {
