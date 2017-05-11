@@ -17,7 +17,10 @@
 #define BOOTLOADER_VERSION	1
 
 // optional bootloader entry button
-#define ENTRY_BUTTON	((PORTB.IN & PIN0_bm) == 0)
+#define ENTRY_BUTTON_PORT	PORTB
+#define ENTRY_BUTTON_PIN	0
+#define ENTRY_BUTTON_SETUP	do { ENTRY_BUTTON_PORT.PIN0CTRL = (ENTRY_BUTTON_PORT.PIN0CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLUP_gc; _delay_ms(10); } while(0)
+#define ENTRY_BUTTON_TEST	((ENTRY_BUTTON_PORT.IN & (1 << ENTRY_BUTTON_PIN)) == 0)
 
 // optional LED flash
 #define LED_PORT		PORTF
@@ -33,8 +36,10 @@ uint16_t	page_ptr = 0;
 */
 int main(void)
 {
+	ENTRY_BUTTON_SETUP;
+
 	if ((SP_ReadWord(0x00000000) != 0xFFFF)		// application reset vector not blank
-		&& (!ENTRY_BUTTON))
+		&& (!ENTRY_BUTTON_TEST))
 	{
 		// exit bootloader
 		AppPtr application_vector = (AppPtr)0x000000;
