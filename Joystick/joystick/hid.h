@@ -23,15 +23,11 @@ typedef struct
 #define HID_ROTATE_RIGHT_BUTTON_bm		(1<<6)
 
 #define HID_TC							TCF0
-#define HID_TC_CLKSEL					TC_TC0_CLKSEL_DIV64_gc
+#define HID_TC_CLKSEL					TC_CLKSEL_DIV64_gc
 #define HID_TC_PER						0x1387	// 20ms
 
 
-extern bool HID_enabled;
-
 extern void HID_init(void);
-extern bool HID_callback_enable(void);
-extern bool HID_callback_disable(void);
 extern void HID_set_feature(uint8_t *report);
 extern void HID_send_report(void);
 

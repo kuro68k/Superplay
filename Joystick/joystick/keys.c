@@ -1,11 +1,8 @@
 /*
  * keys.c
  *
- * Created: 14/07/2015 16:40:30
- *  Author: Paul Qureshi
- *
  * Treat buttons as "keys", with simple debouncing and repeat inhibit etc.
- */ 
+ */
 
 #include <avr/io.h>
 #include "hw_misc.h"
@@ -45,7 +42,7 @@ uint8_t KEY_read(void)
 	last_keys &= new_keys;							// clear any no-longer pressed keys
 	pressed_keys = new_keys & ~last_keys;			// return only newly pressed keys
 	last_keys = new_keys;
-	
+
 	return pressed_keys;
 }
 

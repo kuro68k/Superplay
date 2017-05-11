@@ -109,8 +109,10 @@ COMPILER_WORD_ALIGNED
 
 //@}
 
+
 //! HID report descriptor for standard HID generic
 #include "descriptor.h"
+
 
 /**
  * \name Internal routines

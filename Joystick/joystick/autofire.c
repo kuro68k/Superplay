@@ -17,9 +17,9 @@
 
 
 const __flash uint16_t prescalers_lut[] = { 1, 2, 4, 8, 64, 256, 1024 };
-const __flash uint8_t clksel_lut[] = {	TC_TC0_CLKSEL_DIV1_gc, TC_TC0_CLKSEL_DIV2_gc, TC_TC0_CLKSEL_DIV4_gc,
-										TC_TC0_CLKSEL_DIV8_gc, TC_TC0_CLKSEL_DIV64_gc, TC_TC0_CLKSEL_DIV256_gc,
-										TC_TC0_CLKSEL_DIV1024_gc };
+const __flash uint8_t clksel_lut[] = {	TC_CLKSEL_DIV1_gc, TC_CLKSEL_DIV2_gc, TC_CLKSEL_DIV4_gc,
+										TC_CLKSEL_DIV8_gc, TC_CLKSEL_DIV64_gc, TC_CLKSEL_DIV256_gc,
+										TC_CLKSEL_DIV1024_gc };
 
 
 
@@ -96,7 +96,7 @@ void AF_init(void)
 	AF_TC1.CTRLC = 0;
 	AF_TC1.CTRLD = 0;
 	AF_TC1.CTRLE = 0;
-	AF_TC1.INTCTRLA = TC_TC0_OVFINTLVL_LO_gc;
+	AF_TC1.INTCTRLA = TC_OVFINTLVL_LO_gc;
 	AF_TC1.INTCTRLB = 0;
 	AF_TC1.CNT = 0;
 	AF_TC1.PER = per;
@@ -116,7 +116,7 @@ void AF_init(void)
 	AF_TC2.CTRLC = 0;
 	AF_TC2.CTRLD = 0;
 	AF_TC2.CTRLE = 0;
-	AF_TC2.INTCTRLA = TC_TC0_OVFINTLVL_LO_gc;
+	AF_TC2.INTCTRLA = TC_OVFINTLVL_LO_gc;
 	AF_TC2.INTCTRLB = 0;
 	AF_TC2.CNT = 0;
 	AF_TC2.PER = per;

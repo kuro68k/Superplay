@@ -39,7 +39,7 @@
 #define AUX_RX_TC_CCA_vect		TCE0_CCA_vect
 #define AUX_RX_EVENT_CHMUX		EVSYS_CHMUX_PORTC_PIN6_gc
 
-#define USART_TC_DIV			TC_TC0_CLKSEL_DIV256_gc
+#define USART_TC_DIV			TC_CLKSEL_DIV256_gc
 #define USART_TC_CCA			1		// 10.667us @ 48MHz
 
 

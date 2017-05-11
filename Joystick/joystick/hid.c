@@ -11,11 +11,8 @@
 #include <asf.h>
 
 #include "report.h"
-#include "vendor.h"
 #include "kbus.h"
 #include "hid.h"
-
-bool HID_enabled = false;
 
 /**************************************************************************************************
 ** Set up HID interface
@@ -30,24 +27,6 @@ void HID_init(void)
 	HID_TC.INTCTRLA = 0;
 	HID_TC.INTCTRLB = 0;
 	HID_TC.INTFLAGS = TC0_OVFIF_bm;
-}
-
-/**************************************************************************************************
-** Enable vendor interface, set default state
-*/
-bool HID_callback_enable(void)
-{
-	HID_enabled = true;
-	return true;
-}
-
-/**************************************************************************************************
-** Disable vendor interface
-*/
-bool HID_callback_disable(void)
-{
-	HID_enabled = false;
-	return true;
 }
 
 /**************************************************************************************************
