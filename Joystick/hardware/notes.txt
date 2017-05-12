@@ -8,3 +8,55 @@ V1.1:	Minor fixes, firmware compatible.
 
 V1.2:	Connected PF4/UNUSED to LED
 	Thickened lines in SUPERPLAY logos
+
+
+V2 -> V1 mapping:
+
+V2		V1
+-------------
+Up		Up
+Down	Down
+Left	Left
+Right	Right
+
+B1		B1
+B2		B2
+B3		B3
+B4		B4
+B5		B5
+B6		B6
+B7		B7
+B8		B8
+B9		Exp / AF low 1
+B10		Exp / AF low 2
+B11		Exp / AF low 3
+B12		Exp / AF low 4
+B13		AF low 6
+B14		AF low 5
+B15		Coin
+B16		Start
+
+A1		Unused
+A2		Mode 4B
+A3		Mode 4B AF
+A4		Control
+A5		AF high 1
+A6		AF high 2
+A7		AF high 3
+A8		AF high 4
+
+R1		R12
+R2		R11
+R3		R10
+R4		R9
+R5		R8
+R6		R7
+R7		R6
+R8		R5
+R9		R4
+R10		R3
+R11		R2
+R12		R1
+
+META	AF high 5
+LED		AF high 6
