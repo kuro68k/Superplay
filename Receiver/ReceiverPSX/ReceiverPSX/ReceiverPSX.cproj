@@ -122,13 +122,10 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="atari.c">
+    <Compile Include="psx.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="atari.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="atari_asm.S">
+    <Compile Include="psx.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="config.c">
