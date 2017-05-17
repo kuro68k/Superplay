@@ -410,13 +410,13 @@ Wire Wire Line
 Wire Wire Line
 	3450 3250 3250 3250
 Wire Wire Line
-	5450 4550 5650 4550
+	3450 4650 3250 4650
 Wire Wire Line
-	5450 4650 5650 4650
-Wire Wire Line
-	5450 4750 5650 4750
+	3450 4550 3250 4550
 Wire Wire Line
 	5450 4850 5650 4850
+Wire Wire Line
+	5450 4750 5650 4750
 Wire Wire Line
 	3450 4400 3250 4400
 Wire Wire Line
@@ -434,9 +434,9 @@ Wire Wire Line
 Wire Wire Line
 	3450 2850 3250 2850
 Wire Wire Line
-	3450 4550 3250 4550
+	5450 4550 5650 4550
 Wire Wire Line
-	3450 4650 3250 4650
+	5450 4650 5650 4650
 Wire Wire Line
 	2000 4750 3450 4750
 Wire Wire Line
@@ -521,9 +521,9 @@ Text Label 3250 3800 2    60   ~ 0
 A7
 Text Label 3250 3700 2    60   ~ 0
 A8
-Text Label 3250 4550 2    60   ~ 0
+Text Label 5650 4550 0    60   ~ 0
 META
-Text Label 3250 4650 2    60   ~ 0
+Text Label 5650 4650 0    60   ~ 0
 LED
 Text Label 3250 4400 2    60   ~ 0
 R1
@@ -549,13 +549,13 @@ Text Label 3250 3350 2    60   ~ 0
 R11
 Text Label 3250 3250 2    60   ~ 0
 R12
-Text Label 5650 4550 0    60   ~ 0
+Text Label 3250 4650 2    60   ~ 0
 A1
-Text Label 5650 4650 0    60   ~ 0
+Text Label 3250 4550 2    60   ~ 0
 A2
-Text Label 5650 4750 0    60   ~ 0
-A3
 Text Label 5650 4850 0    60   ~ 0
+A3
+Text Label 5650 4750 0    60   ~ 0
 A4
 Wire Wire Line
 	2500 4850 2500 5400
