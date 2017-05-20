@@ -3,7 +3,7 @@
   (general
     (links 0)
     (no_connects 0)
-    (area 27 42.3 92.85 101.505733)
+    (area 49.899999 42.3 92.85 101.505733)
     (thickness 1.6)
     (drawings 232)
     (tracks 601)
@@ -73,8 +73,8 @@
     (aux_axis_origin 0 0)
     (visible_elements 7FFEBF9F)
     (pcbplotparams
-      (layerselection 0x00030_80000001)
-      (usegerberextensions false)
+      (layerselection 0x02cc0_80000007)
+      (usegerberextensions true)
       (excludeedgelayer true)
       (linewidth 0.100000)
       (plotframeref false)
@@ -91,12 +91,12 @@
       (plotvalue true)
       (plotinvisibletext false)
       (padsonsilk false)
-      (subtractmaskfromsilk false)
+      (subtractmaskfromsilk true)
       (outputformat 1)
       (mirror false)
-      (drillshape 1)
+      (drillshape 0)
       (scaleselection 1)
-      (outputdirectory ""))
+      (outputdirectory plot/))
   )
 
   (net 0 "")
@@ -1994,11 +1994,11 @@
   )
 
   (module Keio:logo2_7.5x2.3mm (layer B.Cu) (tedit 0) (tstamp 592080F8)
-    (at 55.5 60)
-    (fp_text reference G*** (at 0 0) (layer B.SilkS) hide
+    (at 55.5 60 180)
+    (fp_text reference G*** (at 0 0 180) (layer B.SilkS) hide
       (effects (font (thickness 0.3)) (justify mirror))
     )
-    (fp_text value LOGO (at 0.75 0) (layer B.SilkS) hide
+    (fp_text value LOGO (at 0.75 0 180) (layer B.SilkS) hide
       (effects (font (thickness 0.3)) (justify mirror))
     )
     (fp_poly (pts (xy 1.28116 0.959301) (xy 1.280664 0.790115) (xy 0.829888 0.789129) (xy 0.829391 0.927807)
