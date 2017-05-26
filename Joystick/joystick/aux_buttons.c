@@ -1,9 +1,6 @@
 /*
  * aux_buttons.c
  *
- * Created: 15/04/2016 10:58:36
- *  Author: paul.qureshi
- *
  * Serial output to multiple NPIC6C596As to simulate button presses.
  */
 

@@ -3,7 +3,7 @@
  *
  * Created: 14/07/2015 16:40:39
  *  Author: Paul Qureshi
- */ 
+ */
 
 
 #ifndef KEYS_H_
@@ -16,8 +16,7 @@
 #define KEY_TC_PER				0x30D3
 
 
-extern uint8_t KEY_read(void);
-extern void KEY_clear(void);
+extern void KEY_read(void);
 
 
 #endif /* KEYS_H_ */

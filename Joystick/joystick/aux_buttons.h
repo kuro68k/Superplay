@@ -1,9 +1,7 @@
 /*
  * aux_buttons.h
  *
- * Created: 15/04/2016 10:58:48
- *  Author: paul.qureshi
- */ 
+ */
 
 
 #ifndef AUX_BUTTONS_H_

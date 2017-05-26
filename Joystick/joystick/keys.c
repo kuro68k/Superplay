@@ -6,9 +6,10 @@
 
 #include <avr/io.h>
 #include "hw_misc.h"
+#include "report.h"
 #include "keys.h"
 
-uint8_t	last_keys = 0;
+uint8_t		key_matrix[256];
 
 /**************************************************************************************************
 * Set up key input system after reset
@@ -31,25 +32,11 @@ void KEY_init(void)
 /**************************************************************************************************
 * Read keys
 */
-uint8_t KEY_read(void)
+void KEY_read(void)
 {
 	if (!(KEY_TC.INTFLAGS & TC0_OVFIF_bm))			// only re-read keys on timer overflow
 		return 0;
 	KEY_TC.INTFLAGS = TC0_OVFIF_bm;
 
-	uint8_t	pressed_keys;
-	uint8_t new_keys = PORTB.IN;
-	last_keys &= new_keys;							// clear any no-longer pressed keys
-	pressed_keys = new_keys & ~last_keys;			// return only newly pressed keys
-	last_keys = new_keys;
-
-	return pressed_keys;
-}
-
-/**************************************************************************************************
-* Clear all pressed keys until released and pressed again
-*/
-void KEY_clear(void)
-{
-	last_keys = 0xFF;
+	memcpy(key_matrix, input_matrix, sizeof(key_matrix));
 }
