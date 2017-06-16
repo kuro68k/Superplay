@@ -68,11 +68,14 @@ int main(void)
 	udc_start();
 	udc_attach();
 
+PORTA.DIRSET = PIN0_bm;
+
 	for(;;)
 	{
 		WDR();
 
 		RPT_refresh_input_matrix();
+PORTA.OUTSET = PIN0_bm;
 		AF_apply();
 		RPT_refresh_leds();
 
@@ -80,5 +83,6 @@ int main(void)
 		//	AB_send_report();
 
 		HID_send_report();
+PORTA.OUTCLR = PIN0_bm;
 	}
 }

@@ -115,6 +115,7 @@ enum PHYSICAL_INPUTS_enum
 	PJOY_DN,
 	PJOY_LF,
 	PJOY_RT,
+	PLED = 0x8E,
 	PMETA = 0x8F,
 
 	PB1 = 0x90,
