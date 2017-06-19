@@ -10,10 +10,10 @@
 // logical input to physical IO port mapping
 // V2.0 hardware
 #define IO_TABLE \
-		ENTRY(PB16,		&PORTA, PIN0_bm) \
-		ENTRY(PB15,		&PORTA, PIN1_bm) \
-		ENTRY(PB14,		&PORTA, PIN2_bm) \
-		ENTRY(PB13,		&PORTA, PIN3_bm) \
+		ENTRY(PB16,			&PORTA, PIN0_bm) \
+		ENTRY(PB15,			&PORTA, PIN1_bm) \
+		ENTRY(PB14,			&PORTA, PIN2_bm) \
+		ENTRY(PB13,			&PORTA, PIN3_bm) \
 		ENTRY(PB12,			&PORTA, PIN4_bm) \
 		ENTRY(PB11,			&PORTA, PIN5_bm) \
 		ENTRY(PB10,			&PORTA, PIN6_bm) \

@@ -17,6 +17,7 @@
 #include "serial_num.h"
 #include "usart.h"
 #include "aux_buttons.h"
+#include "keys.h"
 
 
 #define VERSION_MAJOR	1
@@ -74,15 +75,16 @@ PORTA.DIRSET = PIN0_bm;
 	{
 		WDR();
 
+//PORTA.OUTSET = PIN0_bm;
 		RPT_refresh_input_matrix();
-PORTA.OUTSET = PIN0_bm;
+//PORTA.OUTCLR = PIN0_bm;
 		AF_apply();
 		RPT_refresh_leds();
+		//KEY_read();
 
 		//if (cfg->aux_mode == AUX_MODE_BUTTONS)
 		//	AB_send_report();
 
 		HID_send_report();
-PORTA.OUTCLR = PIN0_bm;
 	}
 }

@@ -35,8 +35,8 @@ void KEY_init(void)
 */
 void KEY_read(void)
 {
-	if (!(KEY_TC.INTFLAGS & TC0_OVFIF_bm))			// only re-read keys on timer overflow
-		return;
+//	if (!(KEY_TC.INTFLAGS & TC0_OVFIF_bm))			// only re-read keys on timer overflow
+//		return;
 	KEY_TC.INTFLAGS = TC0_OVFIF_bm;
 
 	memcpy(key_matrix, input_matrix, sizeof(key_matrix));

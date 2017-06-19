@@ -4,6 +4,7 @@
  */
 
 #include <avr/io.h>
+#include <avr/sleep.h>
 #include <string.h>
 
 #include "global.h"
@@ -30,68 +31,59 @@ void RPT_init(void)
 */
 void rpt_physical_inputs_refresh(void)
 {
-	// PORTA
 	uint8_t p = PORTA.IN;
-	if (!(p & JOY_UP_PIN_bm))		input_matrix[PJOY_UP] = 1;
-	if (!(p & JOY_DOWN_PIN_bm))		input_matrix[PJOY_DN] = 1;
-	if (!(p & JOY_LEFT_PIN_bm))		input_matrix[PJOY_LF] = 1;
-	if (!(p & JOY_RIGHT_PIN_bm))	input_matrix[PJOY_RT] = 1;
-	if (!(p & START_PIN_bm))		input_matrix[PB16] = 1;
-	if (!(p & COIN_PIN_bm))			input_matrix[PB15] = 1;
-	if (!(p & AUTO_LOW_5_PIN_bm))	input_matrix[PA5] = 1;
-	if (!(p & AUTO_LOW_6_PIN_bm))	input_matrix[PA6] = 1;
+	input_matrix[PB16] = p & PIN0_bm ? 1 : 0;
+	input_matrix[PB15] = p & PIN1_bm ? 1 : 0;
+	input_matrix[PB14] = p & PIN2_bm ? 1 : 0;
+	input_matrix[PB13] = p & PIN3_bm ? 1 : 0;
+	input_matrix[PB12] = p & PIN4_bm ? 1 : 0;
+	input_matrix[PB11] = p & PIN5_bm ? 1 : 0;
+	input_matrix[PB10] = p & PIN6_bm ? 1 : 0;
+	input_matrix[PB9] = p & PIN7_bm ? 1 : 0;
 
-	// PORTB
 	p = PORTB.IN;
-	if (!(p & BUTTON_1_PIN_bm))		input_matrix[PB1] = 1;
-	if (!(p & BUTTON_2_PIN_bm))		input_matrix[PB2] = 1;
-	if (!(p & BUTTON_3_PIN_bm))		input_matrix[PB3] = 1;
-	if (!(p & BUTTON_4_PIN_bm))		input_matrix[PB4] = 1;
-	if (!(p & BUTTON_5_PIN_bm))		input_matrix[PB5] = 1;
-	if (!(p & BUTTON_6_PIN_bm))		input_matrix[PB6] = 1;
-	if (!(p & BUTTON_7_PIN_bm))		input_matrix[PB7] = 1;
-	if (!(p & BUTTON_8_PIN_bm))		input_matrix[PB8] = 1;
+	input_matrix[PB8] = p & PIN0_bm ? 1 : 0;
+	input_matrix[PB7] = p & PIN1_bm ? 1 : 0;
+	input_matrix[PB6] = p & PIN2_bm ? 1 : 0;
+	input_matrix[PB5] = p & PIN3_bm ? 1 : 0;
+	input_matrix[PB4] = p & PIN4_bm ? 1 : 0;
+	input_matrix[PB3] = p & PIN5_bm ? 1 : 0;
+	input_matrix[PB2] = p & PIN6_bm ? 1 : 0;
+	input_matrix[PB1] = p & PIN7_bm ? 1 : 0;
 
-	// PORTC
 	p = PORTC.IN;
-	if (!(p & AUTO_LOW_1_PIN_bm))	input_matrix[PA1] = 1;
-	if (!(p & AUTO_LOW_2_PIN_bm))	input_matrix[PA2] = 1;
-	if (!(p & AUTO_LOW_3_PIN_bm))	input_matrix[PA3] = 1;
-	if (!(p & AUTO_LOW_4_PIN_bm))	input_matrix[PA4] = 1;
+	input_matrix[PJOY_UP] = p & PIN4_bm ? 1 : 0;
+	input_matrix[PJOY_DN] = p & PIN5_bm ? 1 : 0;
+	input_matrix[PJOY_LF] = p & PIN6_bm ? 1 : 0;
+	input_matrix[PJOY_RT] = p & PIN7_bm ? 1 : 0;
 
-	// PORTD
 	p = PORTD.IN;
-	if (!(p & AUTO_HIGH_1_PIN_bm))	input_matrix[PA9] = 1;
-	if (!(p & AUTO_HIGH_2_PIN_bm))	input_matrix[PA10] = 1;
-	if (!(p & AUTO_HIGH_3_PIN_bm))	input_matrix[PA11] = 1;
-	if (!(p & AUTO_HIGH_4_PIN_bm))	input_matrix[PA12] = 1;
-	if (!(p & AUTO_HIGH_5_PIN_bm))	input_matrix[PA13] = 1;
-	if (!(p & AUTO_HIGH_6_PIN_bm))	input_matrix[PA14] = 1;
+	input_matrix[PMETA] = p & PIN0_bm ? 1 : 0;
+	input_matrix[PLED] = p & PIN1_bm ? 1 : 0;
+	input_matrix[PA4] = p & PIN2_bm ? 1 : 0;
+	input_matrix[PA3] = p & PIN3_bm ? 1 : 0;
+	input_matrix[PA2] = p & PIN4_bm ? 1 : 0;
+	input_matrix[PA1] = p & PIN5_bm ? 1 : 0;
 
-	// PORTE
 	p = PORTE.IN;
-	if (!(p & ROTARY_1_PIN_bm))		input_matrix[PR1] = 1;
-	if (!(p & ROTARY_2_PIN_bm))		input_matrix[PR2] = 1;
-	if (!(p & ROTARY_3_PIN_bm))		input_matrix[PR3] = 1;
-	if (!(p & ROTARY_4_PIN_bm))		input_matrix[PR4] = 1;
-	if (!(p & ROTARY_5_PIN_bm))		input_matrix[PR5] = 1;
-	if (!(p & ROTARY_6_PIN_bm))		input_matrix[PR6] = 1;
-	if (!(p & ROTARY_7_PIN_bm))		input_matrix[PR7] = 1;
-	if (!(p & ROTARY_8_PIN_bm))		input_matrix[PR8] = 1;
+	input_matrix[PA8] = p & PIN0_bm ? 1 : 0;
+	input_matrix[PA7] = p & PIN1_bm ? 1 : 0;
+	input_matrix[PA6] = p & PIN2_bm ? 1 : 0;
+	input_matrix[PA5] = p & PIN3_bm ? 1 : 0;
+	input_matrix[PR4] = p & PIN4_bm ? 1 : 0;
+	input_matrix[PR3] = p & PIN5_bm ? 1 : 0;
+	input_matrix[PR2] = p & PIN6_bm ? 1 : 0;
+	input_matrix[PR1] = p & PIN7_bm ? 1 : 0;
 
-	// PORTF
 	p = PORTF.IN;
-	if (!(p & ROTARY_9_PIN_bm))		input_matrix[PR9] = 1;
-	if (!(p & ROTARY_10_PIN_bm))	input_matrix[PR10] = 1;
-	if (!(p & ROTARY_11_PIN_bm))	input_matrix[PR11] = 1;
-	if (!(p & ROTARY_12_PIN_bm))	input_matrix[PR12] = 1;
-	if (!(p & UNUSED_PIN_bm))		input_matrix[PB13] = 1;
-	if (!(p & MODE_4_PIN_bm))		input_matrix[PB12] = 1;
-	if (!(p & MODE_4AF_PIN_bm))		input_matrix[PB11] = 1;
-	if (!(p & CONTROL_PIN_bm))		input_matrix[PMETA] = 1;
-
-	//input_matrix[LOFF] = 0;
-	//input_matrix[LON] = 1;
+	input_matrix[PR8] = p & PIN0_bm ? 1 : 0;
+	input_matrix[PR7] = p & PIN1_bm ? 1 : 0;
+	input_matrix[PR6] = p & PIN2_bm ? 1 : 0;
+	input_matrix[PR5] = p & PIN3_bm ? 1 : 0;
+	input_matrix[PR12] = p & PIN4_bm ? 1 : 0;
+	input_matrix[PR11] = p & PIN5_bm ? 1 : 0;
+	input_matrix[PR10] = p & PIN6_bm ? 1 : 0;
+	input_matrix[PR9] = p & PIN7_bm ? 1 : 0;
 }
 
 /**************************************************************************************************
@@ -99,7 +91,24 @@ void rpt_physical_inputs_refresh(void)
 */
 void RPT_refresh_input_matrix(void)
 {
-	memset(input_matrix, 0, 256);
+	//memset(input_matrix, 0, 256);
+
+#define STX		"st		X+, r1"				"\n\t"
+#define STX16	STX STX STX STX STX STX STX STX STX STX STX STX STX STX STX STX
+
+	asm volatile(
+		STX16
+		STX16
+		STX16
+		STX16	// 64
+		STX16
+		STX16
+		STX16
+		STX16	// 128
+	:
+	: [input] "x" (input_matrix)
+	);
+
 	input_matrix[LON] = 1;
 	input_matrix[PON] = 1;
 
@@ -107,8 +116,33 @@ void RPT_refresh_input_matrix(void)
 
 	//input_matrix[PB1] = 1;
 
-	for (uint8_t i = 0; i < map->count; i++)
-		input_matrix[map->mapping[i][0]] |= input_matrix[map->mapping[i][1]];
+PORTA.OUTSET = PIN0_bm;
+//	for (uint8_t i = 0; i < map->count; i++)
+//		input_matrix[map->mapping[i][0]] |= input_matrix[map->mapping[i][1]];
+
+	asm volatile(
+		"loop%=:"					"\n\t"
+		"ld		r18, Z+"			"\n\t"	// dest
+		"ld		r19, Z+"			"\n\t"	// src
+		"movw	Y, X"				"\n\t"
+		"add	YL, r18"			"\n\t"
+		"adc	YH, r1"				"\n\t"
+		"ld		r18, Y"				"\n\t"
+		"movw	Y, X"				"\n\t"
+		"add	YL, r19"			"\n\t"
+		"adc	YH, r1"				"\n\t"
+		"ld		r19, Y"				"\n\t"
+		"or		r18, r19"			"\n\t"
+		"st		X+, __tmp_reg__"	"\n\t"
+		"dec	%[count]"			"\n\t"
+		"brne	loop%="
+	:
+	: [count] "r" (map->count),
+	  [matrix] "x" (input_matrix),
+	  [mapping] "z" (map->mapping[0][0])
+	: "r18", "r19", "r28", "r29"
+	);
+PORTA.OUTCLR = PIN0_bm;
 }
 
 /**************************************************************************************************
