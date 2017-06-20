@@ -1,14 +1,12 @@
 /*
  * usart.c
  *
- * Created: 02/09/2015 09:27:28
- *  Author: Paul Qureshi
- *
  * USART comms using KBUS protocol, with main (shared with USB) and aux ports.
  */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 #include <string.h>
 #include <stdbool.h>
 #include "kbus.h"
@@ -102,7 +100,7 @@ void USART_init(void)
 		asm("nop");
 		ch->CTRLA = DMA_CH_BURSTLEN_1BYTE_gc;
 		ch->ADDRCTRL = DMA_CH_SRCRELOAD_BURST_gc | DMA_CH_SRCDIR_FIXED_gc |
-					  DMA_CH_DESTRELOAD_TRANSACTION_gc | DMA_CH_DESTDIR_INC_gc;
+					  DMA_CH_DESTRELOAD_BURST_gc | DMA_CH_DESTDIR_INC_gc;
 		ch->TRFCNT = BUFFER_SIZE;	// maximum packet size
 		ch->REPCNT = 0;
 
@@ -134,9 +132,9 @@ void USART_init(void)
 	{
 		ch->CTRLA = DMA_CH_RESET_bm;
 		asm("nop");
-		ch->CTRLA = DMA_CH_BURSTLEN_1BYTE_gc;
+		ch->CTRLA = DMA_CH_BURSTLEN_1BYTE_gc | DMA_CH_SINGLE_bm;
 		ch->ADDRCTRL = DMA_CH_SRCRELOAD_TRANSACTION_gc | DMA_CH_SRCDIR_INC_gc |
-					  DMA_CH_DESTRELOAD_BURST_gc | DMA_CH_DESTDIR_FIXED_gc;
+					  DMA_CH_DESTRELOAD_TRANSACTION_gc | DMA_CH_DESTDIR_FIXED_gc;
 		ch->TRFCNT = 4;	// minimum packet size
 		ch->REPCNT = 0;
 
@@ -276,20 +274,33 @@ void USART_run(void)
 	if (main_rx_SIG != 0)
 	{
 		main_rx_SIG = 0;
-		MAIN_RX_DMA_CH.CTRLA &= ~DMA_CH_ENABLE_bm;
+		MAIN_RX_DMA_CH.CTRLA &= ~DMA_CH_ENABLE_bm;	// cancel any further RX
+
 		if (usart_check_crc((uint8_t*)main_rx_buffer_DMA) && !(MAIN_TX_DMA_CH.CTRLB & DMA_CH_CHBUSY_bm))	// don't send if previous TX still in progress)
 		{
+			while (MAIN_TX_DMA_CH.CTRLB & DMA_CH_CHBUSY_bm);
 			KBUS_process_command((KBUS_PACKET_t *)main_rx_buffer_DMA, (KBUS_PACKET_t *)main_tx_buffer_DMA);
 			usart_add_crc(main_tx_buffer_DMA);
+			while (MAIN_TX_DMA_CH.CTRLB & DMA_CH_CHBUSY_bm);
 			usart_reset_main_dma_tx_pointer();
-			MAIN_TX_DMA_CH.TRFCNT = main_tx_buffer_DMA[1] + 2;	// data length + command + length
+			MAIN_TX_DMA_CH.TRFCNT = main_tx_buffer_DMA[1] + 2 + 2;	// command/length + data length + CRC16
 			MAIN_TX_DMA_CH.CTRLA |= DMA_CH_ENABLE_bm;
 		}
+
 		while (MAIN_RX_DMA_CH.CTRLA & DMA_CH_ENABLE_bm)	// wait for DMA to disable
 			MAIN_RX_DMA_CH.CTRLA &= ~DMA_CH_ENABLE_bm;
 		usart_reset_main_dma_rx_pointer();
 		MAIN_RX_DMA_CH.CTRLA |= DMA_CH_ENABLE_bm;
 	}
+
+	while (MAIN_TX_DMA_CH.CTRLB & DMA_CH_CHBUSY_bm);
+	KBUS_long_report((KBUS_PACKET_t *)main_tx_buffer_DMA);
+	usart_add_crc(main_tx_buffer_DMA);
+	usart_reset_main_dma_tx_pointer();
+
+	MAIN_TX_DMA_CH.CTRLB |= DMA_CH_TRNIF_bm;
+	MAIN_TX_DMA_CH.TRFCNT = main_tx_buffer_DMA[1] + 2 + 2;	// command/length + data length + CRC16
+	MAIN_TX_DMA_CH.CTRLA |= DMA_CH_ENABLE_bm;
 
 	// aux
 	if (aux_rx_SIG != 0)

@@ -51,6 +51,7 @@ typedef struct
 ** Public variables and functions
 */
 
+extern void KBUS_long_report(KBUS_PACKET_t *res);
 extern void KBUS_process_command(const KBUS_PACKET_t *cmd, KBUS_PACKET_t *res);
 
 

@@ -17,11 +17,14 @@
 #include "kbus.h"
 
 
+KBUS_PACKET_t report = { .command = KCMD_READ_REPORT | 0x80, .length = 16 };
+
 /**************************************************************************************************
 ** Long report
 */
-void kbus_long_report(KBUS_PACKET_t *res)
+void KBUS_long_report(KBUS_PACKET_t *res)
 {
+	res->command = KCMD_READ_REPORT | 0x80;
 	res->length = 16;
 	RPT_generate_report((uint8_t *)res->data);
 }
@@ -75,7 +78,7 @@ void KBUS_process_command(const KBUS_PACKET_t *cmd, KBUS_PACKET_t *res)
 			}
 
 		case KCMD_READ_REPORT:
-			kbus_long_report(res);
+			KBUS_long_report(res);
 			break;
 
 		default:

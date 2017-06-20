@@ -69,15 +69,16 @@ int main(void)
 	udc_start();
 	udc_attach();
 
+	MAIN_USART.CTRLB |= USART_TXEN_bm;
+	PORTE.DIRSET = PIN3_bm;
+
 PORTA.DIRSET = PIN0_bm;
 
 	for(;;)
 	{
 		WDR();
 
-//PORTA.OUTSET = PIN0_bm;
 		RPT_refresh_input_matrix();
-//PORTA.OUTCLR = PIN0_bm;
 		AF_apply();
 		RPT_refresh_leds();
 		//KEY_read();
@@ -85,6 +86,9 @@ PORTA.DIRSET = PIN0_bm;
 		//if (cfg->aux_mode == AUX_MODE_BUTTONS)
 		//	AB_send_report();
 
-		HID_send_report();
+PORTA.OUTSET = PIN0_bm;
+		//HID_send_report();
+		USART_run();
+PORTA.OUTCLR = PIN0_bm;
 	}
 }

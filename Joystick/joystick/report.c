@@ -116,7 +116,7 @@ void RPT_refresh_input_matrix(void)
 
 	//input_matrix[PB1] = 1;
 
-PORTA.OUTSET = PIN0_bm;
+//PORTA.OUTSET = PIN0_bm;
 //	for (uint8_t i = 0; i < map->count; i++)
 //		input_matrix[map->mapping[i][0]] |= input_matrix[map->mapping[i][1]];
 
@@ -142,7 +142,7 @@ PORTA.OUTSET = PIN0_bm;
 	  [mapping] "z" (map->mapping[0][0])
 	: "r18", "r19", "r28", "r29"
 	);
-PORTA.OUTCLR = PIN0_bm;
+//PORTA.OUTCLR = PIN0_bm;
 }
 
 /**************************************************************************************************
