@@ -9,8 +9,10 @@
 #include <util/delay.h>
 #include <string.h>
 #include <stdbool.h>
+#include "global.h"
 #include "kbus.h"
 #include "config.h"
+#include "hw_misc.h"
 #include "usart.h"
 
 
@@ -263,6 +265,30 @@ void usart_add_crc(uint8_t *buffer)
 	for (uint8_t i = 0; i < len; i++)
 		CRC.DATAIN = buffer[i];
 	*crc = (CRC.CHECKSUM1 << 8) | CRC.CHECKSUM0;
+}
+
+/**************************************************************************************************
+** Look for USART connection to KBUS. Returns true if found
+*/
+bool USART_check_for_bus(void)
+{
+	HW_reset_rtc();
+	MAIN_USART.CTRLB |= USART_RXEN_bm;
+	uint32_t rx = 0;
+
+	do
+	{
+		if (MAIN_USART.STATUS & USART_RXCIF_bm)
+		{
+			rx <<= 8;
+			rx |= MAIN_USART.DATA;
+			if (rx == LE_CHR('K', 'B', 'U', 'S'))
+				return true;
+		}
+	} while (RTC.CNT < 100);	// approx 100ms
+
+	MAIN_USART.CTRLB &= ~USART_RXEN_bm;
+	return false;
 }
 
 /**************************************************************************************************

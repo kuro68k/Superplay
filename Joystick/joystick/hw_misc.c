@@ -132,10 +132,30 @@ void HW_init(void)
 
 	SLEEP.CTRL = SLEEP_SMODE_IDLE_gc | SLEEP_SEN_bm;
 
+	// RTC, ticks at approx 1ms intervals
+	// 1.024kHz from 32kHz RC oscillator enabled by ASF code (conf_clock.h)
+	RTC.CTRL = 0;
+	while (RTC.STATUS & RTC_SYNCBUSY_bm);
+	RTC.INTCTRL = 0;
+	RTC.CNT = 0;
+	RTC.PER = 0xFFFF;
+	RTC.CTRL = RTC_PRESCALER_DIV1_gc;
+
 	// DMA
 	DMA.CTRL = DMA_RESET_bm;
 	asm("nop");
 	DMA.CTRL = DMA_ENABLE_bm | DMA_DBUFMODE_DISABLED_gc | DMA_PRIMODE_CH0RR123_gc;
+}
+
+/**************************************************************************************************
+** Reset RTC to zero
+*/
+void HW_reset_rtc(void)
+{
+	RTC.CTRL = 0;
+	while (RTC.STATUS & RTC_SYNCBUSY_bm);
+	RTC.CNT = 0;
+	RTC.CTRL = RTC_PRESCALER_DIV1_gc;
 }
 
 /**************************************************************************************************

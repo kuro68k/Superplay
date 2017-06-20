@@ -66,11 +66,20 @@ int main(void)
 
 	PMIC.CTRL = PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_HILVLEN_bm;
 	sei();
-	udc_start();
-	udc_attach();
 
-	MAIN_USART.CTRLB |= USART_TXEN_bm;
-	PORTE.DIRSET = PIN3_bm;
+	bool usart_mode = false;
+	usart_mode = USART_check_for_bus();
+
+	if (!usart_mode)
+	{
+		udc_start();
+		udc_attach();
+	}
+	else
+	{
+		MAIN_USART.CTRLB |= USART_TXEN_bm;
+		PORTE.DIRSET = PIN3_bm;
+	}
 
 PORTA.DIRSET = PIN0_bm;
 
@@ -87,8 +96,10 @@ PORTA.DIRSET = PIN0_bm;
 		//	AB_send_report();
 
 PORTA.OUTSET = PIN0_bm;
-		//HID_send_report();
-		USART_run();
+		if (!usart_mode)
+			HID_send_report();
+		else
+			USART_run();
 PORTA.OUTCLR = PIN0_bm;
 	}
 }

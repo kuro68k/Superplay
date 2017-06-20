@@ -16,14 +16,14 @@
 #define USART_CLK2X				USART_CLK2X_bm
 
 
-//#define MAIN_USART				USARTD1
-//#define MAIN_RXC_vect			USARTD1_RXC_vect
-//#define MAIN_RX_DMA_TRIGSRC		DMA_CH_TRIGSRC_USARTD1_RXC_gc
-//#define MAIN_TX_DMA_TRIGSRC		DMA_CH_TRIGSRC_USARTD1_DRE_gc
-#define MAIN_USART				USARTE0
-#define MAIN_RXC_vect			USARTE0_RXC_vect
-#define MAIN_RX_DMA_TRIGSRC		DMA_CH_TRIGSRC_USARTE0_RXC_gc
-#define MAIN_TX_DMA_TRIGSRC		DMA_CH_TRIGSRC_USARTE0_DRE_gc
+#define MAIN_USART				USARTD1
+#define MAIN_RXC_vect			USARTD1_RXC_vect
+#define MAIN_RX_DMA_TRIGSRC		DMA_CH_TRIGSRC_USARTD1_RXC_gc
+#define MAIN_TX_DMA_TRIGSRC		DMA_CH_TRIGSRC_USARTD1_DRE_gc
+//#define MAIN_USART				USARTE0
+//#define MAIN_RXC_vect			USARTE0_RXC_vect
+//#define MAIN_RX_DMA_TRIGSRC		DMA_CH_TRIGSRC_USARTE0_RXC_gc
+//#define MAIN_TX_DMA_TRIGSRC		DMA_CH_TRIGSRC_USARTE0_DRE_gc
 
 #define AUX_USART				USARTC1
 #define AUX_RXC_vect			USARTC1_RXC_vect
@@ -48,6 +48,7 @@
 #define USART_TC_CCA			1		// 10.667us @ 48MHz
 
 
+extern bool USART_check_for_bus(void);
 extern void USART_init(void);
 extern void USART_run(void);
 

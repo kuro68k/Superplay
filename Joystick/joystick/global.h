@@ -3,7 +3,7 @@
  *
  * Created: 18/12/2014 21:47:07
  *  Author: Paul Qureshi
- */ 
+ */
 
 
 #ifndef GLOBAL_H_
@@ -15,6 +15,8 @@
 
 #define NOP()	__asm__ __volatile__("nop")
 #define	WDR()	__asm__ __volatile__("wdr")
+
+#define LE_CHR(a,b,c,d)		( ((uint32_t)(a)<<24) | ((uint32_t)(b)<<16) | ((c)<<8) | (d) )
 
 
 // compile time static assertions (http://www.pixelbeat.org/programming/gcc/static_assert.html)
