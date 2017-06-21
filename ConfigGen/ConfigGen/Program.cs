@@ -29,7 +29,7 @@ namespace ConfigGen
 			//	t.DumpToConsole();
 			//}
 
-			List<Config> config_list = Config.LoadConfigFromFile("config.txt");
+			List<Config> config_list = Config.LoadConfigFromFile("..\\..\\config.txt");
 			if (config_list == null)
 			{
 				Console.WriteLine("Failed to load config.txt.");
