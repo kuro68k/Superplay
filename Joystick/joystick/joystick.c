@@ -68,17 +68,12 @@ int main(void)
 	sei();
 
 	bool usart_mode = false;
-	usart_mode = USART_check_for_bus();
-
-	if (!usart_mode)
+	for(;;)
 	{
-		udc_start();
-		udc_attach();
-	}
-	else
-	{
-		MAIN_USART.CTRLB |= USART_TXEN_bm;
-		PORTE.DIRSET = PIN3_bm;
+		if (HID_check_for_bus())
+			break;
+		if ((usart_mode = USART_check_for_bus()))
+			break;
 	}
 
 PORTA.DIRSET = PIN0_bm;

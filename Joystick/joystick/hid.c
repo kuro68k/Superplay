@@ -1,18 +1,20 @@
 /*
  * hid.c
  *
- * Created: 04/04/2015 16:10:24
- *  Author: Paul Qureshi
  */
 
 #include <avr/io.h>
 #include <stdbool.h>
 #include <string.h>
 #include <asf.h>
+#include "usb_device.h"
 
 #include "report.h"
+#include "hw_misc.h"
 #include "kbus.h"
 #include "hid.h"
+
+bool HID_udc_resumed = false;	// set by ASF USB stack via callback (see conf_usb.h)
 
 /**************************************************************************************************
 ** Set up HID interface
@@ -27,6 +29,27 @@ void HID_init(void)
 	HID_TC.INTCTRLA = 0;
 	HID_TC.INTCTRLB = 0;
 	HID_TC.INTFLAGS = TC0_OVFIF_bm;
+}
+
+/**************************************************************************************************
+** Look for USB bus
+*/
+bool HID_check_for_bus(void)
+{
+	HW_reset_rtc();
+
+	udc_start();
+	udc_attach();
+
+	do
+	{
+		if (HID_udc_resumed)
+			return true;
+	} while (RTC.CNT < 100);
+
+	udc_detach();
+	udc_stop();
+	return false;
 }
 
 /**************************************************************************************************

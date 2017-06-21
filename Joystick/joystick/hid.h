@@ -1,8 +1,6 @@
 /*
  * hid.h
  *
- * Created: 04/04/2015 16:10:43
- *  Author: Paul Qureshi
  */
 
 
@@ -28,6 +26,7 @@ typedef struct
 
 
 extern void HID_init(void);
+extern bool HID_check_for_bus(void);
 extern void HID_set_feature(uint8_t *report);
 extern void HID_send_report(void);
 

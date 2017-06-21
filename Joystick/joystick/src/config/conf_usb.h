@@ -109,6 +109,9 @@ extern uint8_t USB_serial_number[];
 // #define  UDC_GET_EXTRA_STRING()
 //@}
 
+extern bool HID_udc_resumed;
+#define  UDC_RESUME_EVENT()               HID_udc_resumed = true;
+
 //@}
 
 
