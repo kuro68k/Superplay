@@ -89,46 +89,45 @@ void HW_init(void)
 
 	// port A
 	PORTA.OUT = 0;
-	//if (cfg->af_mode == CFG_AF_MODE_HIGH_LOW)
-	//	PORTA.DIR = 0;
-	//else
-		PORTA.DIR = AUTO_LOW_5_PIN_bm | AUTO_LOW_6_PIN_bm;
+	PORTA.DIR = 0;
 	PORTCFG.MPCMASK = 0xFF;
 	ENABLE_PULLUP(PORTA.PIN0CTRL);
 
 	// port B
+	PORTA.OUT = 0;
 	PORTB.DIR = 0;
 	PORTCFG.MPCMASK = 0xFF;
 	ENABLE_PULLUP(PORTB.PIN0CTRL);
 
 	// port C
 	PORTC.OUT = 0;
-	//if (cfg->af_mode == CFG_AF_MODE_HIGH_LOW)
-	//	PORTC.DIR = PIN4_bm | PIN5_bm | DEBUG_TX_PIN_bm;
-	//else
-		PORTC.DIR = ~(DEBUG_RX_PIN_bm);
+	PORTC.DIR = 0;
 	PORTCFG.MPCMASK = 0xFF;
 	ENABLE_PULLUP(PORTC.PIN0CTRL);
 
 	// port D
-	PORTD.DIR = USB_UI_TX_PIN_bm;
+	PORTD.OUT = 0;
+	PORTD.DIR = 0;
 	PORTCFG.MPCMASK = 0xFF;
 	ENABLE_PULLUP(PORTD.PIN0CTRL);
 
 	// port E
+	PORTE.OUT = 0;
 	PORTE.DIR = 0;
 	PORTCFG.MPCMASK = 0xFF;
 	ENABLE_PULLUP(PORTE.PIN0CTRL);
 
 	// port F
+	PORTF.OUT = 0;
 	PORTF.DIR = 0;
 	PORTCFG.MPCMASK = 0xFF;
 	ENABLE_PULLUP(PORTF.PIN0CTRL);
 
 	// port R
+	PORTR.OUT = 0;
 	PORTR.DIR = 0;
 
-	//hw_configure_outputs();
+	hw_configure_outputs();
 
 	SLEEP.CTRL = SLEEP_SMODE_IDLE_gc | SLEEP_SEN_bm;
 
