@@ -19,6 +19,8 @@ namespace ConfigGen
 
 		static void Main(string[] args)
 		{
+			
+			
 			if (!ParseArgs(args))
 				return;
 
@@ -55,75 +57,29 @@ namespace ConfigGen
 
 		private static bool ParseArgs(string[] args)
 		{
-			if (args.Length < 2)
+			CmdArgs argProcessor = new CmdArgs() {
+				{ new CmdArgument("h,hex", ArgType.Flag, help: "generate an Intel hex file",
+									assign: (dynamic d) => { opt_generate_hex = true; }) },
+				{ new CmdArgument("b,bin", ArgType.Flag, help: "generate a binary file",
+									assign: (dynamic d) => { opt_generate_bin = true; }) },
+				{ new CmdArgument("v,verbose", ArgType.Flag, help: "verbose output",
+									assign: (dynamic d) => { opt_verbose = true; }) },
+				{ new CmdArgument("", ArgType.String, anonymous: true,
+									parameter_help: "config file",
+									required: true,
+									assign: (dynamic d) => { opt_input_file = (string)d; }) },
+				{ new CmdArgument("", ArgType.String, anonymous: true,
+									parameter_help: "output file",
+									required: true,
+									assign: (dynamic d) => { opt_output_file = (string)d; }) }
+			};
+
+			if (!argProcessor.TryParse(args))
 			{
-				PrintUsage();
-				return false;
-			}
-
-			int non_option_count = 0;
-			for (int i = 0; i < args.Length; i++)
-			{
-				// option
-				if ((args[i].StartsWith("-")) || (args[i].StartsWith("/")))
-				{
-					string a = args[i].Substring(1);
-					switch(a)
-					{
-						case "h":
-						case "hex":
-							opt_generate_hex = true;
-							break;
-
-						case "b":
-						case "bin":
-							opt_generate_bin = true;
-							break;
-
-						case "v":
-						case "verbose":
-							opt_verbose = true;
-							break;
-
-						default:
-							Console.WriteLine("Unknown option \"" + a + "\"");
-							PrintUsage();
-							return false;
-					}
-				}
-				// file name
-				else
-				{
-					switch(non_option_count)
-					{
-						case 0:
-							opt_input_file = args[i];
-							break;
-						case 1:
-							opt_output_file = args[i];
-							break;
-						default:
-							Console.WriteLine("Extra filename \"" + args[i] + "\"");
-							return false;
-					}
-					non_option_count++;
-				}
-			}
-
-			if (non_option_count != 2)
-			{
-				PrintUsage();
+				argProcessor.PrintHelp();
 				return false;
 			}
 			return true;
-		}
-
-		private static void PrintUsage()
-		{
-			Console.WriteLine("ConfigGen [options] <config file> <output file>");
-			Console.WriteLine("  -b,bin\tProduce binary file");
-			Console.WriteLine("  -h,hex\tProduce hex file");
-			Console.WriteLine("  -v,verbose\tVerbose output");
 		}
 
 		private static bool GenerateBinFile(List<byte[]> buffer_list)
