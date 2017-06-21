@@ -13,6 +13,10 @@
 #include <stdbool.h>
 
 
+#define HARDWARE_V1
+
+
+
 #define NOP()	__asm__ __volatile__("nop")
 #define	WDR()	__asm__ __volatile__("wdr")
 

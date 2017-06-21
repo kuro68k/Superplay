@@ -31,6 +31,7 @@ void RPT_init(void)
 */
 void rpt_physical_inputs_refresh(void)
 {
+#ifndef HARDWARE_V1
 	uint8_t p = PORTA.IN;
 	input_matrix[PB16] = p & PIN0_bm ? 1 : 0;
 	input_matrix[PB15] = p & PIN1_bm ? 1 : 0;
@@ -84,6 +85,63 @@ void rpt_physical_inputs_refresh(void)
 	input_matrix[PR11] = p & PIN5_bm ? 1 : 0;
 	input_matrix[PR10] = p & PIN6_bm ? 1 : 0;
 	input_matrix[PR9] = p & PIN7_bm ? 1 : 0;
+
+#else
+	uint8_t p = PORTA.IN;
+	input_matrix[PJOY_UP] = p & PIN0_bm ? 1 : 0;
+	input_matrix[PJOY_DN] = p & PIN1_bm ? 1 : 0;
+	input_matrix[PJOY_LF] = p & PIN2_bm ? 1 : 0;
+	input_matrix[PJOY_RT] = p & PIN3_bm ? 1 : 0;
+	input_matrix[PB16] = p & PIN4_bm ? 1 : 0;
+	input_matrix[PB15] = p & PIN5_bm ? 1 : 0;
+	input_matrix[PA5] = p & PIN6_bm ? 1 : 0;
+	input_matrix[PA6] = p & PIN7_bm ? 1 : 0;
+
+	p = PORTB.IN;
+	input_matrix[PB1] = p & PIN0_bm ? 1 : 0;
+	input_matrix[PB2] = p & PIN1_bm ? 1 : 0;
+	input_matrix[PB3] = p & PIN2_bm ? 1 : 0;
+	input_matrix[PB4] = p & PIN3_bm ? 1 : 0;
+	input_matrix[PB5] = p & PIN4_bm ? 1 : 0;
+	input_matrix[PB6] = p & PIN5_bm ? 1 : 0;
+	input_matrix[PB7] = p & PIN6_bm ? 1 : 0;
+	input_matrix[PB8] = p & PIN7_bm ? 1 : 0;
+
+	p = PORTC.IN;
+	input_matrix[PA1] = p & PIN1_bm ? 1 : 0;
+	input_matrix[PA2] = p & PIN2_bm ? 1 : 0;
+	input_matrix[PA3] = p & PIN3_bm ? 1 : 0;
+	input_matrix[PA4] = p & PIN4_bm ? 1 : 0;
+
+	p = PORTD.IN;
+	input_matrix[PA7] = p & PIN0_bm ? 1 : 0;
+	input_matrix[PA8] = p & PIN1_bm ? 1 : 0;
+	input_matrix[PA9] = p & PIN2_bm ? 1 : 0;
+	input_matrix[PA10] = p & PIN3_bm ? 1 : 0;
+	input_matrix[PA11] = p & PIN4_bm ? 1 : 0;
+	input_matrix[PA12] = p & PIN5_bm ? 1 : 0;
+
+	p = PORTE.IN;
+	input_matrix[PR12] = p & PIN0_bm ? 1 : 0;
+	input_matrix[PR11] = p & PIN1_bm ? 1 : 0;
+	input_matrix[PR10] = p & PIN2_bm ? 1 : 0;
+	input_matrix[PA9] = p & PIN3_bm ? 1 : 0;
+	input_matrix[PR8] = p & PIN4_bm ? 1 : 0;
+	input_matrix[PR7] = p & PIN5_bm ? 1 : 0;
+	input_matrix[PR6] = p & PIN6_bm ? 1 : 0;
+	input_matrix[PR5] = p & PIN7_bm ? 1 : 0;
+
+	p = PORTF.IN;
+	input_matrix[PR4] = p & PIN0_bm ? 1 : 0;
+	input_matrix[PR3] = p & PIN1_bm ? 1 : 0;
+	input_matrix[PR2] = p & PIN2_bm ? 1 : 0;
+	input_matrix[PR1] = p & PIN3_bm ? 1 : 0;
+	input_matrix[PB14] = p & PIN4_bm ? 1 : 0;
+	input_matrix[PR13] = p & PIN5_bm ? 1 : 0;
+	input_matrix[PR12] = p & PIN6_bm ? 1 : 0;
+	input_matrix[PMETA] = p & PIN7_bm ? 1 : 0;
+
+#endif
 }
 
 /**************************************************************************************************
