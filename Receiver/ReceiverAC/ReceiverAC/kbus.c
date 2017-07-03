@@ -13,6 +13,10 @@
 #include "atari.h"
 #include "kbus.h"
 
+#define BUFFER_SIZE		(sizeof(KBUS_PACKET_t) + 2)
+
+volatile uint8_t rx_buffer_DMA[BUFFER_SIZE];
+
 volatile KBUS_PACKET_t	input_buffer;
 //volatile uint8_t		input_write_ptr_AT = 0;
 volatile uint8_t		packet_ready_SIG = 0;
@@ -31,8 +35,8 @@ void kbus_reset_dma(void)
 	while(KBUS_DMA_CH.CTRLA & EDMA_CH_ENABLE_bm);
 
 	KBUS_DMA_CH.TRFCNTL = sizeof(KBUS_PACKET_t);
-	KBUS_DMA_CH.ADDRL = (( (uint16_t)&input_buffer) >> 0) & 0xFF;
-	KBUS_DMA_CH.ADDRH = (( (uint16_t)&input_buffer) >> 8) & 0xFF;
+	KBUS_DMA_CH.ADDRL = (( (uint16_t)&rx_buffer_DMA) >> 0) & 0xFF;
+	KBUS_DMA_CH.ADDRH = (( (uint16_t)&rx_buffer_DMA) >> 8) & 0xFF;
 }
 
 /**************************************************************************************************
@@ -148,13 +152,13 @@ void kbus_find_device(void)
 }
 
 /**************************************************************************************************
-* Validate the packet in the input buffer
+* Validate the packet in the input buffer. Command in the packet must be command + response bit
 */
 bool kbus_validate_packet(uint8_t command)
 {
 	if (input_buffer.length > 63)
 		return false;
-	if (*(uint16_t *)&input_buffer.data[packet.length] != HW_crc16(&input_buffer.data, 2 + input_buffer.length))
+	if (*(uint16_t *)&input_buffer.data[packet.length] != HW_crc16((void *)input_buffer.data, 2 + input_buffer.length))
 		return false;
 
 	if (input_buffer.command != (command | RESPONSE_BIT_bm))
@@ -177,7 +181,7 @@ bool kbus_state_ping_test(void)
 		KBUS_PACKET_t cmd;
 		cmd.command = CMD_START_REPORTING;
 		cmd.length = 63;
-		for (uint8_t i = 0; i < 63; i++)
+		for (uint8_t i = 0; i < KBUS_PACKET_DATA_SIZE; i++)
 			cmd.data[i] = i;
 		*(uint16_t *)&cmd.data[64] = HW_crc16(&cmd, 2 + 63);
 		kbus_send(&cmd, 2 + 63 + 2);
@@ -191,7 +195,7 @@ bool kbus_state_ping_test(void)
 			if (packet_ready_SIG)
 			{
 				if (!kbus_validate_packet(cmd.command) ||
-					memcmp(&input_buffer.data, &cmd.data, 63) != 0)
+					memcmp((void *)input_buffer.data, &cmd.data, 63) != 0)
 				{
 					break;
 				}
@@ -231,37 +235,30 @@ void KBUS_run(void)
 				break;
 		}
 
-		// keep polling for updates
+		// TODO: read configs
+
+		// updates come continuously
 		retries = 0;
 		do
 		{
-			kbus_send(&report_cmd, 4);
+			if (timeout_SIG)
+				retries++;
 
-			// get response
-			for(;;)
+			if (packet_ready_SIG)
 			{
-				if (timeout_SIG)
+				if (!kbus_validate_packet(CMD_READ_REPORT) ||
+					packet.length != 16)	// fixed report size
 				{
 					retries++;
-					break;
 				}
-
-				if (packet_ready_SIG)
+				else
 				{
-					if (!kbus_validate_packet(report_cmd.command) ||
-						packet.length != 16)	// fixed report size
-					{
-						retries++;
-					}
-					else
-					{
-						RPT_decode_kbus_matrix((uint8_t *)&packet.data);
-						RPT_refresh_input_matrix();
-						AC_update();
-						retries = 0;
-					}
-					break;
+					RPT_decode_kbus_matrix((uint8_t *)&packet.data);
+					RPT_refresh_input_matrix();
+					AC_update();
+					retries = 0;
 				}
+				break;
 			}
 		} while (retries < 3);
 

@@ -42,11 +42,12 @@
 * K-BUS packets
 */
 
+#define KBUS_PACKET_DATA_SIZE			62
 typedef struct
 {
 	uint8_t		command;
-	uint8_t		length;			// data length, excluding checksum
-	uint8_t		data[63+2];		// up to 63 data bytes, plus 2 checksum bytes
+	uint8_t		length;
+	uint8_t		data[KBUS_PACKET_DATA_SIZE];
 } KBUS_PACKET_t;
 
 

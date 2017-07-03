@@ -35,7 +35,7 @@ void HW_init(void)
 	PORTCFG.MPCMASK = 0xFF;
 	ENABLE_PULLUP(PORTC.PIN0CTRL);
 
-	// PORT D, LED, direction, button, KBUS
+	// PORT D, LED, direction, KBUS
 	PORTD.OUT = LED_PIN_bm | KBUS_TX_PIN_bm;
 	PORTD.DIR = ~KBUS_RX_PIN_bm;
 	ENABLE_PULLUP(PORTD.PIN6CTRL);		// KBUS RX

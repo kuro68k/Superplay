@@ -20,9 +20,12 @@ KBUS uses RS232 signalling at 3.3V and 1M baud, 8 bits, no parity, 1 stop bit (8
 
 Packets are separated by a gap of 2 or more characters.
 
-The standard KBUS cable is a standard USB 2.0 cable. The type of connector on either end (A, B or C, micro, mini etc.) is not specified, but the standard full size A to B cable is cheap, readily available and fairly robust. D- is used for TX, and D+ for RX, from the receiver's point of view. Obviously, devices must be reversed.
+The standard KBUS cable is a USB 2.0 cable. The type of connector on either end (A, B or C, micro, mini etc.) is not specified, but the standard full size A to B cable is cheap, readily available and fairly robust. D- is used for TX, and D+ for RX, from the receiver's point of view. Obviously, devices' TX/RX must be reversed.
 
-Power supplied to KBUS devices is 4.5-5.25V at 250mA. This allows for both standard USB 5V ±5% and for diode ORing of multiple supplies. Some receivers can't supply 250mA so it may be necessary to provide an external power. Since signalling is at 3.3V it is expected that the supply voltage will be regulated down to that level anyway.
+`Receiver TX ---> USB D- ---> Device RX`
+`Receiver RX <--- USB D+ <--- Device TX`
+
+Power supplied to KBUS devices is 4.5-5.25V at 250mA. This allows for both standard USB 5V ±5% and for diode ORing of multiple supplies. Since signalling is at 3.3V it is expected that the supply voltage will be regulated down to that level anyway.
 
 
 ## Protocol
@@ -34,7 +37,6 @@ KBUS packets are 64 bytes long, for compatibility with USB HID. Each packet cont
 | Bytes | Description |
 | :--- | :--- |
 | 1 | Command code |
-| 1 | Data length |
 | 0-63 | Data |
 | 2 | CCITT CRC-16 Checksum |
 
@@ -45,9 +47,7 @@ KBUS packets are 64 bytes long, for compatibility with USB HID. Each packet cont
 | 1 | Command code |
 | 0-63 | Data |
 
-USB handles packet length and checksums as part of its own protocol, so there is no need to duplicate them.
-
-Commands are as follows:
+USB handles the checksum as part of its own protocol, so there is no need to duplicate it. Commands are as follows:
 
 | Command | Code | Description |
 | :--- | :--- | :--- |
@@ -62,7 +62,7 @@ Commands are as follows:
 | | |
 | ENTER_BOOTLOADER | 0x5B | Start bootloader (only on supported connections, e.g. USB) |
 
-Strings are in Unicode UTF16-LE format, the same as USB. While Unicode has some severe limitations, compatibility makes it easy to implement dual protocol devices. To convert basic ISO 8859-1 / ASCII to UTF16-LE, just extend every byte to 16 bits and esure you have little-endian order. Strings do not need to be null terminated. Due to the packet length limit, the maximum string length is 31 characters.
+Strings are in Unicode UTF16-LE format, the same as USB. While Unicode has some severe limitations, USB compatibility makes it easy to implement dual protocol devices. To convert basic ISO 8859-1 / ASCII to UTF16-LE, just extend every byte to 16 bits and esure you have little-endian order. Strings do not need to be null terminated. Due to the packet length limit, the maximum string length is 31 characters.
 
 Report packets must contain at least two data bytes, but can be up to 63 bytes. Currently only the following bytes are defined:
 
