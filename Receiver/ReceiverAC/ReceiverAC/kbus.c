@@ -148,26 +148,32 @@ void kbus_send(const void *buffer, uint8_t length)
 */
 void kbus_find_device(void)
 {
+	uint32_t rx = 0;
+	//const uint8_t tx_buffer[6] = { 0xFF, 0xFF, 'K', 'B', 'U', 'S' };
+	const char tx_buffer[] = "\xFF\xFFKBUS";
+	uint8_t i = 0;
+
 	for(;;)
 	{
 		// send sync signal
-		while ((KBUS_USART.STATUS & USART_DREIF_bm) == 0);
-		KBUS_USART.DATA = 0xFF;
+		kbus_tx(tx_buffer[i++]);
+		if (i >= sizeof(tx_buffer))
+			i = 0;
 
 		// check for responses from device
 		if (KBUS_USART.STATUS & USART_RXCIF_bm)
 		{
-			if (KBUS_USART.DATA == 0x0F)	// OK response
+			rx <<= 8;
+			rx |= KBUS_USART.DATA;
+			if (rx == LE_CHR('K', 'B', 'U', 'S'))
 				break;
 		}
 	}
 
-	// wait for device to stop sending
-	do
-	{
-		KBUS_USART.DATA;	// clear buffer and RX flag
-		_delay_ms(10);		// KBUS must be quiet for at least 10ms
-	} while ((KBUS_USART.STATUS & USART_RXCIF_bm) == 0);
+	// send response
+	const char response[] = "\xFF\xFFREDY";
+	for (i = 0; i < sizeof(response); i++)
+		kbus_tx(response[i]);
 }
 
 /**************************************************************************************************
