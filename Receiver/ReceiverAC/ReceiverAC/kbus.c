@@ -13,6 +13,8 @@
 #include "atari.h"
 #include "kbus.h"
 
+#define LE_CHR(a,b,c,d)		( ((uint32_t)(a)<<24) | ((uint32_t)(b)<<16) | ((c)<<8) | (d) )
+
 #define BUFFER_SIZE		(sizeof(KBUS_PACKET_t) + 2)
 
 volatile uint8_t		rx_buffer_DMA[BUFFER_SIZE];
@@ -23,6 +25,15 @@ volatile uint8_t		timeout_SIG = 0;
 KBUS_PACKET_t			packet;
 
 #pragma region Transport Layer
+
+/**************************************************************************************************
+* Transmit a byte
+*/
+static inline void kbus_tx(uint8_t byte)
+{
+	while (KBUS_USART.STATUS & USART_DREIF_bm);
+	KBUS_USART.DATA = byte;
+}
 
 /**************************************************************************************************
 * Reset DMA to start of input buffer. DMA is NOT enabled.
@@ -110,11 +121,21 @@ ISR(KBUS_TC_CCA_vect)
 */
 void kbus_send(const void *buffer, uint8_t length)
 {
+	kbus_tx(0xFF);	// preamble to aid UART sync/auto-baud
+	kbus_tx(0xFF);
+
+	CRC.CTRL = CRC_RESET1_bm;
+	NOP();
+	CRC.CTRL = CRC_SOURCE_IO_gc;
+
 	while(length--)
 	{
-		while ((KBUS_USART.STATUS & USART_DREIF_bm) == 0);
-		KBUS_USART.DATA = *(uint8_t *)buffer++;
+		kbus_tx(*(uint8_t *)buffer);
+		CRC.DATAIN = *(uint8_t *)buffer++;
 	}
+
+	kbus_tx(CRC.CHECKSUM0);		// CRC, little endian
+	kbus_tx(CRC.CHECKSUM1);
 
 	kbus_reset_dma();
 	KBUS_DMA_CH.CTRLA |= EDMA_CH_ENABLE_bm;
@@ -181,11 +202,11 @@ bool kbus_state_ping_test(void)
 		cmd.length = 63;
 		for (uint8_t i = 0; i < KBUS_PACKET_DATA_SIZE; i++)
 			cmd.data[i] = i;
-		*(uint16_t *)&cmd.data[64] = HW_crc16(&cmd, 2 + KBUS_PACKET_DATA_SIZE);
 		kbus_send(&cmd, 2 + 63 + 2);
 
 		// get response
-		for(;;)
+		uint8_t rx_count = 0;
+		do
 		{
 			if (timeout_SIG)
 				break;
@@ -195,11 +216,12 @@ bool kbus_state_ping_test(void)
 				if (!kbus_validate_packet(cmd.command) ||
 					memcmp((void *)rx_packet_DMA->data, &cmd.data, KBUS_PACKET_DATA_SIZE) != 0)
 				{
+					rx_count++;
 					break;
 				}
 				return true;
 			}
-		}
+		} while (rx_count < 5);
 
 		retries++;
 		_delay_ms(1);
