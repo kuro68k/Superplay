@@ -165,15 +165,16 @@ void kbus_find_device(void)
 		{
 			rx <<= 8;
 			rx |= KBUS_USART.DATA;
-			if (rx == LE_CHR('K', 'B', 'U', 'S'))
+			if (rx == LE_CHR('R', 'E', 'D', 'Y'))
 				break;
 		}
 	}
-
+/*
 	// send response
 	const char response[] = "\xFF\xFFREDY";
 	for (i = 0; i < sizeof(response); i++)
 		kbus_tx(response[i]);
+*/
 }
 
 /**************************************************************************************************
