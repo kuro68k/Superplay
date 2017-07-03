@@ -15,10 +15,8 @@
 
 #define BUFFER_SIZE		(sizeof(KBUS_PACKET_t) + 2)
 
-volatile uint8_t rx_buffer_DMA[BUFFER_SIZE];
-
-volatile KBUS_PACKET_t	input_buffer;
-//volatile uint8_t		input_write_ptr_AT = 0;
+volatile uint8_t		rx_buffer_DMA[BUFFER_SIZE];
+volatile KBUS_PACKET_t	*rx_packet_DMA = (KBUS_PACKET_t *)rx_buffer_DMA;
 volatile uint8_t		packet_ready_SIG = 0;
 volatile uint8_t		timeout_SIG = 0;
 
@@ -156,12 +154,12 @@ void kbus_find_device(void)
 */
 bool kbus_validate_packet(uint8_t command)
 {
-	if (input_buffer.length > 63)
+	if (rx_packet_DMA->length > 63)
 		return false;
-	if (*(uint16_t *)&input_buffer.data[packet.length] != HW_crc16((void *)input_buffer.data, 2 + input_buffer.length))
+	if (*(uint16_t *)&rx_buffer_DMA[sizeof(KBUS_PACKET_t)] != HW_crc16((void *)rx_buffer_DMA, sizeof(KBUS_PACKET_t)))
 		return false;
 
-	if (input_buffer.command != (command | RESPONSE_BIT_bm))
+	if (rx_packet_DMA->command != (command | RESPONSE_BIT_bm))
 		return false;
 
 	return true;
@@ -179,11 +177,11 @@ bool kbus_state_ping_test(void)
 	do
 	{
 		KBUS_PACKET_t cmd;
-		cmd.command = CMD_START_REPORTING;
+		cmd.command = KCMD_LOOPBACK;
 		cmd.length = 63;
 		for (uint8_t i = 0; i < KBUS_PACKET_DATA_SIZE; i++)
 			cmd.data[i] = i;
-		*(uint16_t *)&cmd.data[64] = HW_crc16(&cmd, 2 + 63);
+		*(uint16_t *)&cmd.data[64] = HW_crc16(&cmd, 2 + KBUS_PACKET_DATA_SIZE);
 		kbus_send(&cmd, 2 + 63 + 2);
 
 		// get response
@@ -195,7 +193,7 @@ bool kbus_state_ping_test(void)
 			if (packet_ready_SIG)
 			{
 				if (!kbus_validate_packet(cmd.command) ||
-					memcmp((void *)input_buffer.data, &cmd.data, 63) != 0)
+					memcmp((void *)rx_packet_DMA->data, &cmd.data, KBUS_PACKET_DATA_SIZE) != 0)
 				{
 					break;
 				}
@@ -221,7 +219,7 @@ void KBUS_run(void)
 
 	// ask for a report
 	KBUS_PACKET_t report_cmd;
-	report_cmd.command = CMD_READ_REPORT;
+	report_cmd.command = KCMD_READ_REPORT;
 	report_cmd.length = 0;
 	*(uint16_t *)&report_cmd.data[0] = HW_crc16(&report_cmd, 2);
 
@@ -246,7 +244,7 @@ void KBUS_run(void)
 
 			if (packet_ready_SIG)
 			{
-				if (!kbus_validate_packet(CMD_READ_REPORT) ||
+				if (!kbus_validate_packet(KCMD_READ_REPORT) ||
 					packet.length != 16)	// fixed report size
 				{
 					retries++;
