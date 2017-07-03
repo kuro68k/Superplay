@@ -6,6 +6,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/pgmspace.h>
 #include <util/delay.h>
 #include <string.h>
 #include <stdbool.h>
@@ -283,7 +284,15 @@ bool USART_check_for_bus(void)
 			rx <<= 8;
 			rx |= MAIN_USART.DATA;
 			if (rx == LE_CHR('K', 'B', 'U', 'S'))
+			{
+				// send response
+				while (MAIN_TX_DMA_CH.CTRLB & DMA_CH_CHBUSY_bm);
+				memcpy_P((void *)main_tx_buffer_DMA, PSTR("\xFF\xFFREDY"), 6);
+				MAIN_TX_DMA_CH.TRFCNT = 6;
+				MAIN_TX_DMA_CH.CTRLA |= DMA_CH_ENABLE_bm;
+
 				return true;
+			}
 		}
 	} while (RTC.CNT < 100);	// approx 100ms
 
@@ -322,9 +331,9 @@ void USART_run(void)
 	while (MAIN_TX_DMA_CH.CTRLB & DMA_CH_CHBUSY_bm);
 	KBUS_long_report((KBUS_PACKET_t *)main_tx_buffer_DMA);
 	usart_add_crc(main_tx_buffer_DMA);
-	usart_reset_main_dma_tx_pointer();
+	//usart_reset_main_dma_tx_pointer();
 
-	MAIN_TX_DMA_CH.CTRLB |= DMA_CH_TRNIF_bm;
+	//MAIN_TX_DMA_CH.CTRLB |= DMA_CH_TRNIF_bm;
 	MAIN_TX_DMA_CH.TRFCNT = main_tx_buffer_DMA[1] + 2 + 2;	// command/length + data length + CRC16
 	MAIN_TX_DMA_CH.CTRLA |= DMA_CH_ENABLE_bm;
 
