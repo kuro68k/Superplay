@@ -15,11 +15,12 @@
 
 #define LE_CHR(a,b,c,d)		( ((uint32_t)(a)<<24) | ((uint32_t)(b)<<16) | ((c)<<8) | (d) )
 
-#define BUFFER_SIZE		(sizeof(KBUS_PACKET_t) + 2)
+#define RX_BUFFER_SIZE		(sizeof(KBUS_PACKET_t) + 2)
 
-volatile uint8_t		rx_buffer_DMA[BUFFER_SIZE];
+volatile uint8_t		rx_buffer_DMA[RX_BUFFER_SIZE];
 volatile KBUS_PACKET_t	*rx_packet_DMA = (KBUS_PACKET_t *)rx_buffer_DMA;
-volatile uint8_t		packet_ready_SIG = 0;
+volatile uint8_t		rx_sof_flag_SIG = 0;
+volatile uint8_t		rx_complete_SIG = 0;
 volatile uint8_t		timeout_SIG = 0;
 
 KBUS_PACKET_t			packet;
@@ -36,16 +37,20 @@ static inline void kbus_tx(uint8_t byte)
 }
 
 /**************************************************************************************************
-* Reset DMA to start of input buffer. DMA is NOT enabled.
+** Reset RX to get a new packet
 */
-void kbus_reset_dma(void)
+void usart_reset_rx(void)
 {
-	KBUS_DMA_CH.CTRLA &= ~EDMA_CH_ENABLE_bm;
-	while(KBUS_DMA_CH.CTRLA & EDMA_CH_ENABLE_bm);
-
-	KBUS_DMA_CH.TRFCNTL = sizeof(KBUS_PACKET_t);
-	KBUS_DMA_CH.ADDRL = (( (uint16_t)&rx_buffer_DMA) >> 0) & 0xFF;
-	KBUS_DMA_CH.ADDRH = (( (uint16_t)&rx_buffer_DMA) >> 8) & 0xFF;
+	rx_complete_SIG = 0;
+	KBUS_TC.CTRLA = 0;
+	KBUS_TC.INTCTRLA = TC4_OVFIF_bm;		// clear interrupt flag
+	rx_sof_flag_SIG = 0;
+	while (KBUS_DMA_CH.CTRLA & EDMA_CH_ENABLE_bm)
+		KBUS_DMA_CH.CTRLA &= ~EDMA_CH_ENABLE_bm;
+	KBUS_DMA_CH.ADDRL = (uint16_t)&rx_buffer_DMA[1] & 0xFF;	// 1st byte handled by USART RX interrupt
+	KBUS_DMA_CH.ADDRH = ((uint16_t)&rx_buffer_DMA[1] >> 8) & 0xFF;
+	KBUS_DMA_CH.TRFCNT = sizeof(KBUS_PACKET_t) - 1 + 2;	// 1 byte received by interrupt, 2 byte CRC
+	KBUS_USART.CTRLA |= (KBUS_USART.CTRLA & ~USART_RXCINTLVL_gm) | USART_RXCINTLVL_HI_gc;
 }
 
 /**************************************************************************************************
@@ -58,7 +63,7 @@ void KBUS_init(void)
 	KBUS_PORT.DIRSET = KBUS_TX_PIN_bm;
 	KBUS_PORT.KBUS_RX_PINCTRL = (KBUS_PORT.KBUS_RX_PINCTRL & ~PORT_ISC_gm) | PORT_ISC_FALLING_gc;	// event triggered on falling edge
 
-	KBUS_USART.CTRLA = 0;
+	KBUS_USART.CTRLA = USART_RXCINTLVL_MED_gc;
 	KBUS_USART.BAUDCTRLB = (uint8_t)((uint8_t)BSCALE << 4) | ((uint16_t)BSEL >> 8);
 	KBUS_USART.BAUDCTRLA = (uint8_t)BSEL;
 	KBUS_USART.CTRLC = USART_CMODE_ASYNCHRONOUS_gc | USART_PMODE_DISABLED_gc | USART_CHSIZE_8BIT_gc;
@@ -68,10 +73,10 @@ void KBUS_init(void)
 	KBUS_DMA_CH.CTRLA = EDMA_CH_RESET_bm;
 	NOP();
 	KBUS_DMA_CH.CTRLA = 0;
-	KBUS_DMA_CH.CTRLB = 0;
+	KBUS_DMA_CH.CTRLB = EDMA_CH_TRNINTLVL0_bm; //EDMA_CH_TRNINTLVL_LO_gc;
 	KBUS_DMA_CH.ADDRCTRL = EDMA_CH_RELOAD_BLOCK_gc | EDMA_CH_DIR_INC_gc;
 	KBUS_DMA_CH.TRIGSRC = KBUS_DMA_TRIGGER_SRC;
-	kbus_reset_dma();
+	usart_reset_rx();
 
 	// incoming character detection event
 	KBUS_EVENT_CTRL = KBUS_EVENT_MUX;
@@ -86,18 +91,36 @@ void KBUS_init(void)
 	KBUS_TC.INTCTRLB = 0;
 	KBUS_TC.CNT = 0;
 	KBUS_TC.PER = 0x9C3F;	// timeout, 10mS @ 16MHz/4
-	KBUS_TC.CCA = 0x004F;	// end of packet, 20uS @ 16MHz/4
 	KBUS_TC.CTRLA = TC45_CLKSEL_DIV4_gc;
 }
 
 /**************************************************************************************************
-* Restart timeout timer
+* USART RX interrupt, handles preamble
 */
-inline void kbus_restart_timeout(void)
+ISR(KBUS_USART_RXC_vect)
 {
-	KBUS_TC.CNT = KBUS_TC.CCA + 1;	// reset to just past end of packet timeout
-									// RX pin events will reset to zero if a new packet comes in
-	timeout_SIG = 0;
+	uint8_t b = KBUS_USART.DATA;
+
+	if ((rx_sof_flag_SIG == 0) && (b == 0xFF))		// wait for preamble to start
+	{
+		rx_sof_flag_SIG = 0xFF;
+		return;
+	}
+
+	if (b == 0xFF)									// wait for preamble to end
+		return;
+
+	KBUS_DMA_CH.CTRLA |= EDMA_CH_ENABLE_bm;
+	rx_buffer_DMA[0] = b;
+	KBUS_USART.CTRLA &= ~USART_RXCINTLVL_gm;
+}
+
+/**************************************************************************************************
+* DMA complete interrupt
+*/
+ISR(KBUS_DMA_vect)
+{
+	rx_complete_SIG = 0xFF;
 }
 
 /**************************************************************************************************
@@ -109,11 +132,19 @@ ISR(KBUS_TC_OVF_vect)
 }
 
 /**************************************************************************************************
-* Handle timer CCA matches (end of packet)
+* Validate the packet in the input buffer. Command in the packet must be command + response bit
 */
-ISR(KBUS_TC_CCA_vect)
+bool kbus_validate_packet(uint8_t command)
 {
-	packet_ready_SIG = 0xFF;
+	if (rx_packet_DMA->length > KBUS_PACKET_DATA_SIZE)
+		return false;
+	if (*(uint16_t *)&rx_buffer_DMA[sizeof(KBUS_PACKET_t)] != HW_crc16((void *)rx_buffer_DMA, sizeof(KBUS_PACKET_t)))
+		return false;
+
+	if (rx_packet_DMA->command != (command | RESPONSE_BIT_bm))
+		return false;
+
+	return true;
 }
 
 /**************************************************************************************************
@@ -136,11 +167,6 @@ void kbus_send(const void *buffer, uint8_t length)
 
 	kbus_tx(CRC.CHECKSUM0);		// CRC, little endian
 	kbus_tx(CRC.CHECKSUM1);
-
-	kbus_reset_dma();
-	KBUS_DMA_CH.CTRLA |= EDMA_CH_ENABLE_bm;
-	kbus_restart_timeout();
-	packet_ready_SIG = 0;
 }
 
 /**************************************************************************************************
@@ -149,7 +175,6 @@ void kbus_send(const void *buffer, uint8_t length)
 void kbus_find_device(void)
 {
 	uint32_t rx = 0;
-	//const uint8_t tx_buffer[6] = { 0xFF, 0xFF, 'K', 'B', 'U', 'S' };
 	const char tx_buffer[] = "\xFF\xFFKBUS";
 	uint8_t i = 0;
 
@@ -169,28 +194,6 @@ void kbus_find_device(void)
 				break;
 		}
 	}
-/*
-	// send response
-	const char response[] = "\xFF\xFFREDY";
-	for (i = 0; i < sizeof(response); i++)
-		kbus_tx(response[i]);
-*/
-}
-
-/**************************************************************************************************
-* Validate the packet in the input buffer. Command in the packet must be command + response bit
-*/
-bool kbus_validate_packet(uint8_t command)
-{
-	if (rx_packet_DMA->length > 63)
-		return false;
-	if (*(uint16_t *)&rx_buffer_DMA[sizeof(KBUS_PACKET_t)] != HW_crc16((void *)rx_buffer_DMA, sizeof(KBUS_PACKET_t)))
-		return false;
-
-	if (rx_packet_DMA->command != (command | RESPONSE_BIT_bm))
-		return false;
-
-	return true;
 }
 
 #pragma endregion
@@ -218,7 +221,7 @@ bool kbus_state_ping_test(void)
 			if (timeout_SIG)
 				break;
 
-			if (packet_ready_SIG)
+			if (rx_complete_SIG)
 			{
 				if (!kbus_validate_packet(cmd.command) ||
 					memcmp((void *)rx_packet_DMA->data, &cmd.data, KBUS_PACKET_DATA_SIZE) != 0)
@@ -242,15 +245,7 @@ bool kbus_state_ping_test(void)
 */
 void KBUS_run(void)
 {
-	uint8_t retries = 0;
-
 	AC_init();
-
-	// ask for a report
-	KBUS_PACKET_t report_cmd;
-	report_cmd.command = KCMD_READ_REPORT;
-	report_cmd.length = 0;
-	*(uint16_t *)&report_cmd.data[0] = HW_crc16(&report_cmd, 2);
 
 	for(;;)
 	{
@@ -265,29 +260,25 @@ void KBUS_run(void)
 		// TODO: read configs
 
 		// updates come continuously
-		retries = 0;
-		do
+		for (;;)
 		{
 			if (timeout_SIG)
-				retries++;
+				break;
 
-			if (packet_ready_SIG)
+			if (rx_complete_SIG)
 			{
-				if (!kbus_validate_packet(KCMD_READ_REPORT) ||
-					packet.length != 16)	// fixed report size
-				{
-					retries++;
-				}
-				else
+				rx_complete_SIG = 0;
+				if (kbus_validate_packet(KCMD_READ_REPORT) &&
+					packet.length == 16)	// fixed report size
 				{
 					RPT_decode_kbus_matrix((uint8_t *)&packet.data);
 					RPT_refresh_input_matrix();
 					AC_update();
-					retries = 0;
 				}
-				break;
+
+				usart_reset_rx();
 			}
-		} while (retries < 3);
+		}
 
 		_delay_ms(1);
 	}

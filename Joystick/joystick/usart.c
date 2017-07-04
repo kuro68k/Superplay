@@ -140,7 +140,7 @@ void usart_reset_rx(void)
 	rx_sof_flag_SIG = 0;
 	while (DMA_RX_CH.CTRLA & DMA_CH_ENABLE_bm)
 		DMA_RX_CH.CTRLA &= ~DMA_CH_ENABLE_bm;
-	DMA_RX_CH.DESTADDR0 = (uint16_t)&rx_buffer_DMA[1] & 0xFF;
+	DMA_RX_CH.DESTADDR0 = (uint16_t)&rx_buffer_DMA[1] & 0xFF;	// 1st byte handled by USART RX interrupt
 	DMA_RX_CH.DESTADDR1 = ((uint16_t)&rx_buffer_DMA[1] >> 8) & 0xFF;
 	DMA_RX_CH.DESTADDR2 = 0;
 	DMA_RX_CH.TRFCNT = sizeof(KBUS_PACKET_t) - 1 + 2;	// 1 byte received by interrupt, 2 byte CRC
