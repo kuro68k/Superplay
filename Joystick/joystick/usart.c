@@ -16,6 +16,22 @@
 #include "hw_misc.h"
 #include "usart.h"
 
+// peripherals
+#define DMA_RX_CH			DMA.CH0
+#define DMA_RX_CH_vect		DMA_CH0_vect
+#define DMA_TX_CH			DMA.CH1
+#define RX_TC				TCD1
+#define RX_TC_OVF_vect		TCD1_OVF_vect
+#define RX_TC_CCA_vect		TCD1_CCA_vect
+#define RX_EVENT_CHMUX		EVSYS_CHMUX_PORTD_PIN6_gc
+#define RX_TC_DIV			TC_CLKSEL_DIV1_gc
+#define RX_TC_TIMEOUT		0x01DF		// 20us @ 24MHz
+
+// 2Mbaud @ 16MHz
+#define USART_BSEL			0
+#define USART_BSCALE		0
+#define USART_CLK2X			USART_CLK2X_bm
+
 
 enum
 {
@@ -24,46 +40,32 @@ enum
 	STATE_READ_DATA
 };
 
-#define BUFFER_SIZE		(sizeof(KBUS_PACKET_t) + 2)
+#define RX_BUFFER_SIZE		(sizeof(KBUS_PACKET_t) + 2)		// 2 byte CRC
+#define TX_BUFFER_SIZE		(sizeof(KBUS_PACKET_t) + 4)		// 2 byte preamble, 2 byte CRC
 
-volatile uint8_t main_rx_buffer_DMA[BUFFER_SIZE];
-volatile uint8_t aux_rx_buffer_DMA[BUFFER_SIZE];
-volatile uint8_t main_rx_SIG = 0;
-volatile uint8_t aux_rx_SIG = 0;
+volatile uint8_t rx_buffer_DMA[RX_BUFFER_SIZE];
+volatile uint8_t rx_sof_flag_SIG = 0;
+volatile uint8_t rx_complete_SIG = 0;
 
-uint8_t main_tx_buffer_DMA[BUFFER_SIZE];
-uint8_t aux_tx_buffer_DMA[BUFFER_SIZE];
+uint8_t tx_buffer[TX_BUFFER_SIZE] = { 0xFF, 0xFF };			// 0xFF == preamble
+KBUS_PACKET_t *tx_packet = (KBUS_PACKET_t *)&tx_buffer[2];
 
 
 /**************************************************************************************************
 ** Reset DMA pointers
 */
-inline void usart_reset_main_dma_rx_pointer(void)
+static inline void usart_reset_dma_rx_pointer(void)
 {
-	MAIN_TX_DMA_CH.DESTADDR0 = (uint16_t)main_rx_buffer_DMA & 0xFF;
-	MAIN_TX_DMA_CH.DESTADDR1 = ((uint16_t)main_rx_buffer_DMA >> 8) & 0xFF;
-	MAIN_TX_DMA_CH.DESTADDR2 = 0;
+	DMA_RX_CH.DESTADDR0 = (uint16_t)rx_buffer_DMA & 0xFF;
+	DMA_RX_CH.DESTADDR1 = ((uint16_t)rx_buffer_DMA >> 8) & 0xFF;
+	DMA_RX_CH.DESTADDR2 = 0;
 }
 
-inline void usart_reset_aux_dma_rx_pointer(void)
+static inline void usart_reset_dma_tx_pointer(void)
 {
-	AUX_TX_DMA_CH.DESTADDR0 = (uint16_t)main_rx_buffer_DMA & 0xFF;
-	AUX_TX_DMA_CH.DESTADDR1 = ((uint16_t)main_rx_buffer_DMA >> 8) & 0xFF;
-	AUX_TX_DMA_CH.DESTADDR2 = 0;
-}
-
-inline void usart_reset_main_dma_tx_pointer(void)
-{
-	MAIN_TX_DMA_CH.SRCADDR0 = (uint16_t)main_tx_buffer_DMA & 0xFF;
-	MAIN_TX_DMA_CH.SRCADDR1 = ((uint16_t)main_tx_buffer_DMA >> 8) & 0xFF;
-	MAIN_TX_DMA_CH.SRCADDR2 = 0;
-}
-
-inline void usart_reset_aux_dma_tx_pointer(void)
-{
-	AUX_TX_DMA_CH.SRCADDR0 = (uint16_t)aux_tx_buffer_DMA & 0xFF;
-	AUX_TX_DMA_CH.SRCADDR1 = ((uint16_t)aux_tx_buffer_DMA >> 8) & 0xFF;
-	AUX_TX_DMA_CH.SRCADDR2 = 0;
+	DMA_TX_CH.SRCADDR0 = (uint16_t)tx_buffer & 0xFF;
+	DMA_TX_CH.SRCADDR1 = ((uint16_t)tx_buffer >> 8) & 0xFF;
+	DMA_TX_CH.SRCADDR2 = 0;
 }
 
 /**************************************************************************************************
@@ -71,159 +73,118 @@ inline void usart_reset_aux_dma_tx_pointer(void)
 */
 void USART_init(void)
 {
-	// USARTs
-	USART_t *u = &MAIN_USART;
-
-	for (uint8_t i = 0; i < 2; i++)
-	{
-		u->CTRLA = 0;
-		u->CTRLB = USART_CLK2X;
-		u->CTRLC = USART_CMODE_ASYNCHRONOUS_gc | USART_PMODE_DISABLED_gc | USART_CHSIZE_8BIT_gc;
-		u->BAUDCTRLA = USART_BSEL & 0xFF;
-		u->BAUDCTRLB = ((USART_BSCALE << 4) & 0xF0) | ((USART_BSEL >> 8) & 0x0F);
-		u = &AUX_USART;
-		// FIXME
-		//if (cfg->aux_mode != AUX_MODE_KBUS)
-		//	break;
-	}
-
-	/* FIXME
-	if (cfg->aux_mode == AUX_MODE_KBUS)
-	{
-		AUX_USART.CTRLB |= USART_RXEN_bm | USART_TXEN_bm;
-		AUX_USART.CTRLA |= USART_RXCINTLVL_HI_gc;
-	}*/
-
+	// USART
+	USARTD1.CTRLA = 0;
+	USARTD1.CTRLB = USART_CLK2X;
+	USARTD1.CTRLC = USART_CMODE_ASYNCHRONOUS_gc | USART_PMODE_DISABLED_gc | USART_CHSIZE_8BIT_gc;
+	USARTD1.BAUDCTRLA = USART_BSEL & 0xFF;
+	USARTD1.BAUDCTRLB = ((USART_BSCALE << 4) & 0xF0) | ((USART_BSEL >> 8) & 0x0F);
 
 	// RX DMA
-	DMA_CH_t *ch = &MAIN_RX_DMA_CH;
-	for (uint8_t i = 0; i < 2; i++)
-	{
-		ch->CTRLA = DMA_CH_RESET_bm;
-		asm("nop");
-		ch->CTRLA = DMA_CH_BURSTLEN_1BYTE_gc;
-		ch->ADDRCTRL = DMA_CH_SRCRELOAD_BURST_gc | DMA_CH_SRCDIR_FIXED_gc |
-					  DMA_CH_DESTRELOAD_BURST_gc | DMA_CH_DESTDIR_INC_gc;
-		ch->TRFCNT = BUFFER_SIZE;	// maximum packet size
-		ch->REPCNT = 0;
+	DMA_RX_CH.CTRLA = DMA_CH_RESET_bm;
+	asm("nop");
+	DMA_RX_CH.CTRLA = DMA_CH_BURSTLEN_1BYTE_gc;
+	DMA_RX_CH.CTRLB = DMA_CH_TRNINTLVL_LO_gc;
+	DMA_RX_CH.ADDRCTRL = DMA_CH_SRCRELOAD_BURST_gc | DMA_CH_SRCDIR_FIXED_gc |
+						 DMA_CH_DESTRELOAD_BURST_gc | DMA_CH_DESTDIR_INC_gc;
+	DMA_RX_CH.TRFCNT = RX_BUFFER_SIZE;
+	DMA_RX_CH.REPCNT = 0;
 
-		ch = &AUX_RX_DMA_CH;
-		// FIXME
-		//if (cfg->aux_mode != AUX_MODE_KBUS)
-		//	break;
-	}
-
-	MAIN_TX_DMA_CH.TRIGSRC = MAIN_RX_DMA_TRIGSRC;
-	MAIN_TX_DMA_CH.SRCADDR0 = (uint16_t)&MAIN_USART.DATA & 0xFF;
-	MAIN_TX_DMA_CH.SRCADDR1 = ((uint16_t)&MAIN_USART.DATA >> 8) & 0xFF;
-	MAIN_TX_DMA_CH.SRCADDR2 = 0;
-	usart_reset_main_dma_rx_pointer();
-
-	/* FIXME
-	if (cfg->aux_mode == AUX_MODE_KBUS)
-	{
-		AUX_TX_DMA_CH.TRIGSRC = MAIN_RX_DMA_TRIGSRC;
-		AUX_TX_DMA_CH.SRCADDR0 = (uint16_t)&MAIN_USART.DATA & 0xFF;
-		AUX_TX_DMA_CH.SRCADDR1 = ((uint16_t)&MAIN_USART.DATA >> 8) & 0xFF;
-		AUX_TX_DMA_CH.SRCADDR2 = 0;
-		usart_reset_aux_dma_rx_pointer();
-	}*/
+	DMA_RX_CH.TRIGSRC = DMA_CH_TRIGSRC_USARTD1_RXC_gc;
+	DMA_RX_CH.SRCADDR0 = (uint16_t)&USARTD1.DATA & 0xFF;
+	DMA_RX_CH.SRCADDR1 = ((uint16_t)&USARTD1.DATA >> 8) & 0xFF;
+	DMA_RX_CH.SRCADDR2 = 0;
+	usart_reset_dma_rx_pointer();
 
 	// TX DMA
-	ch = &MAIN_TX_DMA_CH;
-	for (uint8_t i = 0; i < 2; i++)
-	{
-		ch->CTRLA = DMA_CH_RESET_bm;
-		asm("nop");
-		ch->CTRLA = DMA_CH_BURSTLEN_1BYTE_gc | DMA_CH_SINGLE_bm;
-		ch->ADDRCTRL = DMA_CH_SRCRELOAD_TRANSACTION_gc | DMA_CH_SRCDIR_INC_gc |
-					  DMA_CH_DESTRELOAD_TRANSACTION_gc | DMA_CH_DESTDIR_FIXED_gc;
-		ch->TRFCNT = 4;	// minimum packet size
-		ch->REPCNT = 0;
+	DMA_TX_CH.CTRLA = DMA_CH_RESET_bm;
+	asm("nop");
+	DMA_TX_CH.CTRLA = DMA_CH_BURSTLEN_1BYTE_gc | DMA_CH_SINGLE_bm;
+	DMA_TX_CH.ADDRCTRL = DMA_CH_SRCRELOAD_TRANSACTION_gc | DMA_CH_SRCDIR_INC_gc |
+						 DMA_CH_DESTRELOAD_TRANSACTION_gc | DMA_CH_DESTDIR_FIXED_gc;
+	DMA_TX_CH.TRFCNT = TX_BUFFER_SIZE;
+	DMA_TX_CH.REPCNT = 0;
 
-		ch = &AUX_TX_DMA_CH;
-		// FIXME
-		//if (cfg->aux_mode != AUX_MODE_KBUS)
-		//	break;
-	}
-
-	MAIN_TX_DMA_CH.TRIGSRC = MAIN_TX_DMA_TRIGSRC;
-	MAIN_TX_DMA_CH.DESTADDR0 = (uint16_t)&MAIN_USART.DATA & 0xFF;
-	MAIN_TX_DMA_CH.DESTADDR1 = ((uint16_t)&MAIN_USART.DATA >> 8) & 0xFF;
-	MAIN_TX_DMA_CH.DESTADDR2 = 0;
-	usart_reset_main_dma_tx_pointer();
-
-	/* FIXME
-	if (cfg->aux_mode == AUX_MODE_KBUS)
-	{
-		AUX_TX_DMA_CH.TRIGSRC = AUX_TX_DMA_TRIGSRC;
-		AUX_TX_DMA_CH.DESTADDR0 = (uint16_t)&AUX_USART.DATA & 0xFF;
-		AUX_TX_DMA_CH.DESTADDR1 = ((uint16_t)&AUX_USART.DATA >> 8) & 0xFF;
-		AUX_TX_DMA_CH.DESTADDR2 = 0;
-		usart_reset_aux_dma_tx_pointer();
-	}*/
+	DMA_TX_CH.TRIGSRC = DMA_CH_TRIGSRC_USARTD1_DRE_gc;
+	DMA_TX_CH.DESTADDR0 = (uint16_t)&USARTD1.DATA & 0xFF;
+	DMA_TX_CH.DESTADDR1 = ((uint16_t)&USARTD1.DATA >> 8) & 0xFF;
+	DMA_TX_CH.DESTADDR2 = 0;
+	usart_reset_dma_tx_pointer();
 
 	// RX timers
-	TC0_t *tc = (TC0_t *)&MAIN_RX_TC;
-	for (uint8_t i = 0; i < 2; i++)
-	{
-		tc->CTRLA = 0;
-		tc->CTRLB = 0;
-		tc->CTRLC = 0;
-		tc->CTRLD = TC_EVACT_RESTART_gc;		// reset counter to zero when RX pin changes
-		tc->CTRLE = 0;
-		tc->INTCTRLA = TC_OVFINTLVL_HI_gc;		// avoid spurious end of frame detection
-		tc->INTCTRLB = TC_CCAINTLVL_LO_gc;		// detect end of frame
-		tc->INTCTRLB = 0;
-		tc->INTFLAGS = 0xFF;					// clear all flags
-		tc->PER = 0xFFFF;
-		tc->CCA = USART_TC_CCA;					// end of frame detection
-		tc->CNT = USART_TC_CCA+1;				// avoid triggering after starting timer
-		tc->CTRLA = USART_TC_DIV;				// start timer
-
-		tc = &AUX_RX_TC;
-		// FIXME
-		//if (cfg->aux_mode != AUX_MODE_KBUS)
-		//	break;
-	}
+	RX_TC.CTRLA = 0;
+	RX_TC.CTRLB = 0;
+	RX_TC.CTRLC = 0;
+	RX_TC.CTRLD = TC_EVACT_RESTART_gc;		// reset counter to zero when RX pin changes
+	RX_TC.CTRLE = 0;
+	RX_TC.INTCTRLA = TC_OVFINTLVL_HI_gc;	// avoid spurious end of frame detection
+	RX_TC.INTCTRLB = TC_CCAINTLVL_LO_gc;	// detect end of frame
+	RX_TC.INTCTRLB = 0;
+	RX_TC.INTFLAGS = 0xFF;					// clear all flags
+	RX_TC.PER = RX_TC_TIMEOUT;
+	RX_TC.CNT = 0;
 
 	EVSYS.CH0CTRL = 0;
-	EVSYS.CH0MUX = MAIN_RX_EVENT_CHMUX;
-	MAIN_RX_TC.CTRLD |= TC_EVSEL_CH0_gc;
+	EVSYS.CH0MUX = RX_EVENT_CHMUX;
+	RX_TC.CTRLD |= TC_EVSEL_CH0_gc;
+}
 
-	/* FIXME
-	if (cfg->aux_mode == AUX_MODE_KBUS)
+/**************************************************************************************************
+** Reset RX to get a new packet
+*/
+void usart_reset_rx(void)
+{
+	rx_complete_SIG = 0;
+	RX_TC.CTRLA = 0;
+	RX_TC.INTCTRLA = TC0_OVFIF_bm;		// clear interrupt flag
+	rx_sof_flag_SIG = 0;
+	while (DMA_RX_CH.CTRLA & DMA_CH_ENABLE_bm)
+		DMA_RX_CH.CTRLA &= ~DMA_CH_ENABLE_bm;
+	DMA_RX_CH.DESTADDR0 = (uint16_t)&rx_buffer_DMA[1] & 0xFF;
+	DMA_RX_CH.DESTADDR1 = ((uint16_t)&rx_buffer_DMA[1] >> 8) & 0xFF;
+	DMA_RX_CH.DESTADDR2 = 0;
+	DMA_RX_CH.TRFCNT = sizeof(KBUS_PACKET_t) - 1 + 2;	// 1 byte received by interrupt, 2 byte CRC
+	USARTD1.CTRLA |= (USARTD1.CTRLA & ~USART_RXCINTLVL_gm) | USART_RXCINTLVL_HI_gc;
+}
+
+/**************************************************************************************************
+** USART timeout interrupt
+*/
+ISR(RX_TC_OVF_vect)
+{
+	usart_reset_rx();
+}
+
+/**************************************************************************************************
+** USART RX interrupts. Skip preamble bytes and then start DMA
+*/
+ISR(USARTD1_RXC_vect)
+{
+	uint8_t b = USARTD1.DATA;
+
+	if ((rx_sof_flag_SIG == 0) && (b == 0xFF))		// wait for preamble to start
 	{
-		EVSYS.CH1CTRL = 0;
-		EVSYS.CH1MUX = AUX_RX_EVENT_CHMUX;
-		AUX_RX_TC.CTRLD |= TC_TC0_EVSEL_CH1_gc;
-	}*/
+		rx_sof_flag_SIG = 0xFF;
+		return;
+	}
+
+	if (b == 0xFF)									// wait for preamble to end
+		return;
+
+	DMA_RX_CH.CTRLA |= DMA_CH_ENABLE_bm;
+	RX_TC.CNT = 0;
+	RX_TC.CTRLA = RX_TC_DIV;						// start timeout counter
+
+	rx_buffer_DMA[0] = b;
+	USARTD1.CTRLA &= ~USART_RXCINTLVL_gm;
 }
 
 /**************************************************************************************************
-** USART timer overflow interrupts. Avoid spurious end of frame detection.
+**
 */
-ISR(MAIN_RX_TC_OVF_vect)
+ISR(DMA_RX_CH_vect)
 {
-	MAIN_RX_TC.CNT = USART_TC_CCA+1;
-}
-
-ISR(AUX_RX_TC_OVF_vect)
-{
-	AUX_RX_TC.CNT = USART_TC_CCA+1;
-}
-
-/**************************************************************************************************
-** USART timer compare interrupts. End of frame detection.
-*/
-ISR(MAIN_RX_TC_CCA_vect)
-{
-	main_rx_SIG = 0xFF;
-}
-
-ISR(AUX_RX_TC_CCA_vect)
-{
-	aux_rx_SIG = 0xFF;
+	rx_complete_SIG = 0xFF;
 }
 
 /**************************************************************************************************
@@ -251,20 +212,15 @@ bool usart_check_crc(const uint8_t *buffer)
 /**************************************************************************************************
 ** Add CRC to TX buffer
 */
-void usart_add_crc(uint8_t *buffer)
+void usart_add_tx_crc(void)
 {
-	uint8_t		len = buffer[1];
-	len += 2;	// add command and length
-	uint16_t	*crc = (uint16_t *)&buffer[len];
-
-	if (len > KBUS_PACKET_DATA_SIZE)	// sanity check
-		return;
+	uint16_t	*crc = (uint16_t *)&tx_buffer[2 + sizeof(KBUS_PACKET_t)];	// preamble + packet
 
 	CRC.CTRL = CRC_RESET_RESET1_gc;
 	asm("nop");
 	CRC.CTRL = CRC_SOURCE_IO_gc;
-	for (uint8_t i = 0; i < len; i++)
-		CRC.DATAIN = buffer[i];
+	for (uint8_t i = 2; i < sizeof(KBUS_PACKET_t) + 2; i++)
+		CRC.DATAIN = tx_buffer[i];
 	*crc = (CRC.CHECKSUM1 << 8) | CRC.CHECKSUM0;
 }
 
@@ -274,29 +230,29 @@ void usart_add_crc(uint8_t *buffer)
 bool USART_check_for_bus(void)
 {
 	HW_reset_rtc();
-	MAIN_USART.CTRLB |= USART_RXEN_bm;
+	USARTD1.CTRLB |= USART_RXEN_bm;
 	uint32_t rx = 0;
 
 	do
 	{
-		if (MAIN_USART.STATUS & USART_RXCIF_bm)
+		if (USARTD1.STATUS & USART_RXCIF_bm)
 		{
 			rx <<= 8;
-			rx |= MAIN_USART.DATA;
+			rx |= USARTD1.DATA;
 			if (rx == LE_CHR('K', 'B', 'U', 'S'))
 			{
 				// send response
-				while (MAIN_TX_DMA_CH.CTRLB & DMA_CH_CHBUSY_bm);
-				memcpy_P((void *)main_tx_buffer_DMA, PSTR("\xFF\xFFREDY"), 6);
-				MAIN_TX_DMA_CH.TRFCNT = 6;
-				MAIN_TX_DMA_CH.CTRLA |= DMA_CH_ENABLE_bm;
+				while (DMA_TX_CH.CTRLB & DMA_CH_CHBUSY_bm);
+				memcpy_P((void *)tx_buffer, PSTR("\xFF\xFFREDY"), 6);
+				DMA_TX_CH.TRFCNT = 6;
+				DMA_TX_CH.CTRLA |= DMA_CH_ENABLE_bm;
 
 				return true;
 			}
 		}
 	} while (RTC.CNT < 100);	// approx 100ms
 
-	MAIN_USART.CTRLB &= ~USART_RXEN_bm;
+	USARTD1.CTRLB &= ~USART_RXEN_bm;
 	return false;
 }
 
@@ -306,40 +262,29 @@ bool USART_check_for_bus(void)
 void USART_run(void)
 {
 	// main
-	if (main_rx_SIG != 0)
+	if (rx_complete_SIG != 0)
 	{
-		main_rx_SIG = 0;
-		MAIN_RX_DMA_CH.CTRLA &= ~DMA_CH_ENABLE_bm;	// cancel any further RX
+		rx_complete_SIG = 0;
 
-		if (usart_check_crc((uint8_t*)main_rx_buffer_DMA) && !(MAIN_TX_DMA_CH.CTRLB & DMA_CH_CHBUSY_bm))	// don't send if previous TX still in progress)
+		if (usart_check_crc((uint8_t*)rx_buffer_DMA))
 		{
-			while (MAIN_TX_DMA_CH.CTRLB & DMA_CH_CHBUSY_bm);
-			KBUS_process_command((KBUS_PACKET_t *)main_rx_buffer_DMA, (KBUS_PACKET_t *)main_tx_buffer_DMA);
-			usart_add_crc(main_tx_buffer_DMA);
-			while (MAIN_TX_DMA_CH.CTRLB & DMA_CH_CHBUSY_bm);
-			usart_reset_main_dma_tx_pointer();
-			MAIN_TX_DMA_CH.TRFCNT = main_tx_buffer_DMA[1] + 2 + 2;	// command/length + data length + CRC16
-			MAIN_TX_DMA_CH.CTRLA |= DMA_CH_ENABLE_bm;
+			while (DMA_TX_CH.CTRLB & DMA_CH_CHBUSY_bm);	// wait for previous TX to finish
+			KBUS_process_command((KBUS_PACKET_t *)rx_buffer_DMA, tx_packet);
+			usart_add_tx_crc();
+			//usart_reset_dma_tx_pointer();
+			//DMA_TX_CH.TRFCNT = TX_BUFFER_SIZE;
+			DMA_TX_CH.CTRLA |= DMA_CH_ENABLE_bm;
 		}
 
-		while (MAIN_RX_DMA_CH.CTRLA & DMA_CH_ENABLE_bm)	// wait for DMA to disable
-			MAIN_RX_DMA_CH.CTRLA &= ~DMA_CH_ENABLE_bm;
-		usart_reset_main_dma_rx_pointer();
-		MAIN_RX_DMA_CH.CTRLA |= DMA_CH_ENABLE_bm;
+		usart_reset_rx();
 	}
 
-	while (MAIN_TX_DMA_CH.CTRLB & DMA_CH_CHBUSY_bm);
-	KBUS_long_report((KBUS_PACKET_t *)main_tx_buffer_DMA);
-	usart_add_crc(main_tx_buffer_DMA);
+	while (DMA_TX_CH.CTRLB & DMA_CH_CHBUSY_bm);
+	KBUS_long_report(tx_packet);
+	usart_add_tx_crc();
 	//usart_reset_main_dma_tx_pointer();
 
 	//MAIN_TX_DMA_CH.CTRLB |= DMA_CH_TRNIF_bm;
-	MAIN_TX_DMA_CH.TRFCNT = main_tx_buffer_DMA[1] + 2 + 2;	// command/length + data length + CRC16
-	MAIN_TX_DMA_CH.CTRLA |= DMA_CH_ENABLE_bm;
-
-	// aux
-	if (aux_rx_SIG != 0)
-	{
-		aux_rx_SIG = 0;
-	}
+	DMA_TX_CH.TRFCNT = TX_BUFFER_SIZE;
+	DMA_TX_CH.CTRLA |= DMA_CH_ENABLE_bm;
 }
