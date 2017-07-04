@@ -246,6 +246,7 @@ bool kbus_state_ping_test(void)
 void KBUS_run(void)
 {
 	AC_init();
+	usart_reset_rx();
 
 	for(;;)
 	{
