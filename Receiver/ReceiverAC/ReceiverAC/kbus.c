@@ -90,8 +90,8 @@ void KBUS_init(void)
 	KBUS_TC.INTCTRLA = TC45_OVFINTLVL_LO_gc;
 	KBUS_TC.INTCTRLB = 0;
 	KBUS_TC.CNT = 0;
-	KBUS_TC.PER = 0x9C3F;	// timeout, 10mS @ 16MHz/4
-	KBUS_TC.CTRLA = TC45_CLKSEL_DIV4_gc;
+	KBUS_TC.PER = 0x1387;	// timeout, 10mS @ 32MHz/64
+	KBUS_TC.CTRLA = TC45_CLKSEL_DIV64_gc;
 }
 
 /**************************************************************************************************
@@ -148,9 +148,9 @@ bool kbus_validate_packet(uint8_t command)
 }
 
 /**************************************************************************************************
-* Send data out over K-BUS
+* Send packet out over K-BUS, with preamble and trailing checksum word.
 */
-void kbus_send(const void *buffer, uint8_t length)
+void kbus_send_packet(const KBUS_PACKET_t * packet)
 {
 	kbus_tx(0xFF);	// preamble to aid UART sync/auto-baud
 	kbus_tx(0xFF);
@@ -159,10 +159,13 @@ void kbus_send(const void *buffer, uint8_t length)
 	NOP();
 	CRC.CTRL = CRC_SOURCE_IO_gc;
 
-	while(length--)
+	uint8_t *buffer = (uint8_t *)packet;
+	uint8_t bytes = sizeof(KBUS_PACKET_t);
+
+	while (bytes--)
 	{
-		kbus_tx(*(uint8_t *)buffer);
-		CRC.DATAIN = *(uint8_t *)buffer++;
+		kbus_tx(*buffer);
+		CRC.DATAIN = *buffer++;
 	}
 
 	kbus_tx(CRC.CHECKSUM0);		// CRC, little endian
@@ -199,32 +202,27 @@ void kbus_find_device(void)
 #pragma endregion
 
 /**************************************************************************************************
-* State machine STATE_PING_TEST. Does an echo test to check that the link is working.
+* Send a KBUS command and get a response. Returns false if response not received before time-out.
+* Response will be in rx_packet_DMA.
 */
-bool kbus_state_ping_test(void)
+bool kbus_command(KBUS_PACKET_t *cmd)
 {
-	uint8_t retries = 0;
+	uint8_t retries = 3;
 
 	do
 	{
-		KBUS_PACKET_t cmd;
-		cmd.command = KCMD_LOOPBACK;
-		cmd.length = 63;
-		for (uint8_t i = 0; i < KBUS_PACKET_DATA_SIZE; i++)
-			cmd.data[i] = i;
-		kbus_send(&cmd, 2 + 63 + 2);
+		kbus_send_packet(cmd);
 
 		// get response
 		uint8_t rx_count = 0;
 		do
 		{
-			if (timeout_SIG)
+			if (timeout_SIG)	// device stopped sending
 				break;
 
 			if (rx_complete_SIG)
 			{
-				if (!kbus_validate_packet(cmd.command) ||
-					memcmp((void *)rx_packet_DMA->data, &cmd.data, KBUS_PACKET_DATA_SIZE) != 0)
+				if (!kbus_validate_packet(cmd->command))
 				{
 					rx_count++;
 					break;
@@ -235,8 +233,25 @@ bool kbus_state_ping_test(void)
 
 		retries++;
 		_delay_ms(1);
-	} while(retries < 3);
+	} while(retries--);
 
+	return false;
+}
+
+/**************************************************************************************************
+* State machine STATE_PING_TEST. Does an echo test to check that the link is working.
+*/
+bool kbus_state_ping_test(void)
+{
+	KBUS_PACKET_t cmd;
+	cmd.command = KCMD_LOOPBACK;
+	cmd.length = 63;
+	for (uint8_t i = 0; i < KBUS_PACKET_DATA_SIZE; i++)
+		cmd.data[i] = i;
+
+	if (kbus_command(&cmd) &&
+		memcmp((void *)rx_packet_DMA->data, &cmd.data, KBUS_PACKET_DATA_SIZE) != 0)
+		return true;
 	return false;
 }
 
