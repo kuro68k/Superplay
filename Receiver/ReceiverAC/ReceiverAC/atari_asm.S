@@ -7,10 +7,10 @@
 #include <avr/io.h>
 
 .section text
-.global AT_set_output
+.global AC_set_output
 
 
-AT_set_output:
+AC_set_output:
 	push	r18
 	in		r18, GPIO0
 	cli
