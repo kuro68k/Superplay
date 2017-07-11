@@ -7,6 +7,7 @@
 #include <avr/sleep.h>
 #include <string.h>
 
+#include "fastmem.h"
 #include "global.h"
 #include "hw_misc.h"
 #include "config.h"
@@ -149,56 +150,46 @@ void rpt_physical_inputs_refresh(void)
 */
 void RPT_refresh_input_matrix(void)
 {
-	//memset(input_matrix, 0, 256);
-
-#define STX		"st		X+, r1"				"\n\t"
-#define STX16	STX STX STX STX STX STX STX STX STX STX STX STX STX STX STX STX
-
-	asm volatile(
-		STX16
-		STX16
-		STX16
-		STX16	// 64
-		STX16
-		STX16
-		STX16
-		STX16	// 128
-	:
-	: [input] "x" (input_matrix)
-	);
-
+	fmemset(input_matrix, 0, 256);
 	input_matrix[LON] = 1;
 	input_matrix[PON] = 1;
 
 	rpt_physical_inputs_refresh();
 
-	//input_matrix[PB1] = 1;
-
 //PORTA.OUTSET = PIN0_bm;
 //	for (uint8_t i = 0; i < map->count; i++)
 //		input_matrix[map->mapping[i][0]] |= input_matrix[map->mapping[i][1]];
 
+	void *im = (void *)input_matrix;
+	void *mapping = (void *)&map->mapping[0][0];
+	uint8_t count = map->count;
+
 	asm volatile(
-		"loop%=:"					"\n\t"
-		"ld		r18, Z+"			"\n\t"	// dest
-		"ld		r19, Z+"			"\n\t"	// src
-		"movw	Y, X"				"\n\t"
-		"add	YL, r18"			"\n\t"
-		"adc	YH, r1"				"\n\t"
-		"ld		r18, Y"				"\n\t"
-		"movw	Y, X"				"\n\t"
-		"add	YL, r19"			"\n\t"
-		"adc	YH, r1"				"\n\t"
-		"ld		r19, Y"				"\n\t"
-		"or		r18, r19"			"\n\t"
-		"st		X+, __tmp_reg__"	"\n\t"
-		"dec	%[count]"			"\n\t"
-		"brne	loop%="
+		"movw	r20, %a[im]"			"\n\t"
+		"loop%=:"						"\n\t"
+		"ld		r18, %a[mapping]+"		"\n\t"	// map->mapping[i][0]
+		"ld		r19, %a[mapping]+"		"\n\t"	// map->mapping[i][1]
+
+		"movw	%a[im], r20"			"\n\t"
+		"add	%A[im], r19"			"\n\t"
+		"adc	%B[im], r1"				"\n\t"
+		"ld		r19, %a[im]"			"\n\t"	// kbus_matrix[map->mapping[i][1]]
+
+		"movw	%a[im], r20"			"\n\t"
+		"add	%A[im], r18"			"\n\t"
+		"adc	%B[im], r1"				"\n\t"
+		"ld		r18, %a[im]"			"\n\t"	// input_matrix[map->mapping[i][0]]
+
+		"or		r18, r19"				"\n\t"
+		"st		%a[im], r18"			"\n\t"
+		"dec	%[count]"				"\n\t"
+		"brne	loop%="					"\n\t"
+	: [im] "+e" (im),
+	  [mapping] "+e" (mapping),
+	  [count] "+r" (count),
+	  "=m" (input_matrix)
 	:
-	: [count] "r" (map->count),
-	  [matrix] "x" (input_matrix),
-	  [mapping] "z" (map->mapping[0][0])
-	: "r18", "r19", "r28", "r29"
+	: "r18", "r19", "r20", "r21"
 	);
 //PORTA.OUTCLR = PIN0_bm;
 }
