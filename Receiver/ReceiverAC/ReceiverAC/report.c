@@ -6,6 +6,7 @@
 #include <avr/io.h>
 #include <string.h>
 
+#include "fastmem.h"
 #include "config.h"
 #include "report.h"
 
@@ -62,7 +63,7 @@ void RPT_decode_kbus_matrix(uint8_t *buffer)
 */
 void RPT_refresh_input_matrix(void)
 {
-	memset(input_matrix, 0, 128);	// clear logical inputs
+	fmemset(input_matrix, 0, 128);	// clear logical inputs
 	input_matrix[LON] = 1;
 
 	for (uint8_t i = 0; i < map->count; i++)

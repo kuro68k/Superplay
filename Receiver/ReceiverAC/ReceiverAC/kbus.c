@@ -8,6 +8,9 @@
 #include <util/delay.h>
 #include <string.h>
 #include <stdbool.h>
+#include "fastmem.h"
+#include "version.h"
+#include "config.h"
 #include "hw_misc.h"
 #include "report.h"
 #include "atari.h"
@@ -289,8 +292,9 @@ bool kbus_read_configs(void)
 	if (new_map->length == 0)	// no config of request type available
 		return true;
 
-	memcpy(mapping_storage, packet);
+	fmemcpy(&mapping_storage, &packet, sizeof(mapping_storage));
 	map = (const MAPPING_CONFIG_t *)&mapping_storage.data;
+	return true;
 }
 
 /**************************************************************************************************
