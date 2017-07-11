@@ -60,3 +60,11 @@ void CFG_init(void)
 	default_mapping.length = __builtin_object_size(&default_mapping, 0);
 	default_mapping.count = (default_mapping.length - 4) / 2;
 }
+
+/**************************************************************************************************
+** Reset to default mapping
+*/
+void CFG_load_default_mapping(void)
+{
+	map = &default_mapping;
+}

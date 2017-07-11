@@ -24,6 +24,7 @@ volatile uint8_t		rx_complete_SIG = 0;
 volatile uint8_t		timeout_SIG = 0;
 
 KBUS_PACKET_t			packet;
+KBUS_PACKET_t			mapping_storage;
 
 #pragma region Transport Layer
 
@@ -256,6 +257,43 @@ bool kbus_state_ping_test(void)
 }
 
 /**************************************************************************************************
+* Read configs
+*/
+bool kbus_read_configs(void)
+{
+#ifdef BUILD_SIMPLE
+	const uint8_t config_id = ATARI_CONFIG_ID;
+#endif
+#ifdef BUILD_PC_ENGINE
+	const uint8_t config_id = PCE_CONFIG_ID;
+#endif
+#ifdef BUILD_SEGA
+	const uint8_t config_id = SEGA3_CONFIG_ID;
+#endif
+
+	KBUS_PACKET_t cmd;
+	cmd.command = KCMD_READ_CONFIG;
+	cmd.data[0] = config_id;
+
+	if (!kbus_command(&cmd))
+		return false;
+
+	// check result
+	MAPPING_CONFIG_t *new_map = (MAPPING_CONFIG_t *)&packet.data;
+	if (new_map->id != config_id)
+		return false;
+	if (new_map->length > KBUS_PACKET_DATA_SIZE)	// can't handle this yet
+		return false;
+
+	// looks okay, load mapping
+	if (new_map->length == 0)	// no config of request type available
+		return true;
+
+	memcpy(mapping_storage, packet);
+	map = (const MAPPING_CONFIG_t *)&mapping_storage.data;
+}
+
+/**************************************************************************************************
 * Main loop, continually reads updates from K-BUS
 */
 void KBUS_run(void)
@@ -273,7 +311,9 @@ void KBUS_run(void)
 				break;
 		}
 
-		// TODO: read configs
+		// read configs
+		if (!kbus_read_configs())
+			break;
 
 		// updates come continuously
 		for (;;)
@@ -296,6 +336,8 @@ void KBUS_run(void)
 			}
 		}
 
+		// comms with device failed
 		_delay_ms(1);
+		CFG_load_default_mapping();
 	}
 }
