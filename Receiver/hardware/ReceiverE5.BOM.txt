@@ -1,47 +1,58 @@
-Title	KBUS Receiver
-Date	12/07/2017 09:59:57
-Source	ReceiverE5.sch
-Revsision	2.1
+Title:      KBUS Receiver
+Date:       12/07/2017 16:29:38
+Source:     ReceiverE5.sch
+Revsision:  2.1
 
-Capacitors	6 values	X7R/X5R, 16V unless otherwise stated
-2	C1, C2 			22p				0603	
-1	C3				4.7u			0603	
-6	C4, C5, C10,
-	C11, C12, C13 	100n			0603	
-1	C6				680p			0603	
-2	C7, C9 			10u				0603	
-1	C8				10u				0805	
+No.  Reference             Value          Footprint                 Precision
 
-Diodes	2 values
-1	D1				LED				0603	
-1	D2				MBR0520LT1G		SOD-123	
+[ Capacitors, 6 values, X7R/X5R, 16V unless otherwise stated ]
+-----------------------------------------------------------------------------
+2    C1, C2                22p            0603                      
+1    C3                    4.7u           0603                      
+6    C4, C5, C10, C11      100n           0603                      
+     C12, C13
+1    C6                    680p           0603                      
+2    C7, C9                10u            0603                      
+1    C8                    10u            0805                      
 
-Connectors	5 values
-1	J1				KBUS			Type A, TH, FCI 87520	
-1	J2				AVR-PDI-6A		Pin_Header_Straight_2x03	
-1	J3				CONN_01X08		no part	
-2	J4, J5 			CONN_01X06		no part	
-2	J6, J7		 	CONN_01X04		no part	
+[ Diodes, 2 values ]
+-----------------------------------------------------------------------------
+1    D1                    LED            0603                      
+1    D2                    MBR0520LT1G    SOD-123                   
 
-Inductors	1 values
-1	L1	6.8u		SRN4012TA	
+[ Connectors, 5 values ]
+-----------------------------------------------------------------------------
+1    J1                    KBUS           Type A, TH, FCI 87520     
+1    J2                    AVR-PDI-6A     Pin_Header_Straight_2x03  
+1    J3                    CONN_01X08     no part                   
+2    J4, J5                CONN_01X06     no part                   
+2    J6, J7                CONN_01X04     no part                   
 
-Resistors	5 values	1% unless otherwise stated
-3	R1, R2, R3 		680				0603	
-1	R4				47k				0603	
-1	R5				15k				0603	
-1	R6				2k2				0603	
-2	R7, R8 			33				0603	
+[ Inductors, 1 value ]
+-----------------------------------------------------------------------------
+1    L1                    6.8u           SRN4012TA                 
 
-SW	1
-1	SW1				SW_SPST			SW_SPST_EVQP7C	
+[ Resistors, 5 values, 1% unless otherwise stated ]
+-----------------------------------------------------------------------------
+3    R1, R2, R3            680            0603                      
+1    R4                    47k            0603                      
+1    R5                    15k            0603                      
+1    R6                    2k2            0603                      
+2    R7, R8                33             0603                      
 
-Integrated Circuits	5 values
-1	U1				ATXMEGA32E5-A	TQFP-32	
-1	U2				LM2731			SOT-23	
-2	U3, U4 			SN74LV07A		SSOP-14	
-1	U5				TPS78233		SOT-23	
-2	U6, U7 			74LVC2T45		SOT-765-1	
+[ SW, 1 value ]
+-----------------------------------------------------------------------------
+1    SW1                   SW_SPST        SW_SPST_EVQP7C            
 
-Crystals	1 values
-1	Y1				Crystal			QC6CB/7A/ABM7 crystals	
+[ Integrated Circuits, 5 values ]
+-----------------------------------------------------------------------------
+1    U1                    ATXMEGA32E5-A  TQFP-32                   
+1    U2                    LM2731         SOT-23                    
+2    U3, U4                SN74LV07A      SSOP-14                   
+1    U5                    TPS78233       SOT-23                    
+2    U6, U7                74LVC2T45      SOT-765-1                 
+
+[ Crystals, 1 value ]
+-----------------------------------------------------------------------------
+1    Y1                    Crystal        QC6CB/7A/ABM7 crystals    
+
