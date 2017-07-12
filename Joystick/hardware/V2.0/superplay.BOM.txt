@@ -1,0 +1,48 @@
+Title:      SUPERPLAY joystick controller
+Date:       12/07/2017 11:46:48
+Source:     superplay.sch
+Revsision:  2.0
+Company:    KEIO
+
+No.  Reference             Value            Footprint                       Precision
+
+[ Capacitors, 5 values, X7R/X5R, 16V unless otherwise stated ]
+-------------------------------------------------------------------------------------
+1    C1                    1u               0603                            
+1    C2                    100u             1206                            
+1    C3                    10u              0603                            
+6    C4, C5, C6, C7, C8    100n             0603                            
+     C9
+2    C10, C11              18p              0603                            
+
+[ Diodes, 1 value ]
+-------------------------------------------------------------------------------------
+1    D1                    LED              0603                            
+
+[ Connectors, 3 values ]
+-------------------------------------------------------------------------------------
+1    J1                    AVR-PDI-6A       3x2_1.27mm_SMD_header           
+1    J2                    CONN_02X04       ...r_Straight_2x04_Pitch2.54mm  
+1    J3                    USB_B            USB_Micro-B_Molex_47346-0001    
+
+2    PA1, PA2              CONN_01X05       B5B-ZR-SM4-TF                   
+4    PB1, PB2, PB3, PB4    CONN_01X05       B5B-ZR-SM4-TF                   
+1    PJ1                   CONN_01X05       B5B-ZR-SM4-TF                   
+1    PL1                   CONN_01X02       B2B-ZR-SM4-TF                   
+1    PM1                   CONN_01X02       B2B-ZR-SM4-TF                   
+3    PR1, PR2, PR3         CONN_01X05       B5B-ZR-SM4-TF                   
+
+[ Resistors, 1 value, 1% unless otherwise stated ]
+-------------------------------------------------------------------------------------
+1    R1                    680R             0603                            
+
+[ Integrated Circuits, 3 values ]
+-------------------------------------------------------------------------------------
+1    U1                    MCP1700T-3002E   SOT-23                          
+1    U2                    ATXMEGA128A3U-A  TQFP-64_14x14mm_Pitch0.8mm      
+1    U3                    TPD4S009DBV      SOT-23                          
+
+[ Crystals, 1 value ]
+-------------------------------------------------------------------------------------
+1    Y1                    16MHz            QC6CB/7A/ABM7 crystals          
+
