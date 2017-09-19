@@ -78,6 +78,8 @@ int main(void)
 
 	PORTD.DIRSET = PIN1_bm;
 
+	//udc_start();
+	//udc_attach();
 
 	for(;;)
 	{
