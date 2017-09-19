@@ -1,4 +1,5 @@
 EESchema Schematic File Version 2
+LIBS:superplay-rescue
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -122,7 +123,7 @@ F 3 "" H 6600 1300 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L USB_B J3
+L USB_B-RESCUE-superplay J3
 U 1 1 59143165
 P 1700 4850
 F 0 "J3" V 1400 5000 50  0000 C CNN
