@@ -56,7 +56,7 @@
 
 //! Device definition (mandatory)
 #define USB_DEVICE_VENDOR_ID				0x8282
-#define USB_DEVICE_PRODUCT_ID				0x6899
+#define USB_DEVICE_PRODUCT_ID				0x6898
 #define USB_DEVICE_MAJOR_VERSION			1
 #define USB_DEVICE_MINOR_VERSION			0
 #define USB_DEVICE_POWER					100 // Consumption on VBUS line (mA)
@@ -67,7 +67,7 @@
 
 //! USB Device string definitions (Optional)
 #define USB_DEVICE_MANUFACTURE_NAME			"KEIO"
-#define USB_DEVICE_PRODUCT_NAME				"SUPERPLAY Joystick"
+#define USB_DEVICE_PRODUCT_NAME				"SUPERPLAY"
 #define	USB_DEVICE_SERIAL_NAME
 #define	USB_DEVICE_GET_SERIAL_NAME_POINTER	USB_serial_number
 #define	USB_DEVICE_GET_SERIAL_NAME_LENGTH	25

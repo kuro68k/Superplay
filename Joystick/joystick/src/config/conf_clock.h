@@ -93,6 +93,7 @@
  * to a higher frequency via the internal PLL module) must be used instead.
  */
 #define CONFIG_USBCLK_SOURCE					USBCLK_SRC_PLL
+//#define CONFIG_USBCLK_SOURCE					USBCLK_SRC_RCOSC
 //#define CONFIG_OSC_RC32_CAL					48000000UL
 //#define CONFIG_OSC_AUTOCAL_RC32MHZ_REF_OSC	OSC_ID_USBSOF
 

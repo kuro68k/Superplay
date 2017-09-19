@@ -19,7 +19,7 @@ FUSES = {
 	//0xFE,		// fusebyte 2 application
 	0xFF,		// fusebyte	3
 	0xF3,		// fusebyte 4
-	0xE0,		// fusebyte 5
+	0xE4,		// fusebyte 5
 };
 
 

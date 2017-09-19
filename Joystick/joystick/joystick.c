@@ -61,8 +61,8 @@ int main(void)
 	USART_init();
 	AB_init();
 
-	//PORTCFG.CLKEVOUT = PORTCFG_CLKOUTSEL_CLK1X_gc | PORTCFG_CLKOUT_PC7_gc;
-	//PORTC.DIRSET = PIN7_bm;
+//	PORTCFG.CLKEVOUT = PORTCFG_CLKOUTSEL_CLK1X_gc | PORTCFG_CLKOUT_PC7_gc;
+//	PORTC.DIRSET = PIN7_bm;
 
 	PMIC.CTRL = PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_HILVLEN_bm;
 	sei();
@@ -76,7 +76,8 @@ int main(void)
 			break;
 	}
 
-PORTA.DIRSET = PIN0_bm;
+	PORTD.DIRSET = PIN1_bm;
+
 
 	for(;;)
 	{
@@ -90,11 +91,11 @@ PORTA.DIRSET = PIN0_bm;
 		//if (cfg->aux_mode == AUX_MODE_BUTTONS)
 		//	AB_send_report();
 
-PORTA.OUTSET = PIN0_bm;
+PORTD.OUTSET = PIN1_bm;
 		if (!usart_mode)
 			HID_send_report();
 		else
 			USART_run();
-PORTA.OUTCLR = PIN0_bm;
+PORTD.OUTCLR = PIN1_bm;
 	}
 }
