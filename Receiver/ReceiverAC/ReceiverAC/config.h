@@ -188,13 +188,17 @@ typedef struct
 } MAPPING_CONFIG_t;
 
 
+#define PCE_CONFIG_ID			17
+#define	PCE6_CONFIG_ID			18
 #define ATARI_CONFIG_ID			19
+#define SEGA3_CONFIG_ID			20
 
 
 extern const MAPPING_CONFIG_t * map;
 
 
 extern void CFG_init(void);
+extern void CFG_load_default_mapping(void);
 
 
 #endif /* CONFIG_H_ */

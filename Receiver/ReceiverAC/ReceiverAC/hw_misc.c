@@ -15,13 +15,19 @@ void HW_init(void)
 {
 	SLEEP.CTRL	= SLEEP_SMODE_IDLE_gc | SLEEP_SEN_bm;
 
-	// set 16MHz CPU clock
+	// set 32MHz CPU clock
+	WDR();
 	OSC.XOSCCTRL = OSC_FRQRANGE_12TO16_gc | OSC_XOSCSEL_XTAL_16KCLK_gc;
 	OSC.CTRL |= OSC_XOSCEN_bm;
 	while(!(OSC.STATUS & OSC_XOSCRDY_bm));
+
+	OSC.PLLCTRL = OSC_PLLSRC_XOSC_gc | 2;		// 16MHz XOSC
+	OSC.CTRL |= OSC_PLLEN_bm;
+	while(!(OSC.STATUS & OSC_PLLRDY_bm));
+
 	HW_CCPWrite(&CLK.PSCTRL, CLK_PSADIV_1_gc | CLK_PSBCDIV_1_1_gc);
-	HW_CCPWrite(&CLK.CTRL, CLK_SCLKSEL_XOSC_gc);
-	OSC.CTRL = OSC_XOSCEN_bm;		// disable other clocks
+	HW_CCPWrite(&CLK.CTRL, CLK_SCLKSEL_PLL_gc);
+	OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;	// disable other clocks
 
 	// PORTA, buffered open drain outputs
 	PORTA.OUT = 0x00;

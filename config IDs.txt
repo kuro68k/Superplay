@@ -9,3 +9,4 @@
 17	PC Engine mapping
 18	PC Engine 6 button mode mapping
 19	Atari mapping
+20	Sega 3 button

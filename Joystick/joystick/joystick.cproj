@@ -352,6 +352,9 @@
     <Compile Include="drivers\sp_driver.S">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="fastmem.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="global.h">
       <SubType>compile</SubType>
     </Compile>

@@ -137,6 +137,9 @@
     <Compile Include="config.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="fastmem.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hw_misc.c">
       <SubType>compile</SubType>
     </Compile>
