@@ -49,8 +49,8 @@ int main(void)
 {
 	firmware_info.magic_string[0];	// prevent firmware_info being optimized away
 
-	PORTF.DIRSET = PIN0_bm | PIN1_bm | PIN2_bm;
-	PORTF.OUTCLR = PIN0_bm | PIN1_bm | PIN2_bm;
+//	PORTF.DIRSET = PIN0_bm | PIN1_bm | PIN2_bm;
+//	PORTF.OUTCLR = PIN0_bm | PIN1_bm | PIN2_bm;
 
 	sysclk_init();
 	CFG_init();
@@ -76,7 +76,7 @@ int main(void)
 			break;
 	}
 
-	PORTD.DIRSET = PIN1_bm;
+	//PORTD.DIRSET = PIN1_bm;
 
 	//udc_start();
 	//udc_attach();
@@ -93,11 +93,11 @@ int main(void)
 		//if (cfg->aux_mode == AUX_MODE_BUTTONS)
 		//	AB_send_report();
 
-PORTD.OUTSET = PIN1_bm;
+//PORTD.OUTSET = PIN1_bm;
 		if (!usart_mode)
 			HID_send_report();
 		else
 			USART_run();
-PORTD.OUTCLR = PIN1_bm;
+//PORTD.OUTCLR = PIN1_bm;
 	}
 }
