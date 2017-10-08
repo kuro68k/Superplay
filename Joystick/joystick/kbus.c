@@ -72,6 +72,7 @@ void KBUS_process_command(const KBUS_PACKET_t *cmd, KBUS_PACKET_t *res)
 				EEP_WriteBuffer(&load, sizeof(load), 31);
 				_delay_ms(100);								// ensure all writes have definitely finished
 				*/
+				memcpy_P(0, PSTR("LOAD"), 4);				// copy to .noinit section
 				HW_CCPWrite(&RST.CTRL, RST_SWRST_bm);		// reset MCU into bootloader
 				NOP();
 				break;
