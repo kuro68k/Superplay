@@ -183,7 +183,7 @@ void HID_send_report(void)
 	//if (input_matrix[LUNUSED])		hid_report.buttons3 |= (1<<3);
 	if (input_matrix[LMETA])		hid_report.buttons3 |= (1<<7);
 
-	hid_rotary_buttons(&hid_report);
+	//hid_rotary_buttons(&hid_report);
 
 	udi_hid_generic_send_report_in((uint8_t *)&hid_report);
 }

@@ -154,7 +154,6 @@ void AF_apply(void)
 	sei();
 
 
-	// handle unpressed buttons
 	uint8_t high_temp = af_high_count + 1;
 	uint8_t low_temp = af_low_count + 1;
 	for (i = 0; i < 16; i++)

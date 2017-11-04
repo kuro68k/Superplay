@@ -13,7 +13,7 @@
 #include <stdbool.h>
 
 
-#define HARDWARE_V1
+//#define HARDWARE_V1
 
 
 

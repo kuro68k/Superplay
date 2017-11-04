@@ -1,0 +1,9 @@
+Select		A1
+Start		A4
+L			R7/R8
+R			R5/R6
+Y			R4/R3
+X			R2/R1
+B			A7/A8
+A			A6/A5
+Slow		A2/A3

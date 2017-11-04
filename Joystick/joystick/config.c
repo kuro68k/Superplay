@@ -22,7 +22,7 @@ const SETTINGS_CONFIG_t default_settings = {
 	.af_remember_state = 0
 };
 const SETTINGS_CONFIG_t *settings = &default_settings;
-
+/*
 MAPPING_CONFIG_t default_mapping = {
 	.id = MAPPING_CONFIG_ID,
 	.mapping = {	{	LJOY_UP,	PJOY_UP		},
@@ -46,6 +46,35 @@ MAPPING_CONFIG_t default_mapping = {
 					{	LBUTTON14,	PB14		},
 					{	LBUTTON15,	PB15		},
 					{	LBUTTON16,	PB16		},
+				},
+};*/
+MAPPING_CONFIG_t default_mapping = {	// Hori Fighting Stick Famicom
+	.id = MAPPING_CONFIG_ID,
+	.mapping = {	{	LJOY_UP,	PJOY_UP		},
+					{	LJOY_DN,	PJOY_DN		},
+					{	LJOY_LF,	PJOY_LF		},
+					{	LJOY_RT,	PJOY_RT		},
+					{	LMETA,		PMETA		},
+					{	LBUTTON1,	PB1			},
+					{	LBUTTON2,	PB2			},
+					{	LBUTTON3,	PB3			},
+					{	LBUTTON4,	PB4			},
+					{	LBUTTON5,	PB8			},
+					{	LBUTTON6,	PB7			},
+					{	LBUTTON15,	PA1			},	// select
+					{	LBUTTON16,	PA4			},	// start
+					{	LAF_LOW_1,	PR7			},
+					{	LAF_LOW_2,	PR2			},
+					{	LAF_LOW_3,	PR5			},
+					{	LAF_LOW_4,	PR4			},
+					{	LAF_LOW_5,	PA7			},
+					{	LAF_LOW_6,	PA6			},
+					{	LAF_HIGH_1,	PR8			},
+					{	LAF_HIGH_2,	PR3			},
+					{	LAF_HIGH_3,	PR6			},
+					{	LAF_HIGH_4,	PR5			},
+					{	LAF_HIGH_5,	PA8			},
+					{	LAF_HIGH_6,	PA5			},
 				},
 };
 const MAPPING_CONFIG_t *map = &default_mapping;
