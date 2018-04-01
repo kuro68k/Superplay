@@ -66,7 +66,7 @@ int main(void)
 
 	PMIC.CTRL = PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_HILVLEN_bm;
 	sei();
-
+/*
 	bool usart_mode = false;
 	for(;;)
 	{
@@ -75,11 +75,11 @@ int main(void)
 		if ((usart_mode = USART_check_for_bus()))
 			break;
 	}
-
+*/
 	//PORTD.DIRSET = PIN1_bm;
 
-	//udc_start();
-	//udc_attach();
+	udc_start();
+	udc_attach();
 
 	for(;;)
 	{
@@ -94,10 +94,10 @@ int main(void)
 		//	AB_send_report();
 
 //PORTD.OUTSET = PIN1_bm;
-		if (!usart_mode)
+		//if (!usart_mode)
 			HID_send_report();
-		else
-			USART_run();
+		//else
+		//	USART_run();
 //PORTD.OUTCLR = PIN1_bm;
 	}
 }
