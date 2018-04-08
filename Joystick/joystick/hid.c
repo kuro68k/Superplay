@@ -6,9 +6,8 @@
 #include <avr/io.h>
 #include <stdbool.h>
 #include <string.h>
-#include <asf.h>
-#include "usb_device.h"
 
+#include "usb.h"
 #include "report.h"
 #include "hw_misc.h"
 #include "kbus.h"
@@ -36,6 +35,7 @@ void HID_init(void)
 */
 bool HID_check_for_bus(void)
 {
+/*
 	HW_reset_rtc();
 
 	udc_start();
@@ -48,7 +48,7 @@ bool HID_check_for_bus(void)
 	} while (RTC.CNT < 100);
 
 	udc_detach();
-	udc_stop();
+	udc_stop();*/
 	return false;
 }
 
@@ -59,7 +59,7 @@ void HID_set_feature(uint8_t *report)
 {
 	KBUS_PACKET_t response;
 	KBUS_process_command((KBUS_PACKET_t *)report, &response);
-	udi_hid_generic_send_report_in((uint8_t *)&response);
+	//udi_hid_generic_send_report_in((uint8_t *)&response);
 }
 
 /**************************************************************************************************
@@ -90,7 +90,7 @@ void hid_rotary_buttons(HID_REPORT_t *hid_report)
 		if (!rot_left && !rot_right && !inhibit)
 		{
 			uint8_t new_rot = hid_find_rotary_pos();
-			if (new_rot != -1)
+			if (new_rot != 0xFF)
 			{
 				if (last_rot == 0xFF)
 					last_rot = new_rot;
@@ -185,5 +185,5 @@ void HID_send_report(void)
 
 	//hid_rotary_buttons(&hid_report);
 
-	udi_hid_generic_send_report_in((uint8_t *)&hid_report);
+	//udi_hid_generic_send_report_in((uint8_t *)&hid_report);
 }

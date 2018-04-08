@@ -3,10 +3,9 @@
  *
  */
 
-
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
-#include <asf.h>
 
 #include "global.h"
 #include "hw_misc.h"
@@ -18,7 +17,7 @@
 #include "usart.h"
 #include "aux_buttons.h"
 #include "keys.h"
-
+#include "usb.h"
 
 #define VERSION_MAJOR	1
 #define VERSION_MINOR	0
@@ -52,7 +51,7 @@ int main(void)
 //	PORTF.DIRSET = PIN0_bm | PIN1_bm | PIN2_bm;
 //	PORTF.OUTCLR = PIN0_bm | PIN1_bm | PIN2_bm;
 
-	sysclk_init();
+	usb_configure_clock();
 	CFG_init();
 	HW_init();
 	AF_init();
@@ -64,8 +63,13 @@ int main(void)
 //	PORTCFG.CLKEVOUT = PORTCFG_CLKOUTSEL_CLK1X_gc | PORTCFG_CLKOUT_PC7_gc;
 //	PORTC.DIRSET = PIN7_bm;
 
+	USB.INTCTRLA = /*USB_SOFIE_bm |*/ USB_BUSEVIE_bm | USB_INTLVL_MED_gc;
+	USB.INTCTRLB = USB_TRNIE_bm | USB_SETUPIE_bm;
+	usb_init();
+
 	PMIC.CTRL = PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_HILVLEN_bm;
 	sei();
+
 /*
 	bool usart_mode = false;
 	for(;;)
@@ -78,8 +82,7 @@ int main(void)
 */
 	//PORTD.DIRSET = PIN1_bm;
 
-	udc_start();
-	udc_attach();
+	usb_attach();
 
 	for(;;)
 	{

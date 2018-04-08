@@ -6,12 +6,12 @@
  */ 
 
 #include <avr/io.h>
-#include <asf.h>
+#include <stddef.h>
 
 #include "sp_driver.h"
 #include "serial_num.h"
 
-uint8_t USB_serial_number[USB_DEVICE_GET_SERIAL_NAME_LENGTH];
+uint8_t USB_serial_number[25];
 
 /**************************************************************************************************
 ** Convert lower nibble to hex char
