@@ -19,7 +19,7 @@
 
 // USB vendor and product IDs, version number
 #define USB_VID				0x8282
-#define USB_PID				0x6899
+#define USB_PID				0x689E
 
 #define USB_VERSION_MAJOR	1
 #define USB_VERSION_MINOR	0
