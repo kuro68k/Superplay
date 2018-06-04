@@ -171,9 +171,6 @@
     <Compile Include="config.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="drivers\avr_compiler.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="drivers\eeprom.c">
       <SubType>compile</SubType>
     </Compile>
