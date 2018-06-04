@@ -17,6 +17,7 @@
 #include "aux_buttons.h"
 #include "keys.h"
 #include "usb.h"
+#include "xmega.h"
 
 #define VERSION_MAJOR	1
 #define VERSION_MINOR	0

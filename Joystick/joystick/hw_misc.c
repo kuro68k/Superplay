@@ -11,6 +11,7 @@
 #include "config.h"
 #include "hw_misc.h"
 #include "io_table.h"
+#include "xmega.h"
 
 FUSES = {
 	0xFF,		// fusebyte 0
@@ -85,7 +86,7 @@ void HW_init(void)
 	WDR();
 	while (WDT.STATUS & WDT_SYNCBUSY_bm);
 	WDR();
-	HW_CCPWrite(&WDT_CTRL, WDT_PER_128CLK_gc | WDT_ENABLE_bm | WDT_CEN_bm);
+	CCPWrite(&WDT_CTRL, WDT_PER_128CLK_gc | WDT_ENABLE_bm | WDT_CEN_bm);
 
 	// switch inputs inverted to make mapping slightly more efficient
 
@@ -168,35 +169,4 @@ void HW_reset_rtc(void)
 	while (RTC.STATUS & RTC_SYNCBUSY_bm);
 	RTC.CNT = 0;
 	RTC.CTRL = RTC_PRESCALER_DIV1_gc;
-}
-
-/**************************************************************************************************
-** Write a CCP protected register. Registers protected by CCP require the CCP register to be written
-** first, followed by writing the protected register within 4 instruction cycles.
-**
-** Interrupts are temporarily disabled during the write. Code mostly adapted/stolen from Atmel's
-** clksys_driver.c and avr_compiler.h.
-*/
-void HW_CCPWrite(volatile uint8_t *address, uint8_t value)
-{
-	uint8_t	saved_sreg;
-
-	// disable interrupts if running
-	saved_sreg = SREG;
-	cli();
-
-	volatile uint8_t * tmpAddr = address;
-	RAMPZ = 0;
-
-	asm volatile(
-	"movw r30,  %0"       "\n\t"
-	"ldi  r16,  %2"       "\n\t"
-	"out   %3, r16"       "\n\t"
-	"st     Z,  %1"       "\n\t"
-	:
-	: "r" (tmpAddr), "r" (value), "M" (CCP_IOREG_gc), "i" (&CCP)
-	: "r16", "r30", "r31"
-	);
-
-	SREG = saved_sreg;
 }

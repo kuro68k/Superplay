@@ -14,6 +14,7 @@
 #include "eeprom.h"
 #include "report.h"
 #include "usb_config.h"
+#include "xmega.h"
 #include "kbus.h"
 
 
@@ -74,7 +75,7 @@ void KBUS_process_command(const KBUS_PACKET_t *cmd, KBUS_PACKET_t *res)
 				_delay_ms(100);								// ensure all writes have definitely finished
 				*/
 				memcpy_P(0, PSTR("LOAD"), 4);				// copy to .noinit section
-				HW_CCPWrite(&RST.CTRL, RST_SWRST_bm);		// reset MCU into bootloader
+				CCPWrite(&RST.CTRL, RST_SWRST_bm);		// reset MCU into bootloader
 				NOP();
 				break;
 			}
