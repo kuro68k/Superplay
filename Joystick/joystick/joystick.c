@@ -10,10 +10,9 @@
 #include "global.h"
 #include "hw_misc.h"
 #include "config.h"
-#include "hid.h"
+#include "hid_mode.h"
 #include "report.h"
 #include "autofire.h"
-#include "serial_num.h"
 #include "usart.h"
 #include "aux_buttons.h"
 #include "keys.h"
@@ -52,23 +51,33 @@ int main(void)
 //	PORTF.OUTCLR = PIN0_bm | PIN1_bm | PIN2_bm;
 
 	usb_configure_clock();
+
 	CFG_init();
 	HW_init();
 	AF_init();
 	HID_init();
-	USB_init_build_usb_serial_number();
 	USART_init();
 	AB_init();
 
 //	PORTCFG.CLKEVOUT = PORTCFG_CLKOUTSEL_CLK1X_gc | PORTCFG_CLKOUT_PC7_gc;
 //	PORTC.DIRSET = PIN7_bm;
 
-	USB.INTCTRLA = /*USB_SOFIE_bm |*/ USB_BUSEVIE_bm | USB_INTLVL_MED_gc;
-	USB.INTCTRLB = USB_TRNIE_bm | USB_SETUPIE_bm;
 	usb_init();
 
 	PMIC.CTRL = PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_HILVLEN_bm;
 	sei();
+
+	usb_attach();
+
+	for(;;)
+	{
+		for (uint8_t i = 0; i < USB_HID_REPORT_SIZE; i++)
+			hid_report[i] += (i+1);
+		//_delay_ms(50);
+		hid_send_report();
+		WDR();
+	}
+
 
 /*
 	bool usart_mode = false;
@@ -81,8 +90,6 @@ int main(void)
 	}
 */
 	//PORTD.DIRSET = PIN1_bm;
-
-	usb_attach();
 
 	for(;;)
 	{

@@ -1,11 +1,11 @@
 /*
- * hid.h
+ * hid_mode.h
  *
  */
 
 
-#ifndef HID_H_
-#define HID_H_
+#ifndef HID_MODE_H_
+#define HID_MODE_H_
 
 
 typedef struct
@@ -31,4 +31,4 @@ extern void HID_set_feature(uint8_t *report);
 extern void HID_send_report(void);
 
 
-#endif /* HID_H_ */
+#endif /* HID_MODE_H_ */

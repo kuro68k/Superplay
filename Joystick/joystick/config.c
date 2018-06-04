@@ -104,7 +104,8 @@ void * CFG_find_config(uint8_t id)
 
 	do
 	{
-		if ((header->length == 0xFFFF) || (header->length == 0x0000) ||
+		if ((header->signature != CONFIG_SIGNATURE) ||
+			(header->length == 0xFFFF) || (header->length == 0x0000) ||
 			(header->id == 0x00) || (header->id == 0xFF))
 			break;
 

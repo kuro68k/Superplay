@@ -1,12 +1,17 @@
 /*
  * dfu.h
  *
+ * Copyright 2018 Paul Qureshi
+ *
+ * Device Firmware Update support
  */
 
 
 #ifndef DFU_H_
 #define DFU_H_
 
+
+#define DFU_INTERFACE						1
 
 // USB descriptors
 #define	DFU_INTERFACE_CLASS					0xFE

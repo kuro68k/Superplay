@@ -1,14 +1,24 @@
-#pragma once
+/* usb.h
+ *
+ * Copyright 2011-2014 Nonolith Labs
+ * Copyright 2014 Technical Machine
+ * Copyright 2018 Paul Qureshi
+ *
+ * Single include for application code
+ */
+
+#ifndef USB_H_
+#define USB_H_
+
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <string.h>
+
+#define USB_EP0_MAX_PACKET_SIZE		64
+#define USB_EP0_BUFFER_SIZE			210
 
 #include "usb_standard.h"
 #include "usb_config.h"
-
-#define USB_EP0_MAX_PACKET_SIZE		8
-#define USB_EP0_BUFFER_SIZE			64
 
 extern USB_SetupPacket_t usb_setup;
 extern uint8_t ep0_buf_in[USB_EP0_BUFFER_SIZE];
@@ -25,9 +35,6 @@ void usb_configure_clock(void);
 
 /// Callback for a SET_CONFIGURATION request
 bool usb_cb_set_configuration(uint8_t config);
-
-/// Callback for a SET_INTERFACE request
-bool usb_cb_set_interface(uint16_t interface, uint16_t altsetting);
 
 /// Initialize the USB controller
 void usb_init(void);
@@ -61,7 +68,7 @@ bool usb_ep_is_ready(usb_ep ep);
 bool usb_ep_is_transaction_complete(usb_ep ep);
 
 /// Clear a completion on an endpoint
-void usb_ep_handle_transaction(usb_ep ep);
+void usb_ep_clear_transaction_complete(usb_ep ep);
 
 /// Start an asynchronous host->device transfer.
 /// The data will be received into data up to size len. This buffer must remain valid until
@@ -78,14 +85,4 @@ usb_size usb_ep_get_out_transaction_length(usb_ep ep);
 void usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp);
 
 
-/// Send `size` bytes from ep0_buf_in on endpoint 0
-void usb_ep0_in(uint8_t size);
-
-/// Accept a packet into ep0_buf_out on endpoint 0
-void usb_ep0_out(void);
-
-/// Stall endpoint 0
-void usb_ep0_stall(void);
-
-/// Internal common methods called by the hardware API
-void usb_handle_setup(void);
+#endif	// USB_H_

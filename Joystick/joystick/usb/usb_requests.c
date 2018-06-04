@@ -10,6 +10,7 @@
 #include <avr/io.h>
 #include "usb.h"
 #include "usb_config.h"
+#include "usb_xmega.h"
 #include "hid.h"
 #include "dfu.h"
 
@@ -84,7 +85,7 @@ void usb_handle_standard_setup_requests(void)
 			return usb_ep0_stall();
 
 		case USB_REQ_SetInterface:
-			if (usb_cb_set_interface(usb_setup.wIndex, usb_setup.wValue))
+			if (usb_handle_set_interface(usb_setup.wIndex, usb_setup.wValue))
 			{
 				usb_ep0_in(0);
 				return usb_ep0_out();
@@ -97,85 +98,16 @@ void usb_handle_standard_setup_requests(void)
 }
 
 /**************************************************************************************************
-* Handle class setup requests
-*/
-void usb_handle_class_setup_requests(void)
-{
-#ifdef USB_HID
-	switch (usb_setup.bRequest)
-	{
-		// IN requests
-		case USB_HIDREQ_GET_REPORT:
-		{
-			uint16_t bytes_in = 0xFFFF;
-			switch(usb_setup.wValue >> 8)
-			{
-				case USB_HID_REPORT_TYPE_INPUT:
-					hid_send_report();
-					return usb_ep0_out();
-					//bytes_in = hid_cb_get_report_input(ep0_buf_in, usb_setup.wValue & 0xFF);
-					//break;
-				case USB_HID_REPORT_TYPE_OUTPUT:
-					bytes_in = hid_cb_get_report_output(ep0_buf_in, usb_setup.wValue & 0xFF);
-					break;
-				case USB_HID_REPORT_TYPE_FEATURE:
-					bytes_in = hid_cb_get_report_feature(ep0_buf_in, usb_setup.wValue & 0xFF);
-					break;
-			}
-			if (bytes_in == 0xFFFF)
-				return usb_ep0_stall();
-			usb_ep0_in(bytes_in);
-			return usb_ep0_out();
-		}
-
-		case USB_HIDREQ_GET_IDLE:
-			return usb_ep0_stall();
-
-		case USB_HIDREQ_GET_PROTOCOL:
-			return usb_ep0_stall();
-
-		// OUT requests
-		case USB_HIDREQ_SET_REPORT:
-		{
-			switch(usb_setup.wValue >> 8)
-			{
-				case USB_HID_REPORT_TYPE_INPUT:
-					return (hid_cb_set_report_input(ep0_buf_out, usb_setup.wLength, usb_setup.wValue & 0xFF) ?
-						usb_ep0_out() : usb_ep0_stall);
-				case USB_HID_REPORT_TYPE_OUTPUT:
-					return (hid_cb_set_report_output(ep0_buf_out, usb_setup.wLength, usb_setup.wValue & 0xFF) ?
-						usb_ep0_out() : usb_ep0_stall);
-				case USB_HID_REPORT_TYPE_FEATURE:
-					return (hid_cb_set_report_feature(ep0_buf_out, usb_setup.wLength, usb_setup.wValue & 0xFF) ?
-						usb_ep0_out() : usb_ep0_stall);
-			}
-			return usb_ep0_stall();
-		}
-
-		case USB_HIDREQ_SET_IDLE:
-			usb_ep0_in(0);
-			return usb_ep0_out();
-
-		case USB_HIDREQ_SET_PROTOCOL:
-			return usb_ep0_stall();
-
-		default:
-			return usb_ep0_stall();
-	}
-#else
-	return usb_ep0_stall();
-#endif
-}
-
-/**************************************************************************************************
 * DFU vendor requests
 */
+#ifdef USB_DFU_RUNTIME
 void dfu_control_setup(void)
 {
 	switch (usb_setup.bRequest)
 	{
 		case DFU_DETACH:
 			dfu_cb_enter_dfu_mode();
+			usb_ep0_in(0);
 			return usb_ep0_out();
 
 		// read status
@@ -185,7 +117,7 @@ void dfu_control_setup(void)
 				len = sizeof(DFU_StatusResponse);
 			DFU_StatusResponse *st = (DFU_StatusResponse *)ep0_buf_in;
 			st->bStatus = DFU_STATUS_OK;
-			st->bState = DFU_STATE_dfuIDLE;
+			st->bState = DFU_STATE_appIDLE;
 			st->bwPollTimeout[0] = 0;
 			st->bwPollTimeout[1] = 0;
 			st->bwPollTimeout[2] = 0;
@@ -210,6 +142,107 @@ void dfu_control_setup(void)
 		default:
 			return usb_ep0_stall();
 	}
+}
+#endif
+
+/**************************************************************************************************
+* Handle class setup requests
+*/
+void usb_handle_class_setup_requests(void)
+{
+#if defined(USB_DFU_RUNTIME) || defined(USB_DFU_MODE)
+	if (((usb_setup.bmRequestType & USB_REQTYPE_RECIPIENT_MASK) == USB_RECIPIENT_INTERFACE) &&
+		(usb_setup.wIndex == DFU_INTERFACE))
+		return dfu_control_setup();
+#endif
+
+#ifdef USB_HID
+	switch (usb_setup.bRequest)
+	{
+		// IN requests
+		case USB_HIDREQ_GET_REPORT:
+		{
+			switch(usb_setup.wValue >> 8)
+			{
+				case USB_HID_REPORT_TYPE_INPUT:
+				{
+					int16_t size = hid_cb_get_report_input(ep0_buf_in, usb_setup.wIndex & 0xFF);
+					if (size == -1)
+						return usb_ep0_stall();
+					usb_ep0_in(size);
+					return usb_ep0_out();
+				}
+				case USB_HID_REPORT_TYPE_OUTPUT:
+				{
+					int16_t size = hid_cb_get_report_output(ep0_buf_in, usb_setup.wValue & 0xFF);
+					if (size == -1)
+						return usb_ep0_stall();
+					usb_ep0_in(size);
+					return usb_ep0_out();
+				}
+				case USB_HID_REPORT_TYPE_FEATURE:
+				{
+					int16_t size = hid_cb_get_report_feature(ep0_buf_in, usb_setup.wValue & 0xFF);
+					if (size == -1)
+						return usb_ep0_stall();
+					usb_ep0_in(size);
+					return usb_ep0_out();
+				}
+				default:
+					return usb_ep0_stall();
+			}
+		}
+
+		case USB_HIDREQ_GET_IDLE:
+			return usb_ep0_stall();
+
+		case USB_HIDREQ_GET_PROTOCOL:
+			return usb_ep0_stall();
+
+		// OUT requests
+		case USB_HIDREQ_SET_REPORT:
+		{
+			switch(usb_setup.wValue >> 8)
+			{
+				case USB_HID_REPORT_TYPE_INPUT:
+					if (hid_cb_set_report_input(ep0_buf_out, usb_setup.wLength, usb_setup.wValue & 0xFF))
+					{
+						usb_ep0_in(0);
+						return usb_ep0_clear_out_setup();
+					}
+					return usb_ep0_stall();
+				case USB_HID_REPORT_TYPE_OUTPUT:
+					if (hid_cb_set_report_output(ep0_buf_out, usb_setup.wLength, usb_setup.wValue & 0xFF))
+					{
+						usb_ep0_in(0);
+						return usb_ep0_clear_out_setup();
+					}
+					return usb_ep0_stall();
+				case USB_HID_REPORT_TYPE_FEATURE:
+					if (hid_cb_set_report_feature(ep0_buf_out, usb_setup.wLength, usb_setup.wValue & 0xFF))
+					{
+						usb_ep0_in(0);
+						return usb_ep0_clear_out_setup();
+					}
+					return usb_ep0_stall();
+				default:
+					return usb_ep0_stall();
+			}
+		}
+
+		case USB_HIDREQ_SET_IDLE:
+			usb_ep0_in(0);
+			return usb_ep0_out();
+
+		case USB_HIDREQ_SET_PROTOCOL:
+			return usb_ep0_stall();
+
+		default:
+			return usb_ep0_stall();
+	}
+#else
+	return usb_ep0_stall();
+#endif
 }
 
 /**************************************************************************************************
@@ -240,19 +273,15 @@ void usb_handle_vendor_setup_requests(void)
 #endif
 			}
 		}
-#ifdef USB_DFU_RUNTIME
-		else if (usb_setup.wIndex == 1)		// DFU interface
-			return dfu_control_setup();
-#endif
 	}
 
 	return usb_ep0_stall();
 }
 
 /**************************************************************************************************
-* Handle setup requests
+* Handle control SETUP requests
 */
-void usb_handle_setup(void)
+void usb_handle_control_setup(void)
 {
 	switch (usb_setup.bmRequestType & USB_REQTYPE_TYPE_MASK)
 	{
@@ -266,4 +295,26 @@ void usb_handle_setup(void)
 		default:
 			return usb_handle_vendor_setup_requests();
 	}
+}
+
+/**************************************************************************************************
+* Handle control OUT requests
+*/
+void usb_handle_control_out(void)
+{
+}
+
+/**************************************************************************************************
+* Handle control IN requests
+*/
+void usb_handle_control_in(void)
+{
+}
+
+/**************************************************************************************************
+* Handle set interface requests
+*/
+bool usb_handle_set_interface(uint16_t interface, uint16_t altsetting)
+{
+	return false;
 }

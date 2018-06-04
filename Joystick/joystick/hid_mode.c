@@ -11,7 +11,7 @@
 #include "report.h"
 #include "hw_misc.h"
 #include "kbus.h"
-#include "hid.h"
+#include "hid_mode.h"
 
 bool HID_udc_resumed = false;	// set by ASF USB stack via callback (see conf_usb.h)
 

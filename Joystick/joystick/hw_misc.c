@@ -143,7 +143,9 @@ void HW_init(void)
 	SLEEP.CTRL = SLEEP_SMODE_IDLE_gc | SLEEP_SEN_bm;
 
 	// RTC, ticks at approx 1ms intervals
-	// 1.024kHz from 32kHz RC oscillator enabled by ASF code (conf_clock.h)
+	OSC.CTRL |= OSC_RC32KEN_bm;
+	while (!(OSC.STATUS & OSC_RC32KRDY_bm));
+	CLK.RTCCTRL = CLK_RTCSRC_RCOSC_gc | CLK_RTCEN_bm;	// 1.024kHz from 32kHz RC oscillator
 	RTC.CTRL = 0;
 	while (RTC.STATUS & RTC_SYNCBUSY_bm);
 	RTC.INTCTRL = 0;

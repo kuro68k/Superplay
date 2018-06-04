@@ -12,6 +12,7 @@
 #include "usb.h"
 #include "usb_xmega.h"
 #include "usb_xmega_internal.h"
+#include "xmega.h"
 
 
 #define _USB_EP(epaddr) \
@@ -20,43 +21,16 @@
 
 
 /**************************************************************************************************
-* Write register protected by change protection register
-*/
-void CCPWrite(volatile uint8_t *address, uint8_t value)
-{
-	uint8_t	saved_sreg;
-
-	// disable interrupts if running
-	saved_sreg = SREG;
-	cli();
-
-	volatile uint8_t * tmpAddr = address;
-	RAMPZ = 0;
-
-	asm volatile(
-	"movw r30,  %0"       "\n\t"
-	"ldi  r16,  %2"       "\n\t"
-	"out   %3, r16"       "\n\t"
-	"st     Z,  %1"       "\n\t"
-	:
-	: "r" (tmpAddr), "r" (value), "M" (CCP_IOREG_gc), "i" (&CCP)
-	: "r16", "r30", "r31"
-	);
-
-	SREG = saved_sreg;
-}
-
-/**************************************************************************************************
 * Initialize up USB after reset
 */
 void usb_init()
 {
 	uint8_t saved_sreg = SREG;
 	cli();
-	NVM.CMD  = NVM_CMD_READ_CALIB_ROW_gc;
-	USB.CAL0 = pgm_read_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL0));
-	NVM.CMD  = NVM_CMD_READ_CALIB_ROW_gc;
-	USB.CAL1 = pgm_read_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL1));
+	USB.CAL0 = NVM_read_production_signature_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL0));
+	USB.CAL1 = NVM_read_production_signature_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL1));
+	USB.INTCTRLA = USB_BUSEVIE_bm | USB_INTLVL_MED_gc;
+	USB.INTCTRLB = USB_TRNIE_bm | USB_SETUPIE_bm;
 	SREG = saved_sreg;
 
 	usb_reset();
@@ -73,10 +47,10 @@ void usb_reset()
 	// endpoint 0 control IN/OUT
 	usb_xmega_endpoints[0].out.STATUS = 0;
 	usb_xmega_endpoints[0].out.CTRL = USB_EP_TYPE_CONTROL_gc | USB_EP_size_to_gc(USB_EP0_MAX_PACKET_SIZE);
-	usb_xmega_endpoints[0].out.DATAPTR = (unsigned) &ep0_buf_out;
+	usb_xmega_endpoints[0].out.DATAPTR = (unsigned) ep0_buf_out;
 	usb_xmega_endpoints[0].in.STATUS = USB_EP_BUSNACK0_bm;
 	usb_xmega_endpoints[0].in.CTRL = USB_EP_TYPE_CONTROL_gc | USB_EP_MULTIPKT_bm | USB_EP_size_to_gc(USB_EP0_MAX_PACKET_SIZE);
-	usb_xmega_endpoints[0].in.DATAPTR = (unsigned) &ep0_buf_in;
+	usb_xmega_endpoints[0].in.DATAPTR = (unsigned) ep0_buf_in;
 
 #ifdef USB_HID
 	usb_ep_enable(0x81, USB_EP_TYPE_BULK_gc, 64, false);
@@ -130,7 +104,7 @@ inline void usb_ep_start_out(uint8_t ep, uint8_t* data, usb_size len)
 /**************************************************************************************************
 * Start sending data from buffer to host
 */
-inline void usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp)
+void usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp)
 {
 	_USB_EP(ep);
 	e->DATAPTR = (unsigned) data;
@@ -160,10 +134,10 @@ inline bool usb_ep_is_transaction_complete(uint8_t ep)
 /**************************************************************************************************
 * Handle a completed transaction on an endpoint
 */
-inline void usb_ep_handle_transaction(uint8_t ep)
+void usb_ep_clear_transaction_complete(uint8_t ep)
 {
 	_USB_EP(ep);
-	LACR16(&(e->STATUS), USB_EP_TRNCOMPL0_bm);
+	LACR16(&(e->STATUS), USB_EP_TRNCOMPL0_bm | USB_EP_BUSNACK0_bm);
 }
 
 /**************************************************************************************************
@@ -178,37 +152,42 @@ inline uint16_t usb_ep_get_out_transaction_length(uint8_t ep)
 /**************************************************************************************************
 * Physically detach from USB bus
 */
-inline void usb_detach(void) ATTR_ALWAYS_INLINE;
-inline void usb_detach(void) {
+void usb_detach(void) {
 	USB.CTRLB &= ~USB_ATTACH_bm;
 }
 
 /**************************************************************************************************
 * Physically attach to USB bus
 */
-inline void usb_attach(void) ATTR_ALWAYS_INLINE;
-inline void usb_attach(void) {
+void usb_attach(void) {
 	USB.CTRLB |= USB_ATTACH_bm;
+}
+
+/**************************************************************************************************
+* Clear SETUP OUT stage on the default control pipe
+*/
+void usb_ep0_clear_out_setup(void) {
+	LACR16(&usb_xmega_endpoints[0].out.STATUS, USB_EP_SETUP_bm | USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm | USB_EP_OVF_bm | USB_EP_TOGGLE_bm);
 }
 
 /**************************************************************************************************
 * Enable the OUT stage on the default control pipe
 */
-inline void usb_ep0_out(void) {
+void usb_ep0_out(void) {
 	LACR16(&usb_xmega_endpoints[0].out.STATUS, USB_EP_SETUP_bm | USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm | USB_EP_OVF_bm);
 }
 
 /**************************************************************************************************
 * Enable the IN stage on the default control pipe
 */
-inline void usb_ep0_in(uint8_t size){
+void usb_ep0_in(uint8_t size){
 	usb_ep_start_in(0x80, ep0_buf_in, size, true);
 }
 
 /**************************************************************************************************
 * Stall the default control pipe
 */
-inline void usb_ep0_stall(void) {
+void usb_ep0_stall(void) {
 	usb_xmega_endpoints[0].out.CTRL |= USB_EP_STALL_bm;
 	usb_xmega_endpoints[0].in.CTRL  |= USB_EP_STALL_bm;
 }
@@ -220,7 +199,7 @@ void usb_configure_clock()
 {
 #ifdef USB_USE_PLL
 	OSC.XOSCCTRL = OSC_FRQRANGE_12TO16_gc | OSC_XOSCSEL_XTAL_16KCLK_gc;
-    OSC.CTRL |= OSC_XOSCEN_bm;
+	OSC.CTRL |= OSC_XOSCEN_bm;
 	while(!(OSC.STATUS & OSC_XOSCRDY_bm));
 
 	OSC.PLLCTRL = OSC_PLLSRC_XOSC_gc | 3;		// 48MHz for USB
@@ -238,29 +217,28 @@ void usb_configure_clock()
 #ifdef USB_USE_RC32
 	// Configure DFLL for 48MHz, calibrated by USB SOF
 	OSC.DFLLCTRL = OSC_RC32MCREF_USBSOF_gc;
-	NVM.CMD  = NVM_CMD_READ_CALIB_ROW_gc;
-	DFLLRC32M.CALB = pgm_read_byte(offsetof(NVM_PROD_SIGNATURES_t, USBRCOSC));
+	DFLLRC32M.CALB = NVM_read_production_signature_byte(offsetof(NVM_PROD_SIGNATURES_t, USBRCOSC));
 	DFLLRC32M.COMP1 = 0x1B; //Xmega AU manual, 4.17.19
 	DFLLRC32M.COMP2 = 0xB7;
 	DFLLRC32M.CTRL = DFLL_ENABLE_bm;
 
 	CCP = CCP_IOREG_gc; //Security Signature to modify clock
-    OSC.CTRL = OSC_RC32MEN_bm | OSC_RC2MEN_bm; // enable internal 32MHz oscillator
+	OSC.CTRL = OSC_RC32MEN_bm | OSC_RC2MEN_bm; // enable internal 32MHz oscillator
 
-    while(!(OSC.STATUS & OSC_RC32MRDY_bm)); // wait for oscillator ready
+	while(!(OSC.STATUS & OSC_RC32MRDY_bm)); // wait for oscillator ready
 
-    OSC.PLLCTRL = OSC_PLLSRC_RC2M_gc | 16; // 2MHz * 16 = 32MHz
+	OSC.PLLCTRL = OSC_PLLSRC_RC2M_gc | 16; // 2MHz * 16 = 32MHz
 
-    CCP = CCP_IOREG_gc;
-    OSC.CTRL = OSC_RC32MEN_bm | OSC_PLLEN_bm | OSC_RC2MEN_bm ; // Enable PLL
+	CCP = CCP_IOREG_gc;
+	OSC.CTRL = OSC_RC32MEN_bm | OSC_PLLEN_bm | OSC_RC2MEN_bm ; // Enable PLL
 
-    while(!(OSC.STATUS & OSC_PLLRDY_bm)); // wait for PLL ready
+	while(!(OSC.STATUS & OSC_PLLRDY_bm)); // wait for PLL ready
 
-    DFLLRC2M.CTRL = DFLL_ENABLE_bm;
+	DFLLRC2M.CTRL = DFLL_ENABLE_bm;
 
-    CCP = CCP_IOREG_gc; //Security Signature to modify clock
-    CLK.CTRL = CLK_SCLKSEL_PLL_gc; // Select PLL
-    CLK.PSCTRL = 0x00; // No peripheral clock prescaler
+	CCP = CCP_IOREG_gc; //Security Signature to modify clock
+	CLK.CTRL = CLK_SCLKSEL_PLL_gc; // Select PLL
+	CLK.PSCTRL = 0x00; // No peripheral clock prescaler
 
 	CLK.USBCTRL = CLK_USBPSDIV_1_gc | CLK_USBSRC_RC32M_gc | CLK_USBSEN_bm;
 #endif
@@ -292,30 +270,32 @@ ISR(USB_BUSEVENT_vect)
 }
 
 /**************************************************************************************************
-* Handle transaction complete interrupts
+* Handle transaction complete interrupts. Uncomment callbacks if required.
 */
 ISR(USB_TRNCOMPL_vect)
 {
 	USB.FIFOWP = 0;	// clear TCIF
 	USB.INTFLAGSBCLR = USB_SETUPIF_bm | USB_TRNIF_bm;
 
-	// Endpoint 0 (default control endpoint)
+	// EP0 (control) OUT/SETUP
 	uint8_t status = usb_xmega_endpoints[0].out.STATUS;		// Read once to prevent race condition
 	if (status & USB_EP_SETUP_bm)
 	{
-		// TODO: race conditions because we can't block a setup packet
-		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm | USB_EP_BUSNACK0_bm | USB_EP_SETUP_bm);
 		memcpy(&usb_setup, ep0_buf_out, sizeof(usb_setup));
-		usb_handle_setup();
+		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm | USB_EP_BUSNACK0_bm | USB_EP_SETUP_bm);
+		if (((usb_setup.bmRequestType & 0x80) != 0) ||	// IN host requesting response
+			(usb_setup.wLength == 0))					// OUT but no data
+			usb_handle_control_setup();
+		// else deferred until data stage complete
 	}
 	else if (status & USB_EP_TRNCOMPL0_bm)
 	{
-		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm);
-		// empty
-		//usb_handle_control_out_complete();
+		usb_handle_control_setup();
+		//usb_handle_control_out();
+		//LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm);
 	}
 
-	// EP0 IN (control) endpoint
+	// EP0 (control) IN
 	if (usb_xmega_endpoints[0].in.STATUS & USB_EP_TRNCOMPL0_bm)
 	{
 		// SET_ADDRESS requests must only take effect after the response IN packet has
@@ -325,10 +305,11 @@ ISR(USB_TRNCOMPL_vect)
 			if (usb_setup.bRequest == USB_REQ_SetAddress)
 					USB.ADDR = usb_setup.wValue & 0x7F;
 		}
-		//usb_handle_control_in_complete();
+		//usb_handle_control_in();
 		LACR16(&usb_xmega_endpoints[0].in.STATUS, USB_EP_TRNCOMPL0_bm);
 	}
 
+	// EP1 IN
 	if (usb_xmega_endpoints[1].in.STATUS & USB_EP_TRNCOMPL0_bm)
 	{
 		LACR16(&usb_xmega_endpoints[1].in.STATUS, USB_EP_TRNCOMPL0_bm);

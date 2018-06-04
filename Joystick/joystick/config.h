@@ -172,8 +172,10 @@ enum PHYSICAL_INPUTS_enum
 
 
 // header block for all configs
+#define CONFIG_SIGNATURE			0xCF951968
 typedef struct
 {
+	uint32_t	signature;
 	uint16_t	length;
 	uint8_t		id;
 } CONFIG_HEADER_t;

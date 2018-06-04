@@ -9,14 +9,18 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <string.h>
+#define HID_DECLARE_REPORT_DESCRIPTOR
+#include "usb.h"
 #include "usb_xmega.h"
 #include "dfu.h"
-#include "usb_config.h"
+#include "xmega.h"
+#undef HID_DECLARE_REPORT_DESCRIPTOR
 
-// Notes:
-// Fill in msft_extended for WCID
-
+#ifdef USB_HID
 USB_ENDPOINTS(1);
+#else
+USB_ENDPOINTS(2);
+#endif
 
 
 /**************************************************************************************************
@@ -53,55 +57,14 @@ const __flash USB_DeviceDescriptor_t device_descriptor = {
 
 
 /**************************************************************************************************
-* HID report descriptor
-*/
-#ifdef USB_HID
-const __flash uint8_t hid_report_descriptor[] = {
-	0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
-	0x09, 0x04,                    // USAGE (Joystick)
-	0xa1, 0x01,                    // COLLECTION (Application)
-
-	0x05, 0x01,                    //   USAGE_PAGE (Generic Desktop)	joystick
-	0x09, 0x30,                    //   USAGE (X)
-	0x09, 0x31,                    //   USAGE (Y)
-	0x15, 0x81,                    //   LOGICAL_MINIMUM (-127)
-	0x25, 0x7f,                    //   LOGICAL_MAXIMUM (127)
-	0x75, 0x08,                    //   REPORT_SIZE (8)
-	0x95, 0x02,                    //   REPORT_COUNT (2)
-	0x81, 0x02,                    //   INPUT (Data,Var,Abs)
-
-	0x05, 0x09,                    //   USAGE_PAGE (Button)				buttons
-	0x19, 0x01,                    //   USAGE_MINIMUM (Button 1)
-	0x29, 0x18,                    //   USAGE_MAXIMUM (Button 24)
-	0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
-	0x25, 0x01,                    //   LOGICAL_MAXIMUM (1)
-	0x75, 0x01,                    //   REPORT_SIZE (1)
-	0x95, 0x18,                    //   REPORT_COUNT (24)
-	0x81, 0x02,                    //   INPUT (Data,Var,Abs)
-
-	0x06, 0x00, 0xff,              //   USAGE_PAGE (Vendor Defined Page 1)
-	0x09, 0x01,                    //   USAGE (Vendor Usage 1)
-	0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
-	0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
-	0x75, 0x08,                    //   REPORT_SIZE (8)
-	0x95, 0x40,                    //   REPORT_COUNT (64)
-	0xb1, 0x02,                    //   FEATURE (Data,Var,Abs)
-
-	0xc0                           // END_COLLECTION
-};
-_Static_assert(sizeof(hid_report_descriptor) <= USB_EP0_BUFFER_SIZE, "HID descriptor exceeds EP0 buffer size");
-#endif
-
-
-/**************************************************************************************************
-* USB device descriptor
+* USB configuration descriptor
 */
 typedef struct {
 	USB_ConfigurationDescriptor_t	Config;
 	USB_InterfaceDescriptor_t		Interface0;
 #ifdef USB_HID
 	USB_HIDDescriptor_t				HIDDescriptor;
-	USB_EndpointDescriptor_t		HIDEndpoint;
+	USB_EndpointDescriptor_t		HIDInEndpoint;
 #else
 	USB_EndpointDescriptor_t		DataInEndpoint;
 	USB_EndpointDescriptor_t		DataOutEndpoint;
@@ -154,7 +117,7 @@ const __flash ConfigDesc_t configuration_descriptor = {
 		.bReportDescriptorType = USB_DTYPE_Report,
 		.wDescriptorLength = sizeof(hid_report_descriptor),
 	},
-	.HIDEndpoint = {
+	.HIDInEndpoint = {
 		.bLength = sizeof(USB_EndpointDescriptor_t),
 		.bDescriptorType = USB_DTYPE_Endpoint,
 		.bEndpointAddress = 0x81,
@@ -200,7 +163,7 @@ const __flash ConfigDesc_t configuration_descriptor = {
 		.bNumEndpoints = 0,
 		.bInterfaceClass = DFU_INTERFACE_CLASS,
 		.bInterfaceSubClass = DFU_INTERFACE_SUBCLASS,
-		.bInterfaceProtocol = DFU_INTERFACE_PROTOCOL_DFUMODE,
+		.bInterfaceProtocol = DFU_INTERFACE_PROTOCOL_RUNTIME,
 		.iInterface = 0x10
 	},
 	.DFU_desc_runtime = {
@@ -266,21 +229,12 @@ USB_StringDescriptor serial_string = {
 
 void byte2char16(uint8_t byte, __CHAR16_TYPE__ *c)
 {
-	*c++ = (byte >> 4) < 10 ? (byte >> 4) + '0' : (byte >> 4) + 'A';
-	*c = (byte & 0xF) < 10 ? (byte & 0xF) + '0' : (byte & 0xF) + 'A';
+	*c++ = (byte >> 4) < 10 ? (byte >> 4) + '0' : (byte >> 4) + 'A' - 10;
+	*c = (byte & 0xF) < 10 ? (byte & 0xF) + '0' : (byte & 0xF) + 'A' - 10;
 
 	// this version uses less flash memory
 	//*c++ = 'A' + (byte >> 4);
 	//*c = 'A' + (byte & 0xF);
-}
-
-uint8_t read_calibration_byte(uint16_t address)
-{
-	NVM.CMD = NVM_CMD_READ_CALIB_ROW_gc;
-	uint8_t res;
-	__asm__ ("lpm %0, Z\n" : "=r" (res) : "z" (address));
-	NVM.CMD = NVM_CMD_NO_OPERATION_gc;
-	return res;
 }
 
 void generate_serial(void)
@@ -293,15 +247,15 @@ void generate_serial(void)
 	uint8_t idx = offsetof(NVM_PROD_SIGNATURES_t, LOTNUM0);
 	for (uint8_t i = 0; i < 6; i++)
 	{
-		byte2char16(read_calibration_byte(idx++), c);
+		byte2char16(NVM_read_production_signature_byte(idx++), c);
 		c += 2;
 	}
-	byte2char16(read_calibration_byte(offsetof(NVM_PROD_SIGNATURES_t, WAFNUM)), c);
+	byte2char16(NVM_read_production_signature_byte(offsetof(NVM_PROD_SIGNATURES_t, WAFNUM)), c);
 	c += 2;
 	idx = offsetof(NVM_PROD_SIGNATURES_t, COORDX0);
 	for (uint8_t i = 0; i < 4; i++)
 	{
-		byte2char16(read_calibration_byte(idx++), c);
+		byte2char16(NVM_read_production_signature_byte(idx++), c);
 		c += 2;
 	}
 }
@@ -363,8 +317,8 @@ __attribute__((__aligned__(2))) const USB_MicrosoftExtendedPropertiesDescriptor_
 	.dwType2 = 1,
 	.wNameLength2 = 6*2,
 	.name2 = L"Label\0",
-	.dwDataLength2 = 13*2,
-	.data2 = L"Name56789AB\0",
+	.dwDataLength2 = 10*2,
+	.data2 = L"SUPERPLAY\0",
 };
 
 /*
@@ -433,7 +387,7 @@ void handle_msft_compatible(void)
  *	USB descriptor request handler
  */
 uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
-	const void* address = NULL;
+	uint32_t address = 0;
 	uint16_t size = 0;
 
 	uint8_t cmd_backup = NVM.CMD;
@@ -442,20 +396,20 @@ uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
 	switch (type)
 	{
 		case USB_DTYPE_Device:
-			address = &device_descriptor;
+			address = pgm_get_far_address(device_descriptor);
 			size    = sizeof(USB_DeviceDescriptor_t);
 			break;
 		case USB_DTYPE_Configuration:
-			address = &configuration_descriptor;
+			address = pgm_get_far_address(configuration_descriptor);
 			size    = sizeof(ConfigDesc_t);
 			break;
 #ifdef USB_HID
 		case USB_DTYPE_HID:
-			address = &configuration_descriptor.HIDDescriptor;
+			address = pgm_get_far_address(configuration_descriptor.HIDDescriptor);
 			size	= sizeof(USB_HIDDescriptor_t);
 			break;
 		case USB_DTYPE_Report:
-			address = &hid_report_descriptor;
+			address = pgm_get_far_address(hid_report_descriptor);
 			size    = sizeof(hid_report_descriptor);
 			break;
 #endif
@@ -463,13 +417,13 @@ uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
 			switch (index)
 			{
 				case 0x00:
-					address = &language_string;
+					address = pgm_get_far_address(language_string);
 					break;
 				case 0x01:
-					address = &manufacturer_string;
+					address = pgm_get_far_address(manufacturer_string);
 					break;
 				case 0x02:
-					address = &product_string;
+					address = pgm_get_far_address(product_string);
 					break;
 #ifdef USB_SERIAL_NUMBER
 				case 0x03:
@@ -478,24 +432,31 @@ uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
 #endif
 #ifdef USB_DFU_RUNTIME
 				case 0x10:
-					address = &dfu_runtime_string;
+					address = pgm_get_far_address(dfu_runtime_string);
+					break;
+#endif
+#ifdef USB_DFU_MODE
+				case 0x10:
+					address = pgm_get_far_address(dfu_flash_string);
+					break;
+				case 0x11:
+					address = pgm_get_far_address(dfu_eeprom_string);
 					break;
 #endif
 #ifdef USB_WCID
 				case 0xEE:
-					address = &msft_string;
+					address = pgm_get_far_address(msft_string);
 					break;
 #endif
 
 				default:
 					return 0;
 			}
-			size = pgm_read_byte(&((USB_StringDescriptor_t*)address)->bLength);
+			size = pgm_read_byte_far(address + offsetof(USB_StringDescriptor_t, bLength));
 			break;
 	}
 
-	for (uint8_t i = 0; i < size; i++)
-		ep0_buf_in[i] = pgm_read_byte(address++);
+	memcpy_PF(ep0_buf_in, address, size);
 	NVM.CMD = cmd_backup;
 	return size;
 }
@@ -510,11 +471,4 @@ bool usb_cb_set_configuration(uint8_t config) {
 	} else {
 		return false;
 	}
-}
-
-/**************************************************************************************************
- *	Set USB interface
- */
-bool usb_cb_set_interface(uint16_t interface, uint16_t altsetting) {
-	return false;
 }
