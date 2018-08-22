@@ -44,6 +44,9 @@ volatile const __flash FW_INFO_t firmware_info =	{	{ 0x59, 0x61, 0x6d, 0x61, 0x4
 														EEPROM_PAGE_SIZE
 													};
 
+volatile uint8_t wdr_inhibit_AT = 0;
+
+
 int main(void)
 {
 	firmware_info.magic_string[0];	// prevent firmware_info being optimized away
@@ -84,7 +87,8 @@ int main(void)
 
 	for(;;)
 	{
-		WDR();
+		if (!wdr_inhibit_AT)
+			WDR();
 
 		RPT_refresh_input_matrix();
 		AF_apply();

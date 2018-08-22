@@ -19,7 +19,7 @@
 
 // USB vendor and product IDs, version number
 #define USB_VID				0x8282
-#define USB_PID				0x689E
+#define USB_PID				0x6800
 
 #define USB_VERSION_MAJOR	1
 #define USB_VERSION_MINOR	0
@@ -51,12 +51,14 @@
 #define USB_DFU_RUNTIME
 
 extern void	CCPWrite(volatile uint8_t *address, uint8_t value);
+extern volatile uint8_t wdr_inhibit_AT;
 static inline void dfu_cb_enter_dfu_mode(void)
 {
 	*(uint32_t *)(INTERNAL_SRAM_START) = 0x4c4f4144;	// "LOAD"
 	// watchdog reset gives USB time to send response
 	asm("wdr");
 	CCPWrite(&WDT.CTRL, WDT_WPER_128CLK_gc | WDT_ENABLE_bm | WDT_WCEN_bm);
+	wdr_inhibit_AT = 0xFF;
 }
 
 

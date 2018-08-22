@@ -40,7 +40,8 @@
         </dependencies>
       </framework-data>
     </AsfFrameworkConfig>
-    <avrtool>com.atmel.avrdbg.tool.jtagice3plus</avrtool>
+    <avrtool>
+    </avrtool>
     <avrtoolserialnumber>J30200024603</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x1E9742</avrdeviceexpectedsignature>
     <com_atmel_avrdbg_tool_jtagice3plus>
@@ -104,6 +105,12 @@
       <Value>libm</Value>
     </ListValues>
   </avrgcc.linker.libraries.Libraries>
+  <avrgcc.linker.memorysettings.Sram>
+    <ListValues>
+      <Value>.noinit=0x2000</Value>
+      <Value>.data=0x2004</Value>
+    </ListValues>
+  </avrgcc.linker.memorysettings.Sram>
   <avrgcc.assembler.general.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\atmel\XMEGAA_DFP\1.1.68\include</Value>
@@ -111,6 +118,7 @@
   </avrgcc.assembler.general.IncludePaths>
 </AvrGcc>
     </ToolchainSettings>
+    <PostBuildEvent>"$(MSBuildProjectDirectory)\ihex2dfu.exe" "$(MSBuildProjectDirectory)\Release\joystick.hex" "$(MSBuildProjectDirectory)\Release\joystick.dfu"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
