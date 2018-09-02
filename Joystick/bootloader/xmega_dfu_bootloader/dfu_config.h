@@ -31,8 +31,13 @@
  */
 static inline bool CheckStartConditions(void)
 {
+	PORTB.DIRCLR = PIN7_bm;
+	PORTB.PIN7CTRL = (PORTB.PIN7CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLUP_gc;
+	for (uint16_t i = 1000; i; i--);
+	
 	if ((*(uint32_t *)(INTERNAL_SRAM_START) == 0x4c4f4144) ||	// "LOAD"
-		(*(const __flash uint16_t *)(0) == 0xFFFF))				// reset vector blank
+		(*(const __flash uint16_t *)(0) == 0xFFFF) ||			// reset vector blank
+		(!(PORTB.IN & PIN7_bm)))								// button 1
 	{
 		*(uint32_t *)(INTERNAL_SRAM_START) = 0;					// clear signature
 		return true;
